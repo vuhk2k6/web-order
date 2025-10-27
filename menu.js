@@ -24,22 +24,58 @@ function displayMenuItems() {
     if (!menuGrid) return;
     
     const items = loadMenuItems();
+    menuGrid.innerHTML = '';
     
-    menuGrid.innerHTML = items.map(item => `
-        <div class="menu-item" data-id="${item.id}">
-            <div class="item-image" style="background: ${item.gradient};">
-                <span class="image-placeholder">${item.emoji}</span>
-            </div>
-            <div class="item-details">
-                <h3>${item.name}</h3>
-                <p class="item-description">${item.description}</p>
-                <div class="item-footer">
-                    <span class="item-price">${item.price.toLocaleString('vi-VN')}đ</span>
-                    <button class="btn btn-add-cart" onclick="addToCart(${item.id}, '${item.name}', ${item.price})">Thêm vào giỏ</button>
-                </div>
-            </div>
-        </div>
-    `).join('');
+    items.forEach(item => {
+        const menuItem = document.createElement('div');
+        menuItem.className = 'menu-item';
+        menuItem.dataset.id = item.id;
+        
+        const itemImage = document.createElement('div');
+        itemImage.className = 'item-image';
+        itemImage.style.background = item.gradient || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        
+        const imagePlaceholder = document.createElement('span');
+        imagePlaceholder.className = 'image-placeholder';
+        imagePlaceholder.textContent = item.emoji || '🍽️';
+        itemImage.appendChild(imagePlaceholder);
+        
+        const itemDetails = document.createElement('div');
+        itemDetails.className = 'item-details';
+        
+        const itemName = document.createElement('h3');
+        itemName.textContent = item.name;
+        
+        const itemDescription = document.createElement('p');
+        itemDescription.className = 'item-description';
+        itemDescription.textContent = item.description;
+        
+        const itemFooter = document.createElement('div');
+        itemFooter.className = 'item-footer';
+        
+        const itemPrice = document.createElement('span');
+        itemPrice.className = 'item-price';
+        itemPrice.textContent = item.price.toLocaleString('vi-VN') + 'đ';
+        
+        const addButton = document.createElement('button');
+        addButton.className = 'btn btn-add-cart';
+        addButton.textContent = 'Thêm vào giỏ';
+        addButton.addEventListener('click', function() {
+            addToCart(item.id, item.name, item.price);
+        });
+        
+        itemFooter.appendChild(itemPrice);
+        itemFooter.appendChild(addButton);
+        
+        itemDetails.appendChild(itemName);
+        itemDetails.appendChild(itemDescription);
+        itemDetails.appendChild(itemFooter);
+        
+        menuItem.appendChild(itemImage);
+        menuItem.appendChild(itemDetails);
+        
+        menuGrid.appendChild(menuItem);
+    });
 }
 
 if (document.querySelector('.menu-grid')) {
