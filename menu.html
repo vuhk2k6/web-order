@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thực Đơn - Nhà Hàng Ngon</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>🍽️ Nhà Hàng Ngon</h1>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Trang chủ</a></li>
+                <li><a href="menu.html" class="active">Thực đơn</a></li>
+                <li><a href="cart.html">Giỏ hàng <span id="cart-count" class="cart-badge">(0)</span></a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section class="menu-section">
+        <div class="container">
+            <h2>Thực Đơn Của Chúng Tôi</h2>
+            <p class="section-subtitle">Khám phá các món ăn ngon được chế biến tươi mỗi ngày</p>
+            
+            <div class="menu-grid">
+                <div class="menu-item" data-id="1">
+                    <div class="item-image" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <span class="image-placeholder">🍔</span>
+                    </div>
+                    <div class="item-details">
+                        <h3>Burger Cổ Điển</h3>
+                        <p class="item-description">Bánh mì mềm, thịt bò tươi, phô mai, rau xà lách và sốt đặc biệt</p>
+                        <div class="item-footer">
+                            <span class="item-price">150.000đ</span>
+                            <button class="btn btn-add-cart" onclick="addToCart(1, 'Burger Cổ Điển', 150000)">Thêm vào giỏ</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="menu-item" data-id="2">
+                    <div class="item-image" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <span class="image-placeholder">🍕</span>
+                    </div>
+                    <div class="item-details">
+                        <h3>Pizza Hải Sản</h3>
+                        <p class="item-description">Pizza giòn với tôm, mực, nghêu và phô mai mozzarella</p>
+                        <div class="item-footer">
+                            <span class="item-price">220.000đ</span>
+                            <button class="btn btn-add-cart" onclick="addToCart(2, 'Pizza Hải Sản', 220000)">Thêm vào giỏ</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="menu-item" data-id="3">
+                    <div class="item-image" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <span class="image-placeholder">🍜</span>
+                    </div>
+                    <div class="item-details">
+                        <h3>Phở Bò Đặc Biệt</h3>
+                        <p class="item-description">Phở truyền thống với nước dùng đậm đà, thịt bò tươi</p>
+                        <div class="item-footer">
+                            <span class="item-price">85.000đ</span>
+                            <button class="btn btn-add-cart" onclick="addToCart(3, 'Phở Bò Đặc Biệt', 85000)">Thêm vào giỏ</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="menu-item" data-id="4">
+                    <div class="item-image" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                        <span class="image-placeholder">🍗</span>
+                    </div>
+                    <div class="item-details">
+                        <h3>Gà Rán Giòn</h3>
+                        <p class="item-description">Gà tươi tẩm gia vị đặc biệt, chiên giòn vàng ươm</p>
+                        <div class="item-footer">
+                            <span class="item-price">120.000đ</span>
+                            <button class="btn btn-add-cart" onclick="addToCart(4, 'Gà Rán Giòn', 120000)">Thêm vào giỏ</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="menu-item" data-id="5">
+                    <div class="item-image" style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);">
+                        <span class="image-placeholder">🍝</span>
+                    </div>
+                    <div class="item-details">
+                        <h3>Mì Ý Sốt Bò Bằm</h3>
+                        <p class="item-description">Mì Ý al dente với sốt cà chua và thịt bò bằm thơm ngon</p>
+                        <div class="item-footer">
+                            <span class="item-price">135.000đ</span>
+                            <button class="btn btn-add-cart" onclick="addToCart(5, 'Mì Ý Sốt Bò Bằm', 135000)">Thêm vào giỏ</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="menu-item" data-id="6">
+                    <div class="item-image" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                        <span class="image-placeholder">🍱</span>
+                    </div>
+                    <div class="item-details">
+                        <h3>Cơm Sườn Bì Chả</h3>
+                        <p class="item-description">Cơm trắng với sườn nướng, bì và chả trứng thơm lừng</p>
+                        <div class="item-footer">
+                            <span class="item-price">95.000đ</span>
+                            <button class="btn btn-add-cart" onclick="addToCart(6, 'Cơm Sườn Bì Chả', 95000)">Thêm vào giỏ</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Nhà Hàng Ngon. Tất cả quyền được bảo lưu.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giỏ Hàng - Nhà Hàng Ngon</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>🍽️ Nhà Hàng Ngon</h1>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Trang chủ</a></li>
+                <li><a href="menu.html">Thực đơn</a></li>
+                <li><a href="cart.html" class="active">Giỏ hàng <span id="cart-count" class="cart-badge">(0)</span></a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section class="cart-section">
+        <div class="container">
+            <h2>Giỏ Hàng Của Bạn</h2>
+            
+            <div class="cart-content">
+                <div class="cart-items" id="cart-items">
+                </div>
+
+                <div class="cart-sidebar">
+                    <div class="cart-summary">
+                        <h3>Tổng Đơn Hàng</h3>
+                        <div class="summary-row">
+                            <span>Tạm tính:</span>
+                            <span id="subtotal">0đ</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>Tổng cộng:</span>
+                            <span id="total">0đ</span>
+                        </div>
+                    </div>
+
+                    <div class="checkout-form">
+                        <h3>Thông Tin Giao Hàng</h3>
+                        <form id="checkout-form">
+                            <div class="form-group">
+                                <label for="customer-name">Họ và Tên *</label>
+                                <input type="text" id="customer-name" name="name" required placeholder="Nhập họ và tên của bạn">
+                            </div>
+                            <div class="form-group">
+                                <label for="customer-phone">Số Điện Thoại *</label>
+                                <input type="tel" id="customer-phone" name="phone" required placeholder="Nhập số điện thoại">
+                            </div>
+                            <div class="form-group">
+                                <label for="customer-address">Địa Chỉ Giao Hàng *</label>
+                                <textarea id="customer-address" name="address" required rows="3" placeholder="Nhập địa chỉ giao hàng"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Đặt Hàng</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Nhà Hàng Ngon. Tất cả quyền được bảo lưu.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
