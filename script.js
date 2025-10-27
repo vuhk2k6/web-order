@@ -175,6 +175,12 @@ function updateCartTotal() {
     }
 }
 
+function saveOrder(orderData) {
+    const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+    orders.push(orderData);
+    localStorage.setItem('orders', JSON.stringify(orders));
+}
+
 function handleCheckout(event) {
     event.preventDefault();
 
@@ -197,7 +203,22 @@ function handleCheckout(event) {
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
-    alert(`Đặt hàng thành công!\n\nTên: ${name}\nSố điện thoại: ${phone}\nĐịa chỉ: ${address}\n\nSố món: ${itemCount}\nTổng tiền: ${formatCurrency(total)}\n\nCảm ơn bạn đã đặt hàng!`);
+    const order = {
+        id: 'DH' + Date.now(),
+        customerName: name,
+        phone: phone,
+        address: address,
+        items: [...cart],
+        total: total,
+        itemCount: itemCount,
+        status: 'Mới',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    };
+
+    saveOrder(order);
+
+    alert(`Đặt hàng thành công!\n\nMã đơn: ${order.id}\nTên: ${name}\nSố điện thoại: ${phone}\nĐịa chỉ: ${address}\n\nSố món: ${itemCount}\nTổng tiền: ${formatCurrency(total)}\n\nCảm ơn bạn đã đặt hàng!`);
 
     localStorage.removeItem('cart');
     form.reset();
