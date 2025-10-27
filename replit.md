@@ -9,14 +9,16 @@ A multi-page restaurant food ordering website built with pure HTML, CSS, and Jav
 - `menu.html` - Menu page dynamically loading items from localStorage
 - `cart.html` - Shopping cart page with quantity controls and checkout form
 
-### Admin Pages
-- `admin.html` - Admin panel for managing orders and menu items
+### Admin Panel (Separate Directory)
+- `admin/` - Dedicated admin directory with isolated files
+  - `admin/index.html` - Admin panel for managing orders and menu items
+  - `admin/admin.css` - Admin-specific CSS styling
+  - `admin/admin.js` - Admin functionality for order and menu management
 
 ### Styles & Scripts
-- `style.css` - Responsive CSS styling with mobile, tablet, and desktop support
+- `style.css` - Responsive CSS styling for customer pages
 - `script.js` - Core JavaScript for cart management and order processing
 - `menu.js` - Dynamic menu rendering with secure DOM manipulation
-- `admin.js` - Admin functionality for order and menu management
 
 ## Features
 
@@ -69,7 +71,7 @@ A multi-page restaurant food ordering website built with pure HTML, CSS, and Jav
 6. Receive order confirmation with order ID
 
 ### For Admin
-1. Navigate to the "Quản lý" page
+1. Navigate to the "Quản lý" page (located at `/admin/`)
 2. View dashboard statistics
 3. **Order Management Tab**:
    - Click "Chi tiết" to view order details
@@ -124,6 +126,14 @@ A multi-page restaurant food ordering website built with pure HTML, CSS, and Jav
   - Refactored menu.js to use secure DOM manipulation
   - Fixed XSS vulnerabilities using createElement/textContent
   - Added statistics dashboard for admin
+
+- **October 27, 2025**: Admin panel reorganization
+  - Separated admin panel into dedicated `admin/` directory
+  - Created `admin/admin.css` for isolated admin styling
+  - Moved admin files to `admin/index.html` and `admin/admin.js`
+  - Removed admin CSS from main `style.css` to avoid conflicts
+  - Updated all navigation links to point to `/admin/`
+  - Improved project organization and maintainability
 
 ## Notes
 - All data stored in browser's localStorage
