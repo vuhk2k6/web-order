@@ -23,36 +23,41 @@ A multi-page restaurant food ordering website built with pure HTML, CSS, and Jav
 ## Features
 
 ### Customer Features
-✅ **Navigation Bar**: Consistent across all pages with active page highlighting and cart item counter
-✅ **Home Page**: Beautiful hero section with call-to-action button and restaurant intro
-✅ **Menu Page**: Dynamically loaded menu items from localStorage
-✅ **Shopping Cart**: Full cart management with quantity controls, remove items, and total calculation
-✅ **LocalStorage**: Cart data and orders persist across page navigation
-✅ **Checkout Form**: Simple form with name, phone, and address fields
-✅ **Responsive Design**: Mobile-friendly with CSS media queries for all screen sizes
+✅ **iOS-Style Glassmorphism Design**: Premium liquid glass effects with 42px blur, layered gradients, dual shadows, and edge glows
+✅ **Premium Animations**: Spring transitions, floating effects, shimmer, glow pulses, and smooth micro-interactions
+✅ **Navigation Bar**: Glass morphism navbar with active state highlighting and cart counter
+✅ **Home Page**: Beautiful glass hero section with animated effects and call-to-action
+✅ **Expanded Menu**: 25 diverse menu items across 4 categories (khai vị, món chính, tráng miệng, đồ uống)
+✅ **Category Filters**: iOS-style segmented pill controls for filtering menu by category
+✅ **Shopping Cart**: Full cart management with glass-effect cards, quantity controls, and animations
+✅ **LocalStorage with Versioning**: Smart data migration ensures all users get updated menu catalog
+✅ **Checkout Form**: Glass-effect form with smooth focus states
+✅ **Responsive Design**: Mobile-optimized with prefers-reduced-motion accessibility support
 ✅ **Notifications**: Visual feedback when items are added to cart
 ✅ **Order Confirmation**: Alert with order ID and details when order is placed
 
 ### Admin Features
-✅ **Dashboard Stats**: Real-time statistics showing total orders, new orders, processing orders, and revenue
+✅ **Premium Glass Design**: Matching iOS-style glassmorphism across entire admin panel
+✅ **Dashboard Stats**: Animated glass stat cards with hover effects showing orders and revenue
+✅ **iOS-Style Tab Controls**: Segmented pill navigation between order and menu management
 ✅ **Order Management**: 
-  - View all orders with customer details
-  - Update order status (Mới, Đang xử lý, Đang giao, Đã giao, Đã hủy)
+  - View all orders with customer details in glass-effect tables
+  - Update order status with animated glass badges (Mới, Đang xử lý, Đang giao, Đã giao, Đã hủy)
   - View detailed order information
-  - Delete orders
+  - Delete orders with smooth transitions
 ✅ **Menu Management**:
-  - Add new menu items
-  - Edit existing items (name, description, price, emoji, gradient)
+  - Add new menu items with category support
+  - Edit existing items (name, description, price, emoji, gradient, category)
   - Delete menu items
   - Changes reflect immediately on customer menu page
-✅ **Status Badges**: Color-coded order status indicators
-✅ **Responsive Tables**: Mobile-friendly order and menu management tables
+✅ **Animated UI Elements**: Glass buttons with glow effects and spring transitions
+✅ **Responsive Design**: Mobile-optimized admin panel with collapsible navigation
 
 ## Technology Stack
 - HTML5 - Semantic markup
-- CSS3 - Flexbox, Grid, Media Queries
-- Vanilla JavaScript (ES6+) - No frameworks
-- LocalStorage API - Data persistence
+- CSS3 - Advanced glassmorphism with backdrop-filter, CSS variables, keyframe animations
+- Vanilla JavaScript (ES6+) - No frameworks, versioned data management
+- LocalStorage API - Data persistence with migration system
 - DOM API - Secure element creation with createElement/textContent
 
 ## Security Features
@@ -105,6 +110,7 @@ A multi-page restaurant food ordering website built with pure HTML, CSS, and Jav
 {
   id: number,
   name: string,
+  category: "appetizer" | "main" | "dessert" | "drink",
   description: string,
   price: number,
   emoji: string,
@@ -134,6 +140,27 @@ A multi-page restaurant food ordering website built with pure HTML, CSS, and Jav
   - Removed admin CSS from main `style.css` to avoid conflicts
   - Updated all navigation links to point to `/admin/`
   - Improved project organization and maintainability
+
+- **October 27, 2025**: iOS-Inspired Premium Glassmorphism Redesign
+  - Implemented premium liquid glass effects with 42px backdrop blur, saturation, and contrast filters
+  - Added layered gradients, dual shadows (main + inset), and edge glows throughout
+  - Created spring-like transitions using cubic-bezier easing for iOS-quality animations
+  - Added floating, shimmer, and glow-pulse keyframe animations
+  - Expanded menu from 6 to 25 items across 4 categories (appetizer, main, dessert, drink)
+  - Implemented iOS-style segmented pill filter controls for category navigation
+  - Added data versioning system (MENU_DATA_VERSION) for safe localStorage migrations
+  - Applied matching glassmorphism to admin panel (stats, tabs, tables, buttons)
+  - Added prefers-reduced-motion accessibility support
+  - Installed Python 3.11 for HTTP server workflow
+  - Comprehensive architect review confirms iOS-grade polish and functionality
+
+## Design Philosophy
+The website uses **iOS-inspired glassmorphism** (liquid glass) design language to create a premium, modern user experience:
+- **Glass Effects**: Semi-transparent backgrounds with strong blur and saturation
+- **Layered Depth**: Dual shadows and inset highlights create dimensional surfaces
+- **Fluid Motion**: Spring easing and smooth transitions feel responsive and alive  
+- **Accessibility**: Respects user motion preferences and maintains proper contrast
+- **Consistency**: Unified visual language across customer and admin interfaces
 
 ## Notes
 - All data stored in browser's localStorage

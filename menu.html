@@ -26,6 +26,26 @@
             <h2>Thực Đơn Của Chúng Tôi</h2>
             <p class="section-subtitle">Khám phá các món ăn ngon được chế biến tươi mỗi ngày</p>
             
+            <div class="filter-section">
+                <div class="filter-controls">
+                    <button class="filter-btn active" data-category="all" onclick="filterMenuItems('all')">
+                        Tất cả
+                    </button>
+                    <button class="filter-btn" data-category="appetizer" onclick="filterMenuItems('appetizer')">
+                        Khai vị
+                    </button>
+                    <button class="filter-btn" data-category="main" onclick="filterMenuItems('main')">
+                        Món chính
+                    </button>
+                    <button class="filter-btn" data-category="dessert" onclick="filterMenuItems('dessert')">
+                        Tráng miệng
+                    </button>
+                    <button class="filter-btn" data-category="drink" onclick="filterMenuItems('drink')">
+                        Đồ uống
+                    </button>
+                </div>
+            </div>
+            
             <div class="menu-grid">
             </div>
         </div>
