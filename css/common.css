@@ -44,6 +44,7 @@ body {
     min-height: 100vh;
     border-left: 3px solid var(--light-peach);
     border-right: 3px solid var(--light-peach);
+    padding-top: 90px;
 }
 
 .container {
@@ -60,10 +61,15 @@ body {
     background: var(--light-blue);
     border-bottom: 2px solid var(--light-blue-darker);
     box-shadow: 0 4px 16px rgba(184,212,227,0.3);
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
     z-index: 1000;
     transition: var(--spring-transition);
+    height: 80px;
+    overflow: hidden;
 }
 
 .navbar::before {
@@ -78,11 +84,66 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 20px;
+    padding: 0.5rem 20px;
+    height: 80px;
     position: relative;
     z-index: 1;
 }
 
+.nav-brand {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    height: 80px;
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-brand .logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    transition: var(--smooth-transition);
+    position: relative;
+    height: 80px;
+    padding: 0 30px 0 0;
+}
+
+.nav-brand .logo-link:hover {
+    transform: scale(1.05);
+}
+
+.nav-brand .logo-img {
+    height: 100px;
+    max-height: 100px;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+    transition: var(--smooth-transition);
+    display: block;
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+    }
+
+.nav-brand .logo-link:hover .logo-img {
+    filter: drop-shadow(0 2px 12px rgba(0,0,0,0.4));
+}
+
+.nav-brand .logo-text {
+    font-size: 1.5rem;
+    color: var(--white);
+    text-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.4);
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    white-space: nowrap;
+}
+
+.nav-brand .logo-link:hover .logo-text {
+    text-shadow: 0 2px 12px rgba(0,0,0,0.4), 0 1px 4px rgba(0,0,0,0.5);
+}
+
+/* Keep old h1 styles for backward compatibility (if used elsewhere) */
 .nav-brand h1 {
     font-size: 1.5rem;
     color: var(--white);
@@ -131,9 +192,13 @@ body {
     transition: opacity 280ms ease;
 }
 
-.nav-menu a:hover {
+.nav-menu a:hover,
+.nav-menu a.active {
     color: var(--white);
     text-shadow: 0 2px 8px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.5);
+}
+
+.nav-menu a:hover {
     transform: translateY(-1px);
 }
 
@@ -143,14 +208,8 @@ body {
 
 .nav-menu a.active {
     background: rgba(255, 255, 255, 0.3);
-    color: var(--white);
-    text-shadow: 0 2px 8px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.5);
     border: 1px solid rgba(255, 255, 255, 0.4);
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.cart-badge {
-    font-size: 0.9em;
 }
 
 .nav-utilities {
@@ -172,6 +231,8 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 2px;
     transition: var(--smooth-transition);
+    display: inline-block;
+    overflow: hidden;
 }
 
 .flag-icon:hover {
@@ -179,50 +240,14 @@ body {
     border-color: rgba(255, 255, 255, 0.5);
 }
 
-.flag-vn {
-    background: linear-gradient(to bottom, #DA020E 0%, #DA020E 33%, #FFFF00 33%, #FFFF00 66%, #DA020E 66%);
-    position: relative;
+/* Flag Icons Library Support */
+.flag-icon.fi {
+    border: none;
+    border-radius: 2px;
 }
 
-.flag-vn::after {
-    content: '⭐';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 8px;
-    color: #FFFF00;
-}
-
-.flag-uk {
-    background: #012169;
-    position: relative;
-}
-
-.flag-uk::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: 
-        linear-gradient(0deg, transparent 40%, #FFFFFF 40%, #FFFFFF 45%, transparent 45%, transparent 55%, #FFFFFF 55%, #FFFFFF 60%, transparent 60%),
-        linear-gradient(90deg, transparent 40%, #FFFFFF 40%, #FFFFFF 45%, transparent 45%, transparent 55%, #FFFFFF 55%, #FFFFFF 60%, transparent 60%),
-        linear-gradient(45deg, transparent 43%, #FFFFFF 43%, #FFFFFF 47%, transparent 47%),
-        linear-gradient(-45deg, transparent 43%, #FFFFFF 43%, #FFFFFF 47%, transparent 47%);
-}
-
-.flag-uk::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: 
-        linear-gradient(0deg, transparent 42%, #C8102E 42%, #C8102E 43%, transparent 43%, transparent 57%, #C8102E 57%, #C8102E 58%, transparent 58%),
-        linear-gradient(90deg, transparent 42%, #C8102E 42%, #C8102E 43%, transparent 43%, transparent 57%, #C8102E 57%, #C8102E 58%, transparent 58%);
+.flag-icon.fi::before {
+    border-radius: 2px;
 }
 
 .nav-icon {
@@ -234,6 +259,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 24px;
+    height: 24px;
 }
 
 .nav-icon:hover {
@@ -241,8 +268,33 @@ body {
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
 }
 
+.nav-icon i,
+.nav-icon svg {
+    font-size: 1.5rem;
+    color: var(--white);
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    display: inline-block;
+}
+
+.nav-icon i {
+    line-height: 1;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.4);
+}
+
+.nav-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.nav-icon:hover i,
+.nav-icon:hover svg {
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+}
+
 .cart-icon-wrapper {
     position: relative;
+    text-decoration: none;
+    color: inherit;
 }
 
 .cart-icon-badge {
@@ -262,6 +314,7 @@ body {
     justify-content: center;
     border: 2px solid var(--light-blue);
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    line-height: 1;
 }
 
 /* ========================================
@@ -291,12 +344,21 @@ body {
     transition: opacity 320ms ease;
 }
 
-.btn-primary {
+.btn-primary,
+.btn-add-cart {
     background: var(--light-blue);
     color: var(--white);
     text-shadow: 0 2px 6px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.4);
-    box-shadow: 0 4px 16px rgba(184,212,227,0.3);
     border: 2px solid var(--light-blue-darker);
+}
+
+.btn-primary {
+    box-shadow: 0 4px 16px rgba(184,212,227,0.3);
+}
+
+.btn-add-cart {
+    padding: 10px 20px;
+    font-size: 0.95rem;
 }
 
 .btn-primary:hover {
@@ -311,15 +373,6 @@ body {
 
 .btn-primary:active {
     transform: translateY(-1px) scale(0.98);
-}
-
-.btn-add-cart {
-    background: var(--light-blue);
-    color: var(--white);
-    text-shadow: 0 2px 6px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.4);
-    padding: 10px 20px;
-    font-size: 0.95rem;
-    border: 2px solid var(--light-blue-darker);
 }
 
 .btn-add-cart:hover {
@@ -373,9 +426,15 @@ body {
 }
 
 @media (max-width: 768px) {
+    body {
+        padding-top: 90px;
+    }
+
     .navbar .container {
         flex-direction: column;
-        gap: 1rem;
+        gap: 0.5rem;
+        height: auto;
+        padding: 0.5rem 20px;
     }
 
     .nav-menu {
@@ -409,6 +468,10 @@ body {
         font-size: 1.3rem;
     }
 
+    .nav-brand .logo-text {
+        font-size: 1.1rem;
+    }
+
     .nav-menu {
         width: 100%;
     }
@@ -420,4 +483,3 @@ body {
         font-size: 0.9rem;
     }
 }
-
