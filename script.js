@@ -11,9 +11,22 @@ function saveCart(cart) {
 function updateCartCount() {
     const cart = getCart();
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    
+    // Update old cart count elements
     const cartCountElements = document.querySelectorAll('#cart-count');
     cartCountElements.forEach(element => {
         element.textContent = `(${totalItems})`;
+    });
+    
+    // Update new cart badge
+    const cartBadgeElements = document.querySelectorAll('#cart-badge');
+    cartBadgeElements.forEach(element => {
+        element.textContent = totalItems;
+        if (totalItems === 0) {
+            element.style.display = 'none';
+        } else {
+            element.style.display = 'flex';
+        }
     });
 }
 
