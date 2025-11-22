@@ -31,6 +31,21 @@ function updateCartCount() {
 }
 
 function addToCart(id, name, price) {
+    // Check if user is logged in or has dine-in session
+    if (typeof requireAuth === 'function') {
+        requireAuth(function() {
+            addToCartAfterLogin(id, name, price);
+        });
+    } else if (typeof requireLogin === 'function') {
+        requireLogin(function() {
+            addToCartAfterLogin(id, name, price);
+        });
+    } else {
+        addToCartAfterLogin(id, name, price);
+    }
+}
+
+function addToCartAfterLogin(id, name, price) {
     const cart = getCart();
     const existingItem = cart.find(item => item.id === id);
 
@@ -197,19 +212,70 @@ function saveOrder(orderData) {
 function handleCheckout(event) {
     event.preventDefault();
 
+    // Check if user is logged in or has dine-in session
+    if (typeof requireAuth === 'function') {
+        if (!isAuthenticated()) {
+            requireAuth(function() {
+                const form = event.target;
+                processCheckout(form);
+            });
+            return;
+        }
+    } else if (typeof requireLogin === 'function') {
+        requireLogin(function() {
+            const form = event.target;
+            processCheckout(form);
+        });
+        return;
+    } else if (typeof showLoginModal === 'function') {
+        showLoginModal();
+        return;
+    }
+    
+    processCheckout(event.target);
+}
+
+function processCheckout(form) {
     const cart = getCart();
     if (cart.length === 0) {
         alert('Giỏ hàng của bạn đang trống!');
         return;
     }
+    let name = form.name.value.trim();
+    let phone = form.phone.value.trim();
+    let address = form.address ? form.address.value.trim() : '';
+    let orderType = 'delivery'; // Default to delivery
+    
+    // Try to get user info or dine-in session
+    if (typeof getCurrentSession === 'function') {
+        const session = getCurrentSession();
+        if (session) {
+            if (session.type === 'user') {
+                if (!name) name = session.data.username || '';
+                if (!phone) phone = session.data.phone || '';
+            } else if (session.type === 'dine-in') {
+                if (!name) name = session.data.name || '';
+                if (!phone) phone = session.data.phone || '';
+                orderType = 'dine-in';
+                address = `Bàn số ${session.data.table || 'N/A'} - Ăn tại nhà hàng`;
+            }
+        }
+    } else if (typeof getCurrentUser === 'function') {
+        const user = getCurrentUser();
+        if (user) {
+            if (!name) name = user.username || '';
+            if (!phone) phone = user.phone || '';
+        }
+    }
 
-    const form = event.target;
-    const name = form.name.value.trim();
-    const phone = form.phone.value.trim();
-    const address = form.address.value.trim();
-
-    if (!name || !phone || !address) {
+    if (!name || !phone) {
         alert('Vui lòng điền đầy đủ thông tin!');
+        return;
+    }
+    
+    // For dine-in, address is optional
+    if (orderType === 'delivery' && !address) {
+        alert('Vui lòng điền địa chỉ giao hàng!');
         return;
     }
 
@@ -220,11 +286,12 @@ function handleCheckout(event) {
         id: 'DH' + Date.now(),
         customerName: name,
         phone: phone,
-        address: address,
+        address: address || 'Ăn tại nhà hàng',
         items: [...cart],
         total: total,
         itemCount: itemCount,
         status: 'Mới',
+        orderType: orderType, // 'delivery' or 'dine-in'
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
     };

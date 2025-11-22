@@ -14,11 +14,10 @@ function createNavbar() {
                     </a>
                 </div>
                 <ul class="nav-menu">
-                    <li><a href="#evoucher">MÃ E-VOUCHER</a></li>
-                    <li><a href="#promotions">KHUYẾN MÃI</a></li>
+                    <li><a href="evoucher.html" data-page="evoucher.html">MÃ E-VOUCHER</a></li>
+                    <li><a href="promotions.html" data-page="promotions.html">KHUYẾN MÃI</a></li>
                     <li><a href="menu.html" data-page="menu.html">THỰC ĐƠN</a></li>
-                    <li><a href="#track-order">THEO DÕI ĐƠN HÀNG</a></li>
-                    <li><a href="#store-list">DANH SÁCH CỬA HÀNG</a></li>
+                    <li><a href="track-order.html" data-page="track-order.html" id="track-order-link">THEO DÕI ĐƠN HÀNG</a></li>
                     <li><a href="#blog">BLOG</a></li>
                 </ul>
                 <div class="nav-utilities">
@@ -26,7 +25,7 @@ function createNavbar() {
                         <div class="flag-icon fi-vn" title="Tiếng Việt"></div>
                         <div class="flag-icon fi-gb" title="English"></div>
                     </div>
-                    <div class="nav-icon" title="Tài khoản">
+                    <div class="nav-icon user-icon" id="user-icon" title="Tài khoản">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                             <circle cx="12" cy="7" r="4"></circle>
@@ -53,6 +52,32 @@ function createNavbar() {
     if (typeof updateCartCount === 'function') {
         updateCartCount();
     }
+    
+    // Add event listener for track order link - require login
+    setTimeout(() => {
+        const trackOrderLink = document.getElementById('track-order-link');
+        if (trackOrderLink) {
+            trackOrderLink.addEventListener('click', function(e) {
+                if (typeof requireLogin === 'function') {
+                    if (!isLoggedIn()) {
+                        e.preventDefault();
+                        requireLogin(function() {
+                            // After login, redirect to track order page
+                            window.location.href = 'track-order.html';
+                        });
+                    }
+                } else if (typeof showLoginModal === 'function' && typeof isLoggedIn === 'function') {
+                    if (!isLoggedIn()) {
+                        e.preventDefault();
+                        showLoginModal();
+                    }
+                }
+            });
+        }
+        
+        // User icon click will be handled by updateNavbarUser in auth.js
+        // This ensures it works for both logged-in users and dine-in sessions
+    }, 100);
 }
 
 /**

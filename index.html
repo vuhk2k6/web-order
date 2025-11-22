@@ -14,6 +14,10 @@
     <!-- Navbar will be injected here by navbar.js -->
 
     <section class="hero">
+        <video class="hero-video" autoplay muted loop playsinline>
+            <source src="assets/img/Intro.mp4" type="video/mp4">
+        </video>
+        <div class="hero-overlay"></div>
         <div class="hero-content">
             <h2>Chào Mừng Đến Với CAFRROTSFUD</h2>
             <p>Trải nghiệm hương vị tuyệt vời với những món ăn được chế biến từ nguyên liệu tươi ngon nhất</p>
@@ -21,31 +25,20 @@
         </div>
     </section>
 
-    <section class="intro">
+    <section class="bestsellers-section">
         <div class="container">
-            <h2>Về Chúng Tôi</h2>
-            <div class="intro-content">
-                <div class="intro-text">
-                    <p>CAFRROTSFUD tự hào phục vụ các món ăn truyền thống và hiện đại với hương vị đặc biệt. Chúng tôi sử dụng nguyên liệu tươi ngon hàng ngày và được chế biến bởi đội ngũ đầu bếp giàu kinh nghiệm.</p>
-                    <p>Với không gian ấm cúng và phục vụ tận tình, chúng tôi cam kết mang đến cho bạn những trải nghiệm ẩm thực tuyệt vời nhất.</p>
-                </div>
-                <div class="intro-features">
-                    <div class="feature">
-                        <div class="feature-icon">✨</div>
-                        <h3>Chất Lượng Cao</h3>
-                        <p>Nguyên liệu tươi ngon, được chọn lọc kỹ càng</p>
-                    </div>
-                    <div class="feature">
-                        <div class="feature-icon">🚚</div>
-                        <h3>Giao Hàng Nhanh</h3>
-                        <p>Đảm bảo món ăn đến tay bạn nóng hổi</p>
-                    </div>
-                    <div class="feature">
-                        <div class="feature-icon">👨‍🍳</div>
-                        <h3>Đầu Bếp Chuyên Nghiệp</h3>
-                        <p>Đội ngũ đầu bếp giàu kinh nghiệm</p>
-                    </div>
-                </div>
+            <div class="bestsellers-tabs">
+                <button class="bestsellers-tab" data-tab="today">Hôm Nay Ăn Gì?</button>
+                <button class="bestsellers-tab" data-tab="promo">Khuyến Mãi Mỗi Ngày</button>
+                <button class="bestsellers-tab active" data-tab="bestsellers">Best Sellers</button>
+            </div>
+            
+            <div class="bestsellers-grid" id="bestsellers-grid">
+                <!-- Items will be loaded by JavaScript -->
+            </div>
+            
+            <div class="bestsellers-more">
+                <a href="menu.html" class="btn btn-primary">Xem Thêm</a>
             </div>
         </div>
     </section>
@@ -56,6 +49,9 @@
         </div>
     </footer>
 
-    <script src="script.js"></script>
+    <script src="js/script.js"></script>
+    <script src="js/menu.js"></script>
+    <script src="js/bestsellers.js"></script>
+    <script src="js/auth.js"></script>
 </body>
 </html>

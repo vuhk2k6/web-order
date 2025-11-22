@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mã E-Voucher - CAFRROTSFUD</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/evoucher.css">
+    <link rel="stylesheet" href="assets/fonts/flag-icons-main/flag-icons-main/css/flag-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.7.0/fonts/remixicon.css">
+    <script src="js/navbar.js" defer></script>
+</head>
+<body>
+    <!-- Navbar will be injected here by navbar.js -->
+
+    <section class="evoucher-section">
+        <div class="container">
+            <div class="evoucher-header">
+                <h1>Mã E-Voucher</h1>
+                <p class="section-subtitle">Nhập mã voucher để nhận ưu đãi đặc biệt</p>
+            </div>
+
+            <div class="evoucher-content">
+                <div class="voucher-input-card">
+                    <div class="input-wrapper">
+                        <i class="ri-coupon-3-line"></i>
+                        <input 
+                            type="text" 
+                            id="voucher-code" 
+                            class="voucher-input" 
+                            placeholder="Nhập mã voucher của bạn..."
+                            maxlength="20"
+                        >
+                        <button class="btn btn-primary" id="apply-voucher-btn">
+                            Áp dụng
+                        </button>
+                    </div>
+                    <div id="voucher-message" class="voucher-message"></div>
+                </div>
+
+                <div class="voucher-info" id="voucher-info" style="display: none;">
+                    <div class="voucher-card">
+                        <div class="voucher-card-header">
+                            <h3>Thông Tin Voucher</h3>
+                        </div>
+                        <div class="voucher-card-body">
+                            <div class="voucher-detail">
+                                <span class="label">Mã Voucher:</span>
+                                <span class="value" id="info-code">-</span>
+                            </div>
+                            <div class="voucher-detail">
+                                <span class="label">Loại Ưu Đãi:</span>
+                                <span class="value" id="info-type">-</span>
+                            </div>
+                            <div class="voucher-detail">
+                                <span class="label">Giá Trị:</span>
+                                <span class="value discount" id="info-value">-</span>
+                            </div>
+                            <div class="voucher-detail">
+                                <span class="label">Hạn Sử Dụng:</span>
+                                <span class="value" id="info-expiry">-</span>
+                            </div>
+                            <div class="voucher-detail">
+                                <span class="label">Mô Tả:</span>
+                                <span class="value" id="info-description">-</span>
+                            </div>
+                        </div>
+                        <div class="voucher-card-footer">
+                            <button class="btn btn-primary" id="use-voucher-btn">Sử Dụng Voucher</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="my-vouchers">
+                    <h2>Voucher Của Tôi</h2>
+                    <div class="vouchers-list" id="my-vouchers-list">
+                        <div class="empty-vouchers">
+                            <i class="ri-coupon-3-fill"></i>
+                            <p>Bạn chưa có voucher nào</p>
+                            <p class="hint">Nhập mã voucher ở trên để thêm vào danh sách</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 CAFRROTSFUD. Tất cả quyền được bảo lưu.</p>
+        </div>
+    </footer>
+
+    <script src="js/script.js"></script>
+    <script src="js/evoucher.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html>
+
