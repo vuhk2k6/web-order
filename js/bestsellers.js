@@ -115,7 +115,6 @@ function displayBestsellersItems(items) {
         addBtn.className = 'btn btn-add-cart';
         addBtn.textContent = 'Thêm vào giỏ';
         addBtn.addEventListener('click', function() {
-            // No login required to add to cart
             if (typeof addToCart === 'function') {
                 addToCart(menuItem.id, menuItem.name, menuItem.price);
             }

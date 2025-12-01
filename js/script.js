@@ -31,11 +31,17 @@ function updateCartCount() {
 }
 
 function addToCart(id, name, price) {
-    // No login required to add to cart
-    addToCartDirectly(id, name, price);
+    // Check if user is logged in
+    if (typeof requireLogin === 'function') {
+        requireLogin(function() {
+            addToCartAfterLogin(id, name, price);
+        });
+    } else {
+        addToCartAfterLogin(id, name, price);
+    }
 }
 
-function addToCartDirectly(id, name, price) {
+function addToCartAfterLogin(id, name, price) {
     const cart = getCart();
     const existingItem = cart.find(item => item.id === id);
 
@@ -202,13 +208,7 @@ function saveOrder(orderData) {
 function handleCheckout(event) {
     event.preventDefault();
 
-    const cart = getCart();
-    if (cart.length === 0) {
-        alert('Giỏ hàng của bạn đang trống!');
-        return;
-    }
-
-    // Check if user is logged in - only require login when checking out with items in cart
+    // Check if user is logged in
     if (typeof requireLogin === 'function') {
         requireLogin(function() {
             // Get form from event

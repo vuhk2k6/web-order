@@ -119,10 +119,7 @@ function displayMenuItems() {
         addButton.className = 'btn btn-add-cart';
         addButton.textContent = 'Thêm vào giỏ';
         addButton.addEventListener('click', function() {
-            // No login required to add to cart
-            if (typeof addToCart === 'function') {
-                addToCart(item.id, item.name, item.price);
-            }
+            addToCart(item.id, item.name, item.price);
         });
         
         itemFooter.appendChild(itemPrice);
