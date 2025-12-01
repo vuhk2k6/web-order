@@ -25,7 +25,7 @@ function createNavbar() {
                         <div class="flag-icon fi-vn" title="Tiếng Việt"></div>
                         <div class="flag-icon fi-gb" title="English"></div>
                     </div>
-                    <div class="nav-icon user-icon" id="user-icon" title="Tài khoản">
+                    <div class="nav-icon user-icon" id="user-icon" title="Tài khoản" onclick="if(typeof requireLogin === 'function') requireLogin(function() {})">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                             <circle cx="12" cy="7" r="4"></circle>
@@ -33,7 +33,7 @@ function createNavbar() {
                     </div>
                     <a href="cart.html" class="cart-icon-wrapper">
                         <div class="nav-icon" title="Giỏ hàng">
-                           <i class="ri-takeaway-line"></i>
+                           <i class="ri-shopping-cart-line"></i>
                         </div>
                         <span class="cart-icon-badge" id="cart-badge">0</span>
                     </a>
@@ -53,30 +53,21 @@ function createNavbar() {
         updateCartCount();
     }
     
-    // Add event listener for track order link - require login
+    // Add event listener for track order link - no login required, can view even without login
     setTimeout(() => {
-        const trackOrderLink = document.getElementById('track-order-link');
-        if (trackOrderLink) {
-            trackOrderLink.addEventListener('click', function(e) {
-                if (typeof requireLogin === 'function') {
-                    if (!isLoggedIn()) {
-                        e.preventDefault();
-                        requireLogin(function() {
-                            // After login, redirect to track order page
-                            window.location.href = 'track-order.html';
-                        });
-                    }
-                } else if (typeof showLoginModal === 'function' && typeof isLoggedIn === 'function') {
-                    if (!isLoggedIn()) {
-                        e.preventDefault();
-                        showLoginModal();
-                    }
-                }
+        // Track order link doesn't require login - users can search by order ID
+        // But will check login when loading "My Orders" section
+        
+        // Add event listener for user icon
+        const userIcon = document.getElementById('user-icon');
+        if (userIcon && typeof requireLogin === 'function') {
+            userIcon.addEventListener('click', function(e) {
+                e.preventDefault();
+                requireLogin(function() {
+                    // User is logged in - show profile menu or do nothing
+                });
             });
         }
-        
-        // User icon click will be handled by updateNavbarUser in auth.js
-        // This ensures it works for both logged-in users and dine-in sessions
     }, 100);
 }
 

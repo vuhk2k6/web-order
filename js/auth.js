@@ -15,17 +15,7 @@ function setCurrentUser(user) {
 
 function logout() {
     localStorage.removeItem('currentUser');
-    localStorage.removeItem('dineInSession'); // Also clear dine-in session if exists
     updateNavbarUser();
-    hideUserMenu();
-    
-    // Show notification
-    if (typeof showNotification === 'function') {
-        showNotification('Đã đăng xuất thành công!');
-    }
-    
-    // Reload page to reset state
-    location.reload();
 }
 
 function register(username, email, phone, password) {
@@ -94,19 +84,14 @@ function login(phone, password) {
 }
 
 // Show login modal
-function showLoginModal(tab = 'login') {
+function showLoginModal() {
     const modal = document.getElementById('auth-modal');
     if (modal) {
         modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
-        // Switch to specified tab
-        switchAuthTab(tab);
+        // Switch to login tab
+        switchAuthTab('login');
     }
-}
-
-// Show dine-in modal
-function showDineInModal() {
-    showLoginModal('dine-in');
 }
 
 // Hide login modal
@@ -118,35 +103,23 @@ function hideLoginModal() {
     }
 }
 
-// Switch between login, register and dine-in tabs
+// Switch between login and register tabs
 function switchAuthTab(tab) {
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
-    const dineInForm = document.getElementById('dine-in-form');
     const loginTab = document.getElementById('login-tab');
     const registerTab = document.getElementById('register-tab');
-    const dineInTab = document.getElementById('dine-in-tab');
     
-    // Hide all forms
-    if (loginForm) loginForm.style.display = 'none';
-    if (registerForm) registerForm.style.display = 'none';
-    if (dineInForm) dineInForm.style.display = 'none';
-    
-    // Remove active from all tabs
-    if (loginTab) loginTab.classList.remove('active');
-    if (registerTab) registerTab.classList.remove('active');
-    if (dineInTab) dineInTab.classList.remove('active');
-    
-    // Show selected form and activate tab
     if (tab === 'login') {
         if (loginForm) loginForm.style.display = 'block';
+        if (registerForm) registerForm.style.display = 'none';
         if (loginTab) loginTab.classList.add('active');
-    } else if (tab === 'register') {
+        if (registerTab) registerTab.classList.remove('active');
+    } else {
+        if (loginForm) loginForm.style.display = 'none';
         if (registerForm) registerForm.style.display = 'block';
+        if (loginTab) loginTab.classList.remove('active');
         if (registerTab) registerTab.classList.add('active');
-    } else if (tab === 'dine-in') {
-        if (dineInForm) dineInForm.style.display = 'block';
-        if (dineInTab) dineInTab.classList.add('active');
     }
 }
 
@@ -254,73 +227,6 @@ function showAuthMessage(message, type) {
     }
 }
 
-// Handle dine-in order
-function handleDineIn(event) {
-    event.preventDefault();
-    const form = event.target;
-    const name = form.name.value.trim();
-    const phone = form.phone.value.trim();
-    const table = form.table.value.trim();
-    
-    if (!name || !phone) {
-        showAuthMessage('Vui lòng điền đầy đủ thông tin!', 'error');
-        return;
-    }
-    
-    if (!/^[0-9]{10,11}$/.test(phone)) {
-        showAuthMessage('Số điện thoại không hợp lệ!', 'error');
-        return;
-    }
-    
-    // Save dine-in session info
-    const dineInInfo = {
-        name: name,
-        phone: phone,
-        table: table || null,
-        type: 'dine-in',
-        timestamp: new Date().toISOString()
-    };
-    
-    localStorage.setItem('dineInSession', JSON.stringify(dineInInfo));
-    
-    showAuthMessage('Thông tin đã được lưu! Bạn có thể đặt món ngay.', 'success');
-    
-    setTimeout(() => {
-        hideLoginModal();
-        // Redirect to menu page
-        if (window.location.pathname.includes('menu.html')) {
-            location.reload();
-        } else {
-            window.location.href = 'menu.html';
-        }
-    }, 1000);
-}
-
-// Check if user is logged in or has dine-in session
-function isAuthenticated() {
-    return isLoggedIn() || localStorage.getItem('dineInSession') !== null;
-}
-
-// Get current session (user or dine-in)
-function getCurrentSession() {
-    if (isLoggedIn()) {
-        return {
-            type: 'user',
-            data: getCurrentUser()
-        };
-    }
-    
-    const dineInSession = localStorage.getItem('dineInSession');
-    if (dineInSession) {
-        return {
-            type: 'dine-in',
-            data: JSON.parse(dineInSession)
-        };
-    }
-    
-    return null;
-}
-
 // Check login before action
 function requireLogin(callback) {
     if (isLoggedIn()) {
@@ -330,21 +236,10 @@ function requireLogin(callback) {
     }
 }
 
-// Check authentication (login or dine-in) before action
-function requireAuth(callback) {
-    if (isAuthenticated()) {
-        if (callback) callback();
-    } else {
-        // Show modal with option to login or dine-in
-        showLoginModal();
-    }
-}
-
 // Update navbar user display
 function updateNavbarUser() {
     const userIcon = document.querySelector('.nav-icon.user-icon');
     const user = getCurrentUser();
-    const session = getCurrentSession ? getCurrentSession() : null;
     
     if (userIcon) {
         if (user) {
@@ -353,153 +248,10 @@ function updateNavbarUser() {
             userIcon.setAttribute('title', `Xin chào, ${username}`);
             // Add logged-in class
             userIcon.classList.add('logged-in');
-            // Show user menu on click
-            userIcon.onclick = function(e) {
-                e.preventDefault();
-                toggleUserMenu();
-            };
-        } else if (session && session.type === 'dine-in') {
-            // Show dine-in session info
-            userIcon.setAttribute('title', `Ăn tại nhà hàng - Bàn ${session.data.table || 'N/A'}`);
-            userIcon.classList.add('dine-in-active');
-            // Show user menu on click
-            userIcon.onclick = function(e) {
-                e.preventDefault();
-                toggleUserMenu();
-            };
         } else {
-            userIcon.classList.remove('logged-in', 'dine-in-active');
+            userIcon.classList.remove('logged-in');
             userIcon.setAttribute('title', 'Tài khoản');
-            userIcon.onclick = function(e) {
-                e.preventDefault();
-                if (typeof requireLogin === 'function') {
-                    requireLogin(function() {});
-                } else if (typeof showLoginModal === 'function') {
-                    showLoginModal();
-                }
-            };
         }
-    }
-}
-
-// Toggle user menu
-function toggleUserMenu() {
-    const menu = document.getElementById('user-menu');
-    if (menu) {
-        if (menu.style.display === 'flex') {
-            hideUserMenu();
-        } else {
-            showUserMenu();
-        }
-    } else {
-        createUserMenu();
-        showUserMenu();
-    }
-}
-
-// Show user menu
-function showUserMenu() {
-    const menu = document.getElementById('user-menu');
-    if (menu) {
-        menu.style.display = 'flex';
-        // Close menu when clicking outside
-        setTimeout(() => {
-            document.addEventListener('click', handleClickOutside);
-        }, 100);
-    }
-}
-
-// Hide user menu
-function hideUserMenu() {
-    const menu = document.getElementById('user-menu');
-    if (menu) {
-        menu.style.display = 'none';
-    }
-    document.removeEventListener('click', handleClickOutside);
-}
-
-// Handle click outside menu
-function handleClickOutside(event) {
-    const menu = document.getElementById('user-menu');
-    const userIcon = document.querySelector('.nav-icon.user-icon');
-    
-    if (menu && userIcon) {
-        if (!menu.contains(event.target) && !userIcon.contains(event.target)) {
-            hideUserMenu();
-        }
-    }
-}
-
-// Create user menu
-function createUserMenu() {
-    if (document.getElementById('user-menu')) return;
-    
-    const user = getCurrentUser();
-    const session = getCurrentSession ? getCurrentSession() : null;
-    
-    let menuHTML = '<div class="user-menu" id="user-menu">';
-    
-    if (user) {
-        const username = user.username || user.email.split('@')[0];
-        menuHTML += `
-            <div class="user-menu-header">
-                <div class="user-avatar">
-                    <i class="ri-user-fill"></i>
-                </div>
-                <div class="user-info">
-                    <div class="user-name">${username}</div>
-                    <div class="user-email">${user.email || ''}</div>
-                </div>
-            </div>
-            <div class="user-menu-divider"></div>
-            <a href="track-order.html" class="user-menu-item" onclick="hideUserMenu()">
-                <i class="ri-file-list-3-line"></i>
-                <span>Theo Dõi Đơn Hàng</span>
-            </a>
-            <div class="user-menu-divider"></div>
-            <button class="user-menu-item logout-btn" onclick="logout()">
-                <i class="ri-logout-box-line"></i>
-                <span>Đăng Xuất</span>
-            </button>
-        `;
-    } else if (session && session.type === 'dine-in') {
-        menuHTML += `
-            <div class="user-menu-header">
-                <div class="user-avatar dine-in-avatar">
-                    <i class="ri-restaurant-fill"></i>
-                </div>
-                <div class="user-info">
-                    <div class="user-name">${session.data.name}</div>
-                    <div class="user-email">Bàn số ${session.data.table || 'N/A'}</div>
-                </div>
-            </div>
-            <div class="user-menu-divider"></div>
-            <button class="user-menu-item logout-btn" onclick="clearDineInSession()">
-                <i class="ri-close-circle-line"></i>
-                <span>Hủy Phiên Đặt Món</span>
-            </button>
-        `;
-    }
-    
-    menuHTML += '</div>';
-    
-    // Insert after navbar
-    const navbar = document.querySelector('.navbar');
-    if (navbar) {
-        navbar.insertAdjacentHTML('afterend', menuHTML);
-    }
-}
-
-// Clear dine-in session
-function clearDineInSession() {
-    if (confirm('Bạn có chắc muốn hủy phiên đặt món tại nhà hàng?')) {
-        localStorage.removeItem('dineInSession');
-        hideUserMenu();
-        updateNavbarUser();
-        if (typeof showNotification === 'function') {
-            showNotification('Đã hủy phiên đặt món!');
-        }
-        location.reload();
     }
 }
 
@@ -526,7 +278,6 @@ function initAuthModal() {
                             <div class="auth-tabs">
                                 <button class="auth-tab active" id="login-tab" onclick="switchAuthTab('login')">Đăng Nhập</button>
                                 <button class="auth-tab" id="register-tab" onclick="switchAuthTab('register')">Tạo Tài Khoản</button>
-                                <button class="auth-tab" id="dine-in-tab" onclick="switchAuthTab('dine-in')">Ăn Tại Nhà Hàng</button>
                             </div>
                             
                             <div id="auth-message" class="auth-message"></div>
@@ -576,27 +327,6 @@ function initAuthModal() {
                                 </div>
                                 <button type="submit" class="btn btn-primary auth-submit-btn">Tạo Tài Khoản</button>
                             </form>
-                            
-                            <!-- Dine In Form -->
-                            <form id="dine-in-form" class="auth-form" style="display: none;" onsubmit="handleDineIn(event)">
-                                <div class="dine-in-info">
-                                    <i class="ri-restaurant-line"></i>
-                                    <p>Đặt món tại nhà hàng - Không cần đăng ký!</p>
-                                </div>
-                                <div class="form-group">
-                                    <label for="dine-in-name">Họ và Tên</label>
-                                    <input type="text" id="dine-in-name" name="name" placeholder="Nhập họ và tên của bạn" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="dine-in-phone">Số Điện Thoại</label>
-                                    <input type="tel" id="dine-in-phone" name="phone" placeholder="Nhập số điện thoại" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="dine-in-table">Số Bàn (Tùy chọn)</label>
-                                    <input type="text" id="dine-in-table" name="table" placeholder="Nhập số bàn nếu có">
-                                </div>
-                                <button type="submit" class="btn btn-primary auth-submit-btn">Tiếp Tục Đặt Món</button>
-                            </form>
                         </div>
                     </div>
                 </div>
@@ -609,10 +339,16 @@ function initAuthModal() {
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', function() {
     initAuthModal();
+    updateNavbarUser();
     
-    // Wait for navbar to be injected
-    setTimeout(() => {
-        updateNavbarUser();
-    }, 100);
+    // Check for logout
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            logout();
+            location.reload();
+        });
+    }
 });
 

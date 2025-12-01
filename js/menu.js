@@ -119,20 +119,8 @@ function displayMenuItems() {
         addButton.className = 'btn btn-add-cart';
         addButton.textContent = 'Thêm vào giỏ';
         addButton.addEventListener('click', function() {
-            // Check auth (login or dine-in) before adding to cart
-            if (typeof requireAuth === 'function') {
-                requireAuth(function() {
-                    if (typeof addToCart === 'function') {
-                        addToCart(item.id, item.name, item.price);
-                    }
-                });
-            } else if (typeof requireLogin === 'function') {
-                requireLogin(function() {
-                    if (typeof addToCart === 'function') {
-                        addToCart(item.id, item.name, item.price);
-                    }
-                });
-            } else if (typeof addToCart === 'function') {
+            // No login required to add to cart
+            if (typeof addToCart === 'function') {
                 addToCart(item.id, item.name, item.price);
             }
         });
