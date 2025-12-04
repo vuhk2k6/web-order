@@ -2,7 +2,8 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 const { connectDatabase } = require('../src/config/db');
-const { MenuItem } = require('../src/models/MenuItem');
+const { Dish } = require('../src/models/Dish');
+const { Category } = require('../src/models/Category');
 const { Table } = require('../src/models/Table');
 const { Promotion } = require('../src/models/Promotion');
 const { OnlinePaymentMethod } = require('../src/models/OnlinePaymentMethod');
@@ -11,7 +12,9 @@ const { Member } = require('../src/models/Member');
 
 const seedDatabase = async () => {
   try {
+    console.log('Starting database seed...');
     await connectDatabase();
+    console.log('Database connected.');
 
     // Xóa toàn bộ dữ liệu trong database hiện tại
     await mongoose.connection.dropDatabase();
@@ -33,48 +36,87 @@ const seedDatabase = async () => {
       totalSpent: 5000000
     });
 
-    // Thực đơn mẫu
-    const menuItems = await MenuItem.insertMany([
+    // Tạo danh mục món ăn
+    const categories = await Category.insertMany([
       {
+        name: 'Món chính',
+        description: 'Các món ăn chính của nhà hàng'
+      },
+      {
+        name: 'Khai vị',
+        description: 'Các món khai vị và salad'
+      },
+      {
+        name: 'Thức uống',
+        description: 'Các loại thức uống'
+      },
+      {
+        name: 'Tráng miệng',
+        description: 'Các món tráng miệng'
+      }
+    ]);
+
+    console.log(`Inserted ${categories.length} categories.`);
+
+    // Thực đơn mẫu
+    const mainCourseCategory = categories.find(c => c.name === 'Món chính');
+    const appetizerCategory = categories.find(c => c.name === 'Khai vị');
+    const drinkCategory = categories.find(c => c.name === 'Thức uống');
+    const dessertCategory = categories.find(c => c.name === 'Tráng miệng');
+
+    const dishes = await Dish.insertMany([
+      {
+        category: mainCourseCategory._id,
         name: 'Bò bít tết sốt tiêu đen',
         price: 250000,
         description:
           'Thăn bò Úc nướng vừa chín tới, sốt tiêu đen, phục vụ kèm khoai tây và salad.',
-        image: ''
+        imageUrl: '',
+        status: 'CON'
       },
       {
+        category: mainCourseCategory._id,
         name: 'Mì Ý hải sản sốt cà chua',
         price: 185000,
         description: 'Mì Ý tươi với tôm, mực và nghêu, sốt cà chua tươi và lá basil.',
-        image: ''
+        imageUrl: '',
+        status: 'CON'
       },
       {
+        category: appetizerCategory._id,
         name: 'Salad Caesar gà nướng',
         price: 125000,
         description: 'Xà lách Romaine, phô mai Parmesan, sốt Caesar và ức gà nướng.',
-        image: ''
+        imageUrl: '',
+        status: 'CON'
       },
       {
+        category: appetizerCategory._id,
         name: 'Súp bí đỏ kem tươi',
         price: 85000,
         description: 'Súp bí đỏ béo nhẹ với kem tươi, dùng nóng.',
-        image: ''
+        imageUrl: '',
+        status: 'CON'
       },
       {
+        category: drinkCategory._id,
         name: 'Trà đào cam sả',
         price: 65000,
         description: 'Trà đen ủ lạnh, đào miếng, cam tươi và sả.',
-        image: ''
+        imageUrl: '',
+        status: 'CON'
       },
       {
+        category: dessertCategory._id,
         name: 'Tiramisu',
         price: 95000,
         description: 'Bánh Tiramisu kiểu Ý với mascarpone và cà phê espresso.',
-        image: ''
+        imageUrl: '',
+        status: 'CON'
       }
     ]);
 
-    console.log(`Inserted ${menuItems.length} menu items.`);
+    console.log(`Inserted ${dishes.length} dishes.`);
 
     // Bàn ăn mẫu
     const tables = await Table.insertMany([
