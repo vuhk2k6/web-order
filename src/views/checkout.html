@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thanh toán - Nhà hàng</title>
+  <link rel="stylesheet" href="/@style/main.css" />
+  <link rel="stylesheet" href="/@style/checkout.css" />
+</head>
+
+<body class="page checkout-page">
+  <div id="shared-header"></div>
+
+  <main class="main-content checkout-main">
+    <div class="container">
+      <h1 class="checkout-title">Thanh toán</h1>
+
+      <!-- Step 1: Cart & Order Type -->
+      <section class="checkout-step" id="step-1">
+        <div class="checkout-step-header">
+          <span class="checkout-step-number">1</span>
+          <h2 class="checkout-step-title">Giỏ hàng & Loại đơn hàng</h2>
+        </div>
+
+        <div class="checkout-step-content">
+          <!-- Cart Items -->
+          <div class="checkout-cart-section">
+            <h3 class="checkout-section-title">Giỏ hàng của bạn</h3>
+            <div id="checkout-cart-items" class="checkout-cart-items"></div>
+            <div id="checkout-cart-empty" class="checkout-empty" style="display: none;">
+              <p>Giỏ hàng của bạn đang trống. <a href="/menu">Quay lại thực đơn</a></p>
+            </div>
+            <div class="checkout-cart-subtotal">
+              <span>Tạm tính:</span>
+              <strong id="checkout-subtotal">0 đ</strong>
+            </div>
+          </div>
+
+          <!-- Order Type Selection -->
+          <div class="checkout-order-type-section">
+            <h3 class="checkout-section-title">Chọn loại đơn hàng</h3>
+            <div class="checkout-order-type-options">
+              <label class="checkout-order-type-option">
+                <input type="radio" name="order-type" value="TAKEAWAY" class="checkout-radio" />
+                <div class="checkout-order-type-card">
+                  <div class="checkout-order-type-icon">📦</div>
+                  <div class="checkout-order-type-info">
+                    <h4>Mang về</h4>
+                    <p>Khách đến lấy tại cửa hàng</p>
+                  </div>
+                </div>
+              </label>
+
+              <label class="checkout-order-type-option">
+                <input type="radio" name="order-type" value="DELIVERY" class="checkout-radio" />
+                <div class="checkout-order-type-card">
+                  <div class="checkout-order-type-icon">🚚</div>
+                  <div class="checkout-order-type-info">
+                    <h4>Giao hàng</h4>
+                    <p>Giao hàng tận nơi</p>
+                  </div>
+                </div>
+              </label>
+
+              <label class="checkout-order-type-option">
+                <input type="radio" name="order-type" value="DINE_IN" class="checkout-radio" />
+                <div class="checkout-order-type-card">
+                  <div class="checkout-order-type-icon">🍽️</div>
+                  <div class="checkout-order-type-info">
+                    <h4>Tại chỗ</h4>
+                    <p>Dùng bữa tại nhà hàng</p>
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 2: Customer Info & Points -->
+      <section class="checkout-step" id="step-2" style="display: none;">
+        <div class="checkout-step-header">
+          <span class="checkout-step-number">2</span>
+          <h2 class="checkout-step-title">Thông tin khách hàng & Điểm</h2>
+        </div>
+
+        <div class="checkout-step-content">
+          <!-- Delivery Address (for DELIVERY) -->
+          <div id="checkout-delivery-section" class="checkout-delivery-section" style="display: none;">
+            <h3 class="checkout-section-title">Địa chỉ giao hàng</h3>
+            <div id="checkout-saved-addresses" class="checkout-saved-addresses"></div>
+            <button type="button" id="checkout-add-address-btn" class="btn-secondary">Thêm địa chỉ mới</button>
+            <div id="checkout-new-address-form" class="checkout-new-address-form" style="display: none;">
+              <div class="form-group">
+                <label for="checkout-address-street">Địa chỉ chi tiết</label>
+                <input type="text" id="checkout-address-street" class="form-input" placeholder="Số nhà, tên đường" />
+              </div>
+              <div class="form-group">
+                <label for="checkout-address-ward">Phường/Xã</label>
+                <input type="text" id="checkout-address-ward" class="form-input" placeholder="Phường/Xã" />
+              </div>
+              <div class="form-group">
+                <label for="checkout-address-district">Quận/Huyện</label>
+                <input type="text" id="checkout-address-district" class="form-input" placeholder="Quận/Huyện" />
+              </div>
+              <div class="form-group">
+                <label for="checkout-address-city">Thành phố</label>
+                <input type="text" id="checkout-address-city" class="form-input" placeholder="Thành phố" />
+              </div>
+              <div class="form-group">
+                <label for="checkout-address-phone">Số điện thoại nhận hàng</label>
+                <input type="tel" id="checkout-address-phone" class="form-input" placeholder="0900 000 000" />
+              </div>
+            </div>
+            <div id="checkout-delivery-fee" class="checkout-delivery-fee" style="display: none;">
+              <span>Phí giao hàng:</span>
+              <strong id="checkout-delivery-fee-amount">0 đ</strong>
+            </div>
+          </div>
+
+          <!-- Dine-in Table (for DINE_IN) -->
+          <div id="checkout-dinein-section" class="checkout-dinein-section" style="display: none;">
+            <h3 class="checkout-section-title">Thông tin bàn</h3>
+            <div class="form-group">
+              <label for="checkout-table-number">Số bàn</label>
+              <input type="text" id="checkout-table-number" class="form-input" placeholder="Nhập số bàn hoặc quét QR" />
+            </div>
+          </div>
+
+          <!-- Member Points -->
+          <div id="checkout-points-section" class="checkout-points-section" style="display: none;">
+            <h3 class="checkout-section-title">Điểm tích lũy</h3>
+            <div class="checkout-points-info">
+              <p>Điểm hiện có: <strong id="checkout-available-points">0</strong> điểm</p>
+              <p class="checkout-points-note">1 điểm = 1 VNĐ. Bạn có thể sử dụng tối đa <strong id="checkout-max-points">0</strong> điểm</p>
+            </div>
+            <div class="form-group">
+              <label for="checkout-points-used">Số điểm muốn sử dụng</label>
+              <input type="number" id="checkout-points-used" class="form-input" min="0" value="0" placeholder="0" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 3: Promotion -->
+      <section class="checkout-step" id="step-3" style="display: none;">
+        <div class="checkout-step-header">
+          <span class="checkout-step-number">3</span>
+          <h2 class="checkout-step-title">Khuyến mãi</h2>
+        </div>
+
+        <div class="checkout-step-content">
+          <div class="form-group">
+            <label for="checkout-promo-code">Mã khuyến mãi</label>
+            <div class="checkout-promo-input-group">
+              <input type="text" id="checkout-promo-code" class="form-input" placeholder="Nhập mã khuyến mãi" />
+              <button type="button" id="checkout-apply-promo-btn" class="btn-secondary">Áp dụng</button>
+            </div>
+            <p id="checkout-promo-message" class="checkout-message" style="display: none;"></p>
+          </div>
+          <div id="checkout-promo-applied" class="checkout-promo-applied" style="display: none;">
+            <div class="checkout-promo-info">
+              <span id="checkout-promo-name"></span>
+              <span id="checkout-promo-discount"></span>
+            </div>
+            <button type="button" id="checkout-remove-promo-btn" class="btn-text">Xóa</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 4: Payment Method -->
+      <section class="checkout-step" id="step-4" style="display: none;">
+        <div class="checkout-step-header">
+          <span class="checkout-step-number">4</span>
+          <h2 class="checkout-step-title">Phương thức thanh toán</h2>
+        </div>
+
+        <div class="checkout-step-content">
+          <div class="checkout-payment-methods">
+            <label class="checkout-payment-method">
+              <input type="radio" name="payment-method" value="COD" class="checkout-radio" checked />
+              <div class="checkout-payment-card">
+                <div class="checkout-payment-icon">💵</div>
+                <div class="checkout-payment-info">
+                  <h4>Thanh toán khi nhận hàng</h4>
+                  <p>Tiền mặt hoặc quẹt thẻ tại cửa hàng</p>
+                </div>
+              </div>
+            </label>
+
+            <label class="checkout-payment-method">
+              <input type="radio" name="payment-method" value="ONLINE" class="checkout-radio" />
+              <div class="checkout-payment-card">
+                <div class="checkout-payment-icon">💳</div>
+                <div class="checkout-payment-info">
+                  <h4>Thanh toán online</h4>
+                  <p>Visa/Master, Momo, ZaloPay</p>
+                </div>
+              </div>
+            </label>
+          </div>
+
+          <div id="checkout-online-methods" class="checkout-online-methods" style="display: none;">
+            <h4>Chọn cổng thanh toán</h4>
+            <div class="checkout-online-options">
+              <label class="checkout-online-option">
+                <input type="radio" name="online-method" value="VISA" class="checkout-radio" />
+                <span>Visa/Master</span>
+              </label>
+              <label class="checkout-online-option">
+                <input type="radio" name="online-method" value="MOMO" class="checkout-radio" />
+                <span>Momo</span>
+              </label>
+              <label class="checkout-online-option">
+                <input type="radio" name="online-method" value="ZALOPAY" class="checkout-radio" />
+                <span>ZaloPay</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 5: Order Summary & Finalize -->
+      <section class="checkout-step" id="step-5" style="display: none;">
+        <div class="checkout-step-header">
+          <span class="checkout-step-number">5</span>
+          <h2 class="checkout-step-title">Xác nhận đơn hàng</h2>
+        </div>
+
+        <div class="checkout-step-content">
+          <div class="checkout-order-summary">
+            <div class="checkout-summary-row">
+              <span>Tạm tính:</span>
+              <span id="checkout-summary-subtotal">0 đ</span>
+            </div>
+            <div class="checkout-summary-row" id="checkout-summary-points-row" style="display: none;">
+              <span>Điểm đã sử dụng:</span>
+              <span id="checkout-summary-points">-0 đ</span>
+            </div>
+            <div class="checkout-summary-row" id="checkout-summary-promo-row" style="display: none;">
+              <span>Khuyến mãi:</span>
+              <span id="checkout-summary-promo">-0 đ</span>
+            </div>
+            <div class="checkout-summary-row" id="checkout-summary-delivery-row" style="display: none;">
+              <span>Phí giao hàng:</span>
+              <span id="checkout-summary-delivery">0 đ</span>
+            </div>
+            <div class="checkout-summary-total">
+              <span>Tổng cộng:</span>
+              <strong id="checkout-summary-total">0 đ</strong>
+            </div>
+          </div>
+
+          <button type="button" id="checkout-submit-btn" class="btn-primary checkout-submit-btn">
+            Hoàn tất đơn hàng
+          </button>
+        </div>
+      </section>
+
+      <!-- Navigation Buttons -->
+      <div class="checkout-navigation">
+        <button type="button" id="checkout-prev-btn" class="btn-secondary" style="display: none;">Quay lại</button>
+        <button type="button" id="checkout-next-btn" class="btn-primary">Tiếp theo</button>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <p>© <span id="footer-year"></span> Gourmet House. All rights reserved.</p>
+      <p>Địa chỉ: 123 Đường Ẩm Thực, Quận 1, TP. Hồ Chí Minh · Điện thoại: 0900 000 000 · Email:
+        contact@gourmethouse.vn</p>
+      <p>Giờ mở cửa: 10:00 - 22:00 · Theo dõi chúng tôi trên Facebook · Instagram</p>
+      <p>Phương thức thanh toán: Momo · ZaloPay · Thẻ tín dụng · Tiền mặt tại nhà hàng</p>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('footer-year').textContent = new Date().getFullYear();
+  </script>
+  <script src="/js/header.js" defer></script>
+  <script src="/js/auth.js" defer></script>
+  <script src="/js/main.js" defer></script>
+  <script src="/js/checkout.js" defer></script>
+</body>
+
+</html>

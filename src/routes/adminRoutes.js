@@ -1,7 +1,8 @@
 const express = require('express');
 const path = require('path');
 const multer = require('multer');
-const { MenuItem } = require('../models/MenuItem');
+const { Dish } = require('../models/Dish');
+const { Category } = require('../models/Category');
 const { uploadImageToS3 } = require('../config/s3');
 
 const router = express.Router();
@@ -40,30 +41,65 @@ router.post('/logout', (req, res) => {
 
 router.get('/api/menu', async (req, res) => {
   try {
-    const items = await MenuItem.find().sort({ createdAt: -1 }).lean();
-    res.json(items);
+    const items = await Dish.find().populate('category').sort({ createdAt: -1 }).lean();
+    // Map imageUrl to image for frontend compatibility
+    const mappedItems = items.map(item => ({
+      ...item,
+      image: item.imageUrl || '',
+      _id: item._id.toString()
+    }));
+    res.json(mappedItems);
   } catch (error) {
     res.status(500).json({ message: 'Không thể tải thực đơn', error: error.message });
   }
 });
 
 router.post('/api/menu', async (req, res) => {
-  const { name, price, description, image } = req.body;
+  const { name, price, description, image, category } = req.body;
 
   if (!name || !price) {
     return res.status(400).json({ message: 'Tên và giá món là bắt buộc' });
   }
 
   try {
+    // If category is provided as name, find the category ID
+    let categoryId = category;
+    if (category && typeof category === 'string' && !category.match(/^[0-9a-fA-F]{24}$/)) {
+      const foundCategory = await Category.findOne({ name: category });
+      if (foundCategory) {
+        categoryId = foundCategory._id;
+      } else {
+        // Create a default category if not found
+        const defaultCategory = await Category.findOne({ name: 'Món chính' });
+        categoryId = defaultCategory ? defaultCategory._id : null;
+      }
+    }
+
+    // If no category provided, use first available category
+    if (!categoryId) {
+      const firstCategory = await Category.findOne();
+      if (!firstCategory) {
+        return res.status(400).json({ message: 'Vui lòng tạo danh mục trước khi thêm món ăn' });
+      }
+      categoryId = firstCategory._id;
+    }
+
     const parsedPrice = Number(price);
-    const menuItem = await MenuItem.create({
+    const dish = await Dish.create({
+      category: categoryId,
       name,
       price: Number.isNaN(parsedPrice) ? 0 : parsedPrice,
       description: description || '',
-      image: image || ''
+      imageUrl: image || '',
+      status: 'CON'
     });
 
-    return res.status(201).json(menuItem);
+    const populatedDish = await Dish.findById(dish._id).populate('category').lean();
+    return res.status(201).json({
+      ...populatedDish,
+      image: populatedDish.imageUrl || '',
+      _id: populatedDish._id.toString()
+    });
   } catch (error) {
     return res
       .status(500)
@@ -73,7 +109,7 @@ router.post('/api/menu', async (req, res) => {
 
 router.put('/api/menu/:id', async (req, res) => {
   const { id } = req.params;
-  const { name, price, description, image } = req.body;
+  const { name, price, description, image, category } = req.body;
 
   try {
     const updateData = {};
@@ -92,18 +128,35 @@ router.put('/api/menu/:id', async (req, res) => {
     }
 
     if (image !== undefined) {
-      updateData.image = image;
+      updateData.imageUrl = image;
     }
 
-    const updatedItem = await MenuItem.findByIdAndUpdate(id, updateData, {
+    if (category) {
+      let categoryId = category;
+      if (typeof category === 'string' && !category.match(/^[0-9a-fA-F]{24}$/)) {
+        const foundCategory = await Category.findOne({ name: category });
+        if (foundCategory) {
+          categoryId = foundCategory._id;
+        }
+      }
+      if (categoryId) {
+        updateData.category = categoryId;
+      }
+    }
+
+    const updatedItem = await Dish.findByIdAndUpdate(id, updateData, {
       new: true
-    });
+    }).populate('category').lean();
 
     if (!updatedItem) {
       return res.status(404).json({ message: 'Không tìm thấy món ăn' });
     }
 
-    return res.json(updatedItem);
+    return res.json({
+      ...updatedItem,
+      image: updatedItem.imageUrl || '',
+      _id: updatedItem._id.toString()
+    });
   } catch (error) {
     return res
       .status(500)
@@ -115,13 +168,17 @@ router.delete('/api/menu/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
-    const deletedItem = await MenuItem.findByIdAndDelete(id);
+    const deletedItem = await Dish.findByIdAndDelete(id);
 
     if (!deletedItem) {
       return res.status(404).json({ message: 'Không tìm thấy món ăn' });
     }
 
-    return res.json(deletedItem);
+    return res.json({
+      ...deletedItem.toObject(),
+      image: deletedItem.imageUrl || '',
+      _id: deletedItem._id.toString()
+    });
   } catch (error) {
     return res
       .status(500)
