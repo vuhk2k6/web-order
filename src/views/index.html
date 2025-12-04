@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nhà hàng - Trang chủ</title>
+  <link rel="stylesheet" href="/@style/main.css" />
+</head>
+
+<body class="page">
+  <header class="navbar">
+    <div class="container navbar-inner">
+      <div class="navbar-left">
+        <div class="logo-mark" tabindex="0" aria-label="Logo nhà hàng">
+          G
+        </div>
+        <div class="flex flex-col">
+          <span class="logo-text-main">Carot</span>
+          <span class="logo-text-sub"></span>
+        </div>
+      </div>
+      <nav class="navbar-center" aria-label="Thanh điều hướng chính">
+        <a href="#hero" class="navbar-link" tabindex="0">Trang chủ</a>
+        <a href="/menu" class="navbar-link" tabindex="0">Thực đơn</a>
+        <a href="#reservation" class="navbar-link" tabindex="0">Đặt bàn</a>
+        <a href="#promotions" class="navbar-link" tabindex="0">Tin tức &amp; khuyến mãi</a>
+      </nav>
+      <div class="navbar-right">
+        <button type="button" class="btn-cart" tabindex="0" aria-label="Mở giỏ hàng">
+          <span class="btn-cart-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3.75 4.5h2.25l2.25 12h9l1.5-8.25H7.5" stroke-width="1.5" stroke-linecap="round"
+                stroke-linejoin="round" />
+              <circle cx="10" cy="19" r="1" stroke-width="1.5" />
+              <circle cx="17" cy="19" r="1" stroke-width="1.5" />
+            </svg>
+          </span>
+          <span id="cart-count" class="btn-cart-badge">0</span>
+        </button>
+        <button id="auth-open-button" type="button" class="btn-login" tabindex="0"
+          aria-label="Đăng nhập hoặc đăng ký tài khoản">
+          Đăng nhập
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="hero" class="main-content">
+    <section class="container hero">
+      <div class="hero-grid">
+        <div>
+          <p class="hero-label">Gourmet House</p>
+          <h1 class="hero-title">
+            Trải nghiệm ẩm thực <span>thượng hạng</span> giữa lòng thành phố
+        </h1>
+          <p class="hero-text">
+          Hòa mình trong không gian sang trọng và thưởng thức những món ăn tinh tế được chế biến từ nguyên liệu tươi
+          ngon nhất, bởi các đầu bếp giàu kinh nghiệm.
+        </p>
+          <div class="hero-actions">
+          <a href="/menu"
+            class="btn-primary"
+            tabindex="0" aria-label="Gọi món online ngay">
+            Gọi món ngay
+          </a>
+          <button id="cta-reservation"
+            class="btn-outline"
+            type="button" tabindex="0" aria-label="Cuộn tới form đặt bàn">
+            Đặt bàn trước
+          </button>
+        </div>
+        <dl class="hero-stats">
+          <div>
+            <dt class="hero-stat-title">4.8/5</dt>
+            <dd class="hero-stat-sub">Đánh giá trung bình</dd>
+          </div>
+          <div>
+            <dt class="hero-stat-title">50+</dt>
+            <dd class="hero-stat-sub">Món ăn đặc sắc</dd>
+          </div>
+          <div>
+            <dt class="hero-stat-title">7 ngày</dt>
+            <dd class="hero-stat-sub">Phục vụ trong tuần</dd>
+          </div>
+        </dl>
+      </div>
+        <div class="hero-media-wrapper">
+          <div class="hero-media-glow"></div>
+          <div class="hero-card">
+            <div class="hero-card-header">
+              <p class="hero-card-title">
+              Không gian nhà hàng
+            </p>
+              <span class="hero-card-badge">
+              Mở cửa hôm nay
+            </span>
+          </div>
+            <div class="hero-card-image" role="img"
+            aria-label="Minh họa không gian nhà hàng sang trọng">
+          </div>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <section id="services" class="section container">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Dịch vụ dành cho bạn</h2>
+          <p class="section-subtitle">
+            Đặt món online, giữ chỗ trước và tích điểm thành viên ngay trên một trang duy nhất.
+          </p>
+        </div>
+      </div>
+      <div class="promotions-grid" aria-label="Các dịch vụ chính của nhà hàng">
+        <article class="promo-card">
+          <p class="promo-label orange">Đặt món online</p>
+          <p>
+            Xem toàn bộ thực đơn và tạo đơn hàng giao tận nơi hoặc mang đi.
+            Mọi món ăn đều được kết nối trực tiếp tới hệ thống đơn hàng.
+          </p>
+          <a href="/menu" class="promo-cta" aria-label="Xem menu và đặt hàng online">
+            Xem menu &amp; đặt hàng
+          </a>
+        </article>
+        <article class="promo-card">
+          <p class="promo-label blue">Đặt bàn trước</p>
+          <p>
+            Chọn ngày, giờ và số lượng khách trước khi đến nhà hàng, giúp bạn luôn có chỗ ngồi đẹp và phục vụ nhanh.
+          </p>
+          <a href="#reservation" class="promo-cta" aria-label="Đi tới form đặt bàn">
+            Chọn bàn ngay
+          </a>
+        </article>
+        <article class="promo-card">
+          <p class="promo-label green">Tích điểm thành viên</p>
+          <p>
+            Mỗi hóa đơn đều được quy đổi thành điểm thưởng, dùng để nhận ưu đãi
+            và quà tặng dành riêng cho thành viên thân thiết.
+          </p>
+          <a href="#membership" class="promo-cta" aria-label="Tìm hiểu chương trình thành viên">
+            Tìm hiểu ưu đãi
+          </a>
+        </article>
+      </div>
+    </section>
+
+    <section id="menu" class="section container">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Thực đơn nổi bật</h2>
+          <p class="section-subtitle">
+            Một vài món ăn được yêu thích nhất, được lấy trực tiếp từ hệ thống thực đơn của nhà hàng.
+          </p>
+        </div>
+      </div>
+      <div id="menu-list" class="menu-grid" aria-live="polite"
+        aria-label="Danh sách món ăn">
+      </div>
+      <p id="menu-empty" class="menu-empty" style="display: none;">
+        Hiện chưa có món ăn nào trong thực đơn.
+      </p>
+    </section>
+
+    <section id="promotions" class="promotions container">
+      <div>
+        <h2 class="section-title">Ưu đãi hiện tại</h2>
+        <p class="section-subtitle">
+          Tận hưởng các chương trình khuyến mãi hấp dẫn khi đặt bàn trực tuyến tại Gourmet House.
+        </p>
+        <p class="section-subtitle">
+          Chúng tôi thường xuyên cập nhật những gói ưu đãi theo mùa và dịp đặc biệt để bạn có thêm lý do ghé thăm.
+        </p>
+      </div>
+      <div class="promotions-grid">
+        <div class="promo-card">
+          <p class="promo-label orange">Combo nhóm bạn</p>
+          <p>Giảm <span class="font-semibold">15%</span> cho hóa đơn từ 4
+            khách trở lên khi đặt bàn trước 24 giờ.</p>
+        </div>
+        <div class="promo-card">
+          <p class="promo-label blue">Ưu đãi giờ vàng</p>
+          <p>Tặng món tráng miệng đặc biệt cho khách đến trong khung giờ <span
+              class="font-semibold">17:00 - 18:30</span>.</p>
+        </div>
+        <div class="promo-card">
+          <p class="promo-label green">Kỷ niệm ngày đặc biệt</p>
+          <p>Trang trí bàn theo chủ đề miễn phí cho các dịp sinh nhật, kỷ niệm.</p>
+        </div>
+        <div class="promo-card">
+          <p class="promo-label gray">Đặt bàn online</p>
+          <p>Ưu tiên chọn vị trí đẹp và phục vụ nhanh chóng khi đặt bàn qua website.</p>
+          <a href="#reservation" class="promo-cta">
+            Đặt bàn ngay
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section id="reservation" class="reservation container">
+      <h2 class="reservation-title">Đặt bàn</h2>
+      <p class="reservation-text">
+        Vui lòng để lại thông tin, chúng tôi sẽ liên hệ xác nhận trong thời gian sớm nhất.
+      </p>
+      <form id="reservation-form" class="form" aria-label="Form đặt bàn">
+        <div>
+          <label for="name" class="form-label">Họ và tên</label>
+          <input id="name" name="name" type="text" required
+            class="form-input"
+            placeholder="Nhập họ và tên của bạn" />
+        </div>
+        <div class="form-row">
+          <div>
+            <label for="phone" class="form-label">Số điện thoại</label>
+            <input id="phone" name="phone" type="tel" required
+              class="form-input"
+              placeholder="VD: 09xx xxx xxx" />
+          </div>
+          <div>
+            <label for="guests" class="form-label">Số lượng khách</label>
+            <input id="guests" name="guests" type="number" min="1" max="50" required
+              class="form-input"
+              placeholder="VD: 4" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <label for="date" class="form-label">Ngày</label>
+            <input id="date" name="date" type="date" required
+              class="form-input" />
+          </div>
+          <div>
+            <label for="time" class="form-label">Giờ</label>
+            <input id="time" name="time" type="time" required
+              class="form-input" />
+          </div>
+        </div>
+        <div>
+          <label for="note" class="form-label">Ghi chú</label>
+          <textarea id="note" name="note" rows="3"
+            class="form-textarea"
+            placeholder="Yêu cầu đặc biệt (nếu có)"></textarea>
+        </div>
+        <button type="submit"
+          class="btn-primary btn-reserve">
+          Gửi yêu cầu đặt bàn
+        </button>
+        <p id="reservation-message" class="reservation-message" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section id="membership" class="section container">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Chương trình thành viên</h2>
+          <p class="section-subtitle">
+            Tích điểm cho mỗi lần dùng bữa hoặc đặt hàng online, đổi lấy ưu đãi độc quyền chỉ dành cho thành viên.
+          </p>
+        </div>
+      </div>
+      <div class="promotions-grid" aria-label="Thông tin chương trình thành viên">
+        <article class="promo-card">
+          <p class="promo-label green">Tích điểm tự động</p>
+          <p>Mỗi đơn hàng sẽ tự động cộng điểm vào tài khoản thành viên của bạn.</p>
+        </article>
+        <article class="promo-card">
+          <p class="promo-label orange">Nâng hạng và ưu đãi</p>
+          <p>Càng chi tiêu nhiều, hạng của bạn càng cao và ưu đãi càng hấp dẫn.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="reviews" class="section container">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Khách hàng nói gì về chúng tôi</h2>
+          <p class="section-subtitle">
+            Một vài cảm nhận tiêu biểu được tổng hợp từ các đánh giá món ăn trên hệ thống.
+          </p>
+        </div>
+      </div>
+      <div class="promotions-grid" aria-label="Đánh giá của khách hàng">
+        <article class="promo-card">
+          <p class="promo-label blue">Anh Minh, Quận 1</p>
+          <p>
+            “Bò bít tết chín vừa, sốt rất đậm đà. Không gian sang trọng phù hợp tiếp khách và hẹn hò.”
+          </p>
+        </article>
+        <article class="promo-card">
+          <p class="promo-label orange">Chị Lan, Quận 3</p>
+          <p>
+            “Mì Ý hải sản tươi, khẩu phần vừa đủ. Đặt món online giao nhanh và đúng yêu cầu.”
+          </p>
+        </article>
+        <article class="promo-card">
+          <p class="promo-label green">Bạn Huy, Quận 7</p>
+          <p>
+            “Tích điểm thành viên rất có lợi, mình thường dùng điểm để được giảm giá khi đi nhóm bạn.”
+          </p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <div id="auth-modal-overlay" class="auth-modal-overlay" aria-hidden="true">
+    <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
+      <div class="auth-modal-header">
+        <h2 id="auth-modal-title" class="auth-modal-title">Tài khoản khách hàng</h2>
+        <button type="button" id="auth-close-button" class="btn-text">
+          Đóng
+        </button>
+      </div>
+      <div class="auth-tabs" role="tablist">
+        <button type="button" id="auth-tab-login" class="auth-tab active" role="tab" aria-selected="true">
+          Đăng nhập
+        </button>
+        <button type="button" id="auth-tab-register" class="auth-tab" role="tab" aria-selected="false">
+          Đăng ký
+        </button>
+      </div>
+      <div class="auth-body">
+        <form id="auth-form-login" class="form" aria-label="Form đăng nhập khách hàng">
+          <div>
+            <label for="auth-login-phone" class="form-label">Số điện thoại</label>
+            <input id="auth-login-phone" name="phone" type="tel" class="form-input" placeholder="VD: 09xx xxx xxx"
+              required />
+          </div>
+          <div>
+            <label for="auth-login-password" class="form-label">Mật khẩu</label>
+            <input id="auth-login-password" name="password" type="password" class="form-input"
+              placeholder="Mật khẩu của bạn" required />
+          </div>
+          <button id="auth-login-submit" type="submit" class="btn-primary auth-submit">
+            Đăng nhập
+          </button>
+        </form>
+
+        <form id="auth-form-register" class="form" aria-label="Form đăng ký tài khoản khách hàng"
+          style="display: none;">
+          <div>
+            <label for="auth-register-name" class="form-label">Họ và tên</label>
+            <input id="auth-register-name" name="name" type="text" class="form-input"
+              placeholder="Nhập họ và tên của bạn" required />
+          </div>
+          <div>
+            <label for="auth-register-phone" class="form-label">Số điện thoại</label>
+            <input id="auth-register-phone" name="phone" type="tel" class="form-input"
+              placeholder="VD: 09xx xxx xxx" required />
+          </div>
+          <div>
+            <label for="auth-register-email" class="form-label">Email</label>
+            <input id="auth-register-email" name="email" type="email" class="form-input"
+              placeholder="you@example.com" />
+          </div>
+          <div>
+            <label for="auth-register-password" class="form-label">Mật khẩu</label>
+            <input id="auth-register-password" name="password" type="password" class="form-input"
+              placeholder="Tối thiểu 6 ký tự" required />
+          </div>
+          <button id="auth-register-submit" type="submit" class="btn-primary auth-submit">
+            Đăng ký
+          </button>
+        </form>
+
+        <p id="auth-message" class="auth-error" aria-live="polite" style="display: none;"></p>
+      </div>
+      <p class="auth-footer">
+        Lưu ý: Tài khoản khách hàng được dùng để lưu lịch sử đơn hàng và tích điểm thành viên.
+      </p>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <p>© <span id="footer-year"></span> Gourmet House. All rights reserved.</p>
+      <p>Địa chỉ: 123 Đường Ẩm Thực, Quận 1, TP. Hồ Chí Minh · Điện thoại: 0900 000 000 · Email:
+        contact@gourmethouse.vn</p>
+      <p>Giờ mở cửa: 10:00 - 22:00 · Theo dõi chúng tôi trên Facebook · Instagram</p>
+      <p>Phương thức thanh toán: Momo · ZaloPay · Thẻ tín dụng · Tiền mặt tại nhà hàng</p>
+    </div>
+  </footer>
+
+  <script src="/js/main.js" defer></script>
+</body>
+
+</html>
+
+

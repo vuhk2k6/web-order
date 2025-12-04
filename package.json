@@ -1,0 +1,31 @@
+{
+  "name": "restaurant-website",
+  "version": "1.0.0",
+  "description": "Base project for a restaurant website with public homepage and admin panel using Node.js, Express, HTML, CSS, and JavaScript.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "db:reset": "node scripts/resetDatabase.js",
+    "db:seed": "node scripts/seedDatabase.js"
+  },
+  "keywords": [
+    "restaurant",
+    "nodejs",
+    "express",
+    "html",
+    "css",
+    "javascript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.943.0",
+    "bcrypt": "^6.0.0",
+    "cookie-session": "^2.1.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "mongoose": "^8.8.0",
+    "multer": "^2.0.2",
+    "path": "^0.12.7"
+  }
+}

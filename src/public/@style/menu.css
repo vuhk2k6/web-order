@@ -1,0 +1,75 @@
+.menu-page-main {
+  padding-top: 32px;
+  padding-bottom: 40px;
+}
+
+.menu-hero {
+  max-width: 960px;
+  margin: 0 auto 24px;
+  padding: 0 16px;
+}
+
+.menu-hero-title {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #020617;
+}
+
+.menu-hero-text {
+  margin-top: 6px;
+  font-size: 14px;
+  color: #475569;
+}
+
+.menu-toolbar {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.menu-search-input {
+  min-width: 220px;
+}
+
+.menu-toolbar-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.menu-secondary-button {
+  border-radius: 999px;
+  padding: 8px 16px;
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  font-size: 11px;
+  font-weight: 500;
+  color: #334155;
+  cursor: pointer;
+}
+
+.menu-secondary-button:hover {
+  border-color: #f59e0b;
+  color: #f97316;
+}
+
+.menu-page-grid {
+  max-width: 960px;
+  margin: 12px auto 0;
+  padding: 0 16px 16px;
+}
+
+.menu-page-empty {
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .menu-hero {
+    margin-bottom: 28px;
+  }
+}
+
+
