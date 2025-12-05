@@ -115,32 +115,22 @@ const handleProfileLogout = async () => {
   }
 };
 
-const initializeProfilePage = async () => {
-  const user = await fetchProfileUser();
+const initializeProfilePage = () => {
+  const logoutButton = getProfileElement('profile-logout-button');
 
-  if (!user) {
-    window.location.href = '/';
-    return;
+  if (logoutButton) {
+    logoutButton.addEventListener('click', handleProfileLogout);
   }
 
-  if (typeof window.renderSharedHeader === 'function') {
-    window.renderSharedHeader({
-      logoSubtext: 'Tài khoản khách hàng',
-      activeNavLink: '',
-      showAuthButton: true,
-      authButtonText: 'Đăng xuất',
-      authButtonId: 'profile-logout-button',
-      onAuthClick: handleProfileLogout
-    });
-  }
+  fetchProfileUser().then((user) => {
+    if (!user) {
+      window.location.href = '/';
+      return;
+    }
 
-
-  renderProfile(user);
+    renderProfile(user);
+  });
 };
-
-if (typeof window !== 'undefined') {
-  window.handleProfileLogout = handleProfileLogout;
-}
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initializeProfilePage);

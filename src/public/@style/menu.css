@@ -66,6 +66,7 @@
   text-align: center;
 }
 
+<<<<<<< HEAD
 .menu-card-actions {
   margin-top: 10px;
   display: flex;
@@ -151,6 +152,8 @@
   line-height: 1.5;
 }
 
+=======
+>>>>>>> parent of 88da74c (Merge pull request #2 from vuhk2k6/feat-cart)
 @media (min-width: 768px) {
   .menu-hero {
     margin-bottom: 28px;

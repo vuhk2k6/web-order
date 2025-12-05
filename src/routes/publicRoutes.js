@@ -23,35 +23,12 @@ router.get('/profile', (req, res) => {
   return res.sendFile(profilePath);
 });
 
-router.get('/checkout', (req, res) => {
-  const checkoutPath = path.join(__dirname, '..', 'views', 'checkout.html');
-  res.sendFile(checkoutPath);
-});
-
 router.get('/api/menu', async (req, res) => {
   try {
     console.log('[API /api/menu] Đang lấy dữ liệu từ collection menuitems...');
     const items = await MenuItem.find().sort({ createdAt: -1 }).lean();
-    console.log(`[API /api/menu] Tìm thấy ${items.length} món ăn trong database`);
-    
-    // Map _id to string for frontend compatibility
-    const mappedItems = items.map(item => ({
-      ...item,
-      _id: item._id.toString()
-    }));
-    
-    if (mappedItems.length > 0) {
-      console.log(`[API /api/menu] Mẫu món ăn đầu tiên:`, {
-        _id: mappedItems[0]._id,
-        name: mappedItems[0].name,
-        price: mappedItems[0].price,
-        image: mappedItems[0].image
-      });
-    }
-    
-    res.json(mappedItems);
+    res.json(items);
   } catch (error) {
-    console.error('[API /api/menu] Lỗi:', error);
     res.status(500).json({ message: 'Không thể tải thực đơn', error: error.message });
   }
 });

@@ -10,7 +10,42 @@
 </head>
 
 <body class="page">
-  <div id="shared-header"></div>
+  <header class="navbar">
+    <div class="container navbar-inner">
+      <div class="navbar-left">
+        <div class="logo-mark" tabindex="0" aria-label="Logo nhà hàng">
+          G
+        </div>
+        <div class="flex flex-col">
+          <span class="logo-text-main">Carot</span>
+          <span class="logo-text-sub">Thực đơn nhà hàng</span>
+        </div>
+      </div>
+      <nav class="navbar-center" aria-label="Thanh điều hướng chính">
+        <a href="/" class="navbar-link" tabindex="0">Trang chủ</a>
+        <a href="/menu" class="navbar-link" tabindex="0">Thực đơn</a>
+        <a href="/#reservation" class="navbar-link" tabindex="0">Đặt bàn</a>
+        <a href="/#promotions" class="navbar-link" tabindex="0">Tin tức &amp; khuyến mãi</a>
+      </nav>
+      <div class="navbar-right">
+        <button type="button" class="btn-cart" tabindex="0" aria-label="Mở giỏ hàng">
+          <span class="btn-cart-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3.75 4.5h2.25l2.25 12h9l1.5-8.25H7.5" stroke-width="1.5" stroke-linecap="round"
+                stroke-linejoin="round" />
+              <circle cx="10" cy="19" r="1" stroke-width="1.5" />
+              <circle cx="17" cy="19" r="1" stroke-width="1.5" />
+            </svg>
+          </span>
+          <span id="cart-count" class="btn-cart-badge">0</span>
+        </button>
+        <button id="auth-open-button" type="button" class="btn-login" tabindex="0"
+          aria-label="Đăng nhập hoặc đăng ký tài khoản">
+          Đăng nhập
+        </button>
+      </div>
+    </div>
+  </header>
 
   <main class="main-content menu-page-main">
     <section class="menu-hero">
@@ -42,74 +77,6 @@
     </section>
   </main>
 
-  <div id="auth-modal-overlay" class="auth-modal-overlay" aria-hidden="true">
-    <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
-      <div class="auth-modal-header">
-        <h2 id="auth-modal-title" class="auth-modal-title">Tài khoản khách hàng</h2>
-        <button type="button" id="auth-close-button" class="btn-text">
-          Đóng
-        </button>
-      </div>
-      <div class="auth-tabs" role="tablist">
-        <button type="button" id="auth-tab-login" class="auth-tab active" role="tab" aria-selected="true">
-          Đăng nhập
-        </button>
-        <button type="button" id="auth-tab-register" class="auth-tab" role="tab" aria-selected="false">
-          Đăng ký
-        </button>
-      </div>
-      <div class="auth-body">
-        <form id="auth-form-login" class="form" aria-label="Form đăng nhập khách hàng">
-          <div>
-            <label for="auth-login-phone" class="form-label">Số điện thoại</label>
-            <input id="auth-login-phone" name="phone" type="tel" class="form-input" placeholder="VD: 09xx xxx xxx"
-              required />
-          </div>
-          <div>
-            <label for="auth-login-password" class="form-label">Mật khẩu</label>
-            <input id="auth-login-password" name="password" type="password" class="form-input"
-              placeholder="Mật khẩu của bạn" required />
-          </div>
-          <button id="auth-login-submit" type="submit" class="btn-primary auth-submit">
-            Đăng nhập
-          </button>
-        </form>
-
-        <form id="auth-form-register" class="form" aria-label="Form đăng ký tài khoản khách hàng"
-          style="display: none;">
-          <div>
-            <label for="auth-register-name" class="form-label">Họ và tên</label>
-            <input id="auth-register-name" name="name" type="text" class="form-input"
-              placeholder="Nhập họ và tên của bạn" required />
-          </div>
-          <div>
-            <label for="auth-register-phone" class="form-label">Số điện thoại</label>
-            <input id="auth-register-phone" name="phone" type="tel" class="form-input"
-              placeholder="VD: 09xx xxx xxx" required />
-          </div>
-          <div>
-            <label for="auth-register-email" class="form-label">Email</label>
-            <input id="auth-register-email" name="email" type="email" class="form-input"
-              placeholder="you@example.com" />
-          </div>
-          <div>
-            <label for="auth-register-password" class="form-label">Mật khẩu</label>
-            <input id="auth-register-password" name="password" type="password" class="form-input"
-              placeholder="Tối thiểu 6 ký tự" required />
-          </div>
-          <button id="auth-register-submit" type="submit" class="btn-primary auth-submit">
-            Đăng ký
-          </button>
-        </form>
-
-        <p id="auth-message" class="auth-error" aria-live="polite" style="display: none;"></p>
-      </div>
-      <p class="auth-footer">
-        Lưu ý: Tài khoản khách hàng được dùng để lưu lịch sử đơn hàng và tích điểm thành viên.
-      </p>
-    </div>
-  </div>
-
   <footer class="footer">
     <div class="container footer-inner">
       <p>© <span id="footer-year"></span> Gourmet House. All rights reserved.</p>
@@ -120,9 +87,6 @@
     </div>
   </footer>
 
-  <script src="/js/auth.js" defer></script>
-  <script src="/js/header.js" defer></script>
-  <script src="/js/main.js" defer></script>
   <script src="/js/menu.js" defer></script>
 </body>
 

@@ -152,7 +152,6 @@ const resetMenuForm = () => {
   const imagePreview = getElement('menu-image-preview');
   const messageElement = getElement('menu-message');
   const submitButton = getElement('menu-submit-button');
-  const modalTitle = getElement('menu-modal-title');
 
   if (
     !idInput ||
@@ -180,9 +179,6 @@ const resetMenuForm = () => {
   }
   messageElement.textContent = '';
   submitButton.textContent = 'Lưu món ăn';
-  if (modalTitle) {
-    modalTitle.textContent = 'Thêm / Cập nhật món ăn';
-  }
 
   state.editingItemId = null;
 };
@@ -229,7 +225,6 @@ const handleEditItem = (id) => {
   const imageInput = getElement('menu-image');
   const imagePreview = getElement('menu-image-preview');
   const submitButton = getElement('menu-submit-button');
-  const modalTitle = getElement('menu-modal-title');
 
   if (
     !idInput ||
@@ -252,9 +247,6 @@ const handleEditItem = (id) => {
     imagePreview.style.display = 'block';
   }
   submitButton.textContent = 'Cập nhật món ăn';
-  if (modalTitle) {
-    modalTitle.textContent = 'Chỉnh sửa món ăn';
-  }
 
   state.editingItemId = id;
   openMenuModal();
@@ -402,7 +394,6 @@ const initializeAdminPage = () => {
   const modalCloseButton = getElement('menu-modal-close');
   const modalOverlay = getElement('menu-modal-overlay');
   const imageFileInput = getElement('menu-image-file');
-  const addButton = getElement('menu-add-button');
 
   if (menuForm) {
     menuForm.addEventListener('submit', handleMenuFormSubmit);
@@ -421,17 +412,6 @@ const initializeAdminPage = () => {
       if (event.target === modalOverlay) {
         closeMenuModal();
       }
-    });
-  }
-
-  if (addButton) {
-    addButton.addEventListener('click', () => {
-      resetMenuForm();
-      const modalTitle = getElement('menu-modal-title');
-      if (modalTitle) {
-        modalTitle.textContent = 'Thêm món ăn mới';
-      }
-      openMenuModal();
     });
   }
 

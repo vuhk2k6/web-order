@@ -1,381 +1,30 @@
-/* eslint-disable no-console */
-const cartState = {
-  items: []
+const authState = {
+  currentUser: null
 };
 
-const loadCartItems = () => {
-  try {
-    const stored = localStorage.getItem('cartItems');
-    return stored ? JSON.parse(stored) : [];
-  } catch (error) {
-    console.error('Lỗi khi tải giỏ hàng từ localStorage:', error);
-    return [];
-  }
-};
+const handleScrollToReservation = () => {
+  const reservationSection = document.getElementById('reservation');
 
-const saveCartItems = (items) => {
-  try {
-    localStorage.setItem('cartItems', JSON.stringify(items));
-  } catch (error) {
-    console.error('Lỗi khi lưu giỏ hàng vào localStorage:', error);
-  }
-};
-
-const updateCartBadge = () => {
-  const badge = document.getElementById('cart-count');
-  if (!badge) {
+  if (!reservationSection) {
     return;
   }
 
-  const totalQuantity = cartState.items.reduce(
-    (sum, item) => sum + (item.quantity || 0),
-    0
-  );
-
-  badge.textContent = totalQuantity > 0 ? String(totalQuantity) : '0';
-  badge.style.display = totalQuantity > 0 ? 'flex' : 'none';
+  reservationSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
-const renderCartDropdown = () => {
-  const itemsContainer = document.getElementById('cart-items');
-  const emptyMessage = document.getElementById('cart-empty');
-  const totalElement = document.getElementById('cart-total');
-  const checkoutButton = document.getElementById('cart-checkout-button');
-
-  if (!itemsContainer || !emptyMessage || !totalElement || !checkoutButton) {
-    return;
+const formatCurrencyVnd = (value) => {
+  if (!value) {
+    return '';
   }
 
-  if (cartState.items.length === 0) {
-    itemsContainer.innerHTML = '';
-    emptyMessage.style.display = 'block';
-    checkoutButton.disabled = true;
-    totalElement.textContent = '0 đ';
-    return;
+  const numberValue = Number(value);
+
+  if (Number.isNaN(numberValue)) {
+    return value;
   }
 
-  emptyMessage.style.display = 'none';
-  checkoutButton.disabled = false;
-
-  itemsContainer.innerHTML = cartState.items
-    .map(
-      (item) => {
-        const itemId = item.id || '';
-        const itemName = item.name || 'Món ăn';
-        const itemPrice = item.price || 0;
-        const itemQuantity = item.quantity || 1;
-        const itemImage = item.image || '';
-        const itemTotal = itemPrice * itemQuantity;
-        
-        return `
-        <div class="cart-item" data-item-id="${itemId}">
-          ${itemImage ? `
-            <img src="${itemImage}" alt="${itemName}" class="cart-item-image" />
-          ` : `
-            <div class="cart-item-image cart-item-image-placeholder">
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-          `}
-          <div class="cart-item-content">
-            <p class="cart-item-name">${itemName}</p>
-            <p class="cart-item-price-unit">${itemPrice.toLocaleString('vi-VN')} đ</p>
-            <div class="cart-item-quantity">
-              <button type="button" class="cart-quantity-btn cart-quantity-decrease" data-item-id="${itemId}" aria-label="Giảm số lượng">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </button>
-              <input type="number" class="cart-quantity-input" value="${itemQuantity}" min="1" data-item-id="${itemId}" aria-label="Số lượng" />
-              <button type="button" class="cart-quantity-btn cart-quantity-increase" data-item-id="${itemId}" aria-label="Tăng số lượng">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div class="cart-item-right">
-            <p class="cart-item-price">${itemTotal.toLocaleString('vi-VN')} đ</p>
-            <button type="button" class="cart-item-remove" data-item-id="${itemId}" aria-label="Xóa sản phẩm">
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-      `;
-      }
-    )
-    .join('');
-
-  // Attach event listeners for quantity controls
-  attachCartItemListeners();
-
-  const total = cartState.items.reduce(
-    (sum, item) => sum + (item.price || 0) * (item.quantity || 1),
-    0
-  );
-  totalElement.textContent = `${total.toLocaleString('vi-VN')} đ`;
+  return `${numberValue.toLocaleString('vi-VN')} đ`;
 };
-
-const updateCartDropdownPosition = () => {
-  const dropdown = document.getElementById('cart-dropdown');
-  const cartButton = document.querySelector('.btn-cart');
-  
-  if (!dropdown || !cartButton) {
-    return;
-  }
-  
-  // Calculate horizontal position to align with cart button
-  const cartButtonRect = cartButton.getBoundingClientRect();
-  const viewportWidth = window.innerWidth;
-  
-  // Calculate right position: distance from right edge of viewport to right edge of cart button
-  const rightPosition = viewportWidth - cartButtonRect.right;
-  
-  // Align dropdown right edge with cart button right edge
-  dropdown.style.right = `${rightPosition}px`;
-};
-
-const openCartDropdown = () => {
-  const dropdown = document.getElementById('cart-dropdown');
-  if (!dropdown) {
-    return;
-  }
-  
-  // Update position before opening
-  updateCartDropdownPosition();
-  
-  dropdown.classList.add('open');
-  dropdown.setAttribute('aria-hidden', 'false');
-};
-
-const closeCartDropdown = () => {
-  const dropdown = document.getElementById('cart-dropdown');
-  if (!dropdown) {
-    return;
-  }
-  dropdown.classList.remove('open');
-  dropdown.setAttribute('aria-hidden', 'true');
-};
-
-const toggleCartDropdown = () => {
-  const dropdown = document.getElementById('cart-dropdown');
-  if (!dropdown) {
-    return;
-  }
-  const isOpen = dropdown.classList.contains('open');
-  if (isOpen) {
-    closeCartDropdown();
-  } else {
-    openCartDropdown();
-  }
-};
-
-const addItemToCart = (payload) => {
-  if (!payload || !payload.id) {
-    return;
-  }
-
-  const existingIndex = cartState.items.findIndex(
-    (i) => i.id === String(payload.id)
-  );
-
-  if (existingIndex >= 0) {
-    cartState.items[existingIndex].quantity += payload.quantity || 1;
-  } else {
-    cartState.items.push({
-      id: String(payload.id),
-      name: payload.name || 'Món ăn',
-      price: Number(payload.price) || 0,
-      image: payload.image || '',
-      quantity: payload.quantity && payload.quantity > 0 ? payload.quantity : 1
-    });
-  }
-
-  saveCartItems(cartState.items);
-  updateCartBadge();
-  renderCartDropdown();
-};
-
-const updateCartItemQuantity = (itemId, newQuantity) => {
-  const quantity = Math.max(1, Math.floor(Number(newQuantity)) || 1);
-  const itemIndex = cartState.items.findIndex((i) => i.id === String(itemId));
-  
-  if (itemIndex >= 0) {
-    cartState.items[itemIndex].quantity = quantity;
-    saveCartItems(cartState.items);
-    updateCartBadge();
-    renderCartDropdown();
-  }
-};
-
-const removeCartItem = (itemId) => {
-  const itemIndex = cartState.items.findIndex((i) => i.id === String(itemId));
-  
-  if (itemIndex >= 0) {
-    cartState.items.splice(itemIndex, 1);
-    saveCartItems(cartState.items);
-    updateCartBadge();
-    renderCartDropdown();
-  }
-};
-
-const attachCartItemListeners = () => {
-  // Quantity decrease buttons
-  document.querySelectorAll('.cart-quantity-decrease').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const itemId = btn.getAttribute('data-item-id');
-      const item = cartState.items.find((i) => i.id === String(itemId));
-      if (item && item.quantity > 1) {
-        updateCartItemQuantity(itemId, item.quantity - 1);
-      }
-    });
-  });
-
-  // Quantity increase buttons
-  document.querySelectorAll('.cart-quantity-increase').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const itemId = btn.getAttribute('data-item-id');
-      const item = cartState.items.find((i) => i.id === String(itemId));
-      if (item) {
-        updateCartItemQuantity(itemId, item.quantity + 1);
-      }
-    });
-  });
-
-  // Quantity input fields
-  document.querySelectorAll('.cart-quantity-input').forEach((input) => {
-    input.addEventListener('change', (e) => {
-      e.stopPropagation();
-      const itemId = input.getAttribute('data-item-id');
-      const newQuantity = input.value;
-      updateCartItemQuantity(itemId, newQuantity);
-    });
-
-    input.addEventListener('blur', (e) => {
-      e.stopPropagation();
-      const itemId = input.getAttribute('data-item-id');
-      const item = cartState.items.find((i) => i.id === String(itemId));
-      if (item && input.value !== String(item.quantity)) {
-        input.value = item.quantity;
-      }
-    });
-  });
-
-  // Remove buttons
-  document.querySelectorAll('.cart-item-remove').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const itemId = btn.getAttribute('data-item-id');
-      removeCartItem(itemId);
-    });
-  });
-};
-
-const handleCheckout = () => {
-  if (cartState.items.length === 0) {
-    return;
-  }
-  
-  // Close dropdown before redirecting
-  closeCartDropdown();
-  
-  // Redirect to checkout page
-  window.location.href = '/checkout';
-};
-
-const setupCartListeners = () => {
-  const cartButton = document.querySelector('.btn-cart');
-  const cartCloseButton = document.getElementById('cart-close-button');
-  const checkoutButton = document.getElementById('cart-checkout-button');
-
-  if (cartButton) {
-    const handleCartClick = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      toggleCartDropdown();
-    };
-    
-    // Remove old listeners by cloning
-    const newCartButton = cartButton.cloneNode(true);
-    cartButton.parentNode.replaceChild(newCartButton, cartButton);
-    
-    // Attach new listener
-    newCartButton.addEventListener('click', handleCartClick);
-  }
-
-  if (cartCloseButton) {
-    const handleClose = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      closeCartDropdown();
-    };
-    cartCloseButton.removeEventListener('click', handleClose);
-    cartCloseButton.addEventListener('click', handleClose);
-  }
-
-  if (checkoutButton) {
-    const handleCheckoutClick = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      handleCheckout();
-    };
-    checkoutButton.removeEventListener('click', handleCheckoutClick);
-    checkoutButton.addEventListener('click', handleCheckoutClick);
-  }
-  
-  // Close dropdown when clicking outside
-  const existingClickHandler = window.cartOutsideClickHandler;
-  if (existingClickHandler) {
-    document.removeEventListener('click', existingClickHandler);
-  }
-  
-  window.cartOutsideClickHandler = (e) => {
-    const currentDropdown = document.getElementById('cart-dropdown');
-    const currentCartButton = document.querySelector('.btn-cart');
-    
-    if (currentDropdown && currentCartButton && !currentDropdown.contains(e.target) && !currentCartButton.contains(e.target)) {
-      closeCartDropdown();
-    }
-  };
-  
-  document.addEventListener('click', window.cartOutsideClickHandler);
-  
-  // Update dropdown position on window resize when dropdown is open
-  const existingResizeHandler = window.cartResizeHandler;
-  if (existingResizeHandler) {
-    window.removeEventListener('resize', existingResizeHandler);
-  }
-  
-  window.cartResizeHandler = () => {
-    const dropdown = document.getElementById('cart-dropdown');
-    if (dropdown && dropdown.classList.contains('open')) {
-      updateCartDropdownPosition();
-    }
-  };
-  
-  window.addEventListener('resize', window.cartResizeHandler);
-};
-
-if (typeof window !== 'undefined') {
-  cartState.items = loadCartItems();
-  
-  window.appCart = {
-    addItem: addItemToCart,
-    updateBadge: updateCartBadge,
-    renderDropdown: renderCartDropdown,
-    setupListeners: setupCartListeners,
-    getItems: () => [...cartState.items],
-    open: openCartDropdown,
-    updatePosition: updateCartDropdownPosition
-  };
-}
 
 const createMenuCard = (item) => {
   const card = document.createElement('article');
@@ -387,110 +36,122 @@ const createMenuCard = (item) => {
 
   const imageWrapper = document.createElement('div');
   imageWrapper.className =
-    'relative mb-3 aspect-video w-full overflow-hidden rounded-xl bg-slate-800';
-
-  if (item.image) {
-    const image = document.createElement('img');
-    image.src = item.image;
-    image.alt = item.name || 'Món ăn';
-    image.className = 'h-full w-full object-cover transition-transform group-hover:scale-105';
-    image.loading = 'lazy';
-    imageWrapper.appendChild(image);
-  } else {
-    const placeholder = document.createElement('div');
-    placeholder.className =
-      'flex h-full w-full items-center justify-center text-slate-500';
-    placeholder.textContent = 'Chưa có ảnh';
-    imageWrapper.appendChild(placeholder);
-  }
-
-  const contentWrapper = document.createElement('div');
-  contentWrapper.className = 'flex flex-1 flex-col';
+    'mb-3 flex h-32 items-center justify-center rounded-xl bg-[radial-gradient(circle_at_top,_#fbbf24,_#020617_60%)]';
 
   const title = document.createElement('h3');
-  title.className = 'mb-2 text-lg font-semibold text-white';
-  title.textContent = item.name || 'Món ăn';
+  title.className = 'text-sm font-semibold text-slate-50';
+  title.textContent = item.name;
+
+  const price = document.createElement('p');
+  price.className = 'mt-1 text-sm font-semibold text-amber-400';
+  price.textContent = formatCurrencyVnd(item.price);
 
   const description = document.createElement('p');
-  description.className = 'mb-3 flex-1 text-sm text-slate-400';
-  description.textContent = item.description || 'Món ăn ngon miệng';
-
-  const footer = document.createElement('div');
-  footer.className = 'flex items-center justify-between';
-
-  const price = document.createElement('span');
-  price.className = 'text-lg font-bold text-amber-400';
-  price.textContent = `${(item.price || 0).toLocaleString('vi-VN')} đ`;
-
-  const addButton = document.createElement('button');
-  addButton.className =
-    'rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-slate-900';
-  addButton.textContent = 'Thêm vào giỏ';
-  addButton.setAttribute('aria-label', `Thêm ${item.name || 'món ăn'} vào giỏ hàng`);
-
-  addButton.addEventListener('click', (e) => {
-    e.stopPropagation();
-    addItemToCart({
-      id: item._id || item.id,
-      name: item.name,
-      price: item.price,
-      image: item.image,
-      quantity: 1
-    });
-  });
-
-  footer.appendChild(price);
-  footer.appendChild(addButton);
-
-  contentWrapper.appendChild(title);
-  contentWrapper.appendChild(description);
-  contentWrapper.appendChild(footer);
+  description.className = 'mt-2 text-xs text-slate-300';
+  description.textContent = item.description || 'Món ăn đặc biệt của nhà hàng.';
 
   card.appendChild(imageWrapper);
-  card.appendChild(contentWrapper);
+  card.appendChild(title);
+  card.appendChild(price);
+  card.appendChild(description);
 
   return card;
+};
+
+const renderMenuList = (menuItems) => {
+  const menuList = document.getElementById('menu-list');
+  const menuEmpty = document.getElementById('menu-empty');
+
+  if (!menuList || !menuEmpty) {
+    return;
+  }
+
+  menuList.innerHTML = '';
+
+  if (!menuItems || menuItems.length === 0) {
+    menuEmpty.classList.remove('hidden');
+    return;
+  }
+
+  menuEmpty.classList.add('hidden');
+
+  menuItems.forEach((item) => {
+    const card = createMenuCard(item);
+    menuList.appendChild(card);
+  });
 };
 
 const fetchMenu = async () => {
   try {
     const response = await fetch('/api/menu');
+
     if (!response.ok) {
-      throw new Error('Không thể tải thực đơn');
+      // eslint-disable-next-line no-console
+      console.error('Không thể tải thực đơn');
+      return;
     }
+
     const data = await response.json();
-    return data || [];
+    renderMenuList(data);
   } catch (error) {
-    console.error('Lỗi khi tải thực đơn:', error);
-    return [];
+    // eslint-disable-next-line no-console
+    console.error('Lỗi khi tải thực đơn', error);
   }
 };
 
-const renderMenu = (items) => {
-  const container = document.getElementById('menu-list');
-  const emptyMessage = document.getElementById('menu-empty');
+const handleSubmitReservation = (event) => {
+  event.preventDefault();
 
-  if (!container) {
+  const nameInput = document.getElementById('name');
+  const phoneInput = document.getElementById('phone');
+  const guestsInput = document.getElementById('guests');
+  const dateInput = document.getElementById('date');
+  const timeInput = document.getElementById('time');
+  const messageElement = document.getElementById('reservation-message');
+
+  if (
+    !nameInput ||
+    !phoneInput ||
+    !guestsInput ||
+    !dateInput ||
+    !timeInput ||
+    !messageElement
+  ) {
     return;
   }
 
-  if (!items || items.length === 0) {
-    if (emptyMessage) {
-      emptyMessage.style.display = 'block';
+  const name = nameInput.value.trim();
+  const phone = phoneInput.value.trim();
+  const guests = guestsInput.value.trim();
+  const date = dateInput.value;
+  const time = timeInput.value;
+
+  if (!name || !phone || !guests || !date || !time) {
+    messageElement.textContent = 'Vui lòng điền đầy đủ thông tin đặt bàn.';
+    messageElement.className = 'text-xs text-rose-400';
+    return;
+  }
+
+  messageElement.textContent =
+    'Cảm ơn bạn! Chúng tôi đã ghi nhận yêu cầu và sẽ liên hệ xác nhận trong thời gian sớm nhất.';
+  messageElement.className = 'text-xs text-emerald-400';
+
+  window.setTimeout(() => {
+    const form = document.getElementById('reservation-form');
+    if (form) {
+      form.reset();
     }
-    container.innerHTML = '';
+  }, 500);
+};
+
+const initializeFooterYear = () => {
+  const yearElement = document.getElementById('footer-year');
+
+  if (!yearElement) {
     return;
   }
 
-  if (emptyMessage) {
-    emptyMessage.style.display = 'none';
-  }
-
-  container.innerHTML = '';
-  items.forEach((item) => {
-    const card = createMenuCard(item);
-    container.appendChild(card);
-  });
+  yearElement.textContent = new Date().getFullYear().toString();
 };
 
 const setAuthLoadingState = (button, isLoading) => {
@@ -504,10 +165,6 @@ const setAuthLoadingState = (button, isLoading) => {
   } else {
     button.disabled = false;
   }
-};
-
-const authState = {
-  currentUser: null
 };
 
 const updateAuthUi = (user) => {
@@ -740,88 +397,7 @@ const handleAuthRegisterSubmit = async (event) => {
   }
 };
 
-const handleScrollToReservation = () => {
-  const reservationSection = document.getElementById('reservation');
-  if (reservationSection) {
-    reservationSection.scrollIntoView({ behavior: 'smooth' });
-  }
-};
-
-const handleSubmitReservation = async (event) => {
-  event.preventDefault();
-  
-  const form = event.target;
-  const formData = new FormData(form);
-  const data = Object.fromEntries(formData);
-  
-  const messageElement = document.getElementById('reservation-message');
-  const submitButton = form.querySelector('button[type="submit"]');
-  
-  if (submitButton) {
-    submitButton.disabled = true;
-    submitButton.textContent = 'Đang gửi...';
-  }
-  
-  if (messageElement) {
-    messageElement.textContent = '';
-    messageElement.style.display = 'none';
-  }
-  
-  try {
-    const response = await fetch('/api/reservations', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      credentials: 'same-origin',
-      body: JSON.stringify(data)
-    });
-    
-    const result = await response.json();
-    
-    if (!response.ok) {
-      if (messageElement) {
-        messageElement.textContent = result.message || 'Không thể gửi yêu cầu đặt bàn. Vui lòng thử lại.';
-        messageElement.className = 'reservation-message reservation-error';
-        messageElement.style.display = 'block';
-      }
-      return;
-    }
-    
-    if (messageElement) {
-      messageElement.textContent = 'Đã gửi yêu cầu đặt bàn thành công! Chúng tôi sẽ liên hệ với bạn sớm nhất.';
-      messageElement.className = 'reservation-message reservation-success';
-      messageElement.style.display = 'block';
-    }
-    
-    form.reset();
-  } catch (error) {
-    console.error('Lỗi khi gửi yêu cầu đặt bàn:', error);
-    if (messageElement) {
-      messageElement.textContent = 'Không thể gửi yêu cầu đặt bàn. Vui lòng thử lại sau.';
-      messageElement.className = 'reservation-message reservation-error';
-      messageElement.style.display = 'block';
-    }
-  } finally {
-    if (submitButton) {
-      submitButton.disabled = false;
-      submitButton.textContent = 'Gửi yêu cầu đặt bàn';
-    }
-  }
-};
-
-const initializeFooterYear = () => {
-  const footerYear = document.getElementById('footer-year');
-  if (footerYear) {
-    footerYear.textContent = new Date().getFullYear();
-  }
-};
-
-const initializeHomePage = async () => {
-  const items = await fetchMenu();
-  renderMenu(items);
-  updateCartBadge();
-  renderCartDropdown();
+const initializeHomePage = () => {
   const ctaReservationButton = document.getElementById('cta-reservation');
   const reservationForm = document.getElementById('reservation-form');
   const authOpenButton = document.getElementById('auth-open-button');
@@ -889,30 +465,13 @@ const initializeHomePage = async () => {
   });
 
   initializeFooterYear();
+  fetchMenu();
 };
 
-const shouldInitializeHomePage = () => {
-  const path = window.location.pathname;
-  return path === '/' || path === '/index.html';
-};
-
-// Expose global objects for other scripts
-if (typeof window !== 'undefined') {
-  window.appCart = {
-    addItem: addItemToCart,
-    updateBadge: updateCartBadge,
-    renderDropdown: renderCartDropdown,
-    setupListeners: setupCartListeners,
-    getItems: () => [...cartState.items],
-    open: openCartDropdown,
-    updatePosition: updateCartDropdownPosition
-  };
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeHomePage);
+} else {
+  initializeHomePage();
 }
 
-if (shouldInitializeHomePage()) {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeHomePage);
-  } else {
-    initializeHomePage();
-  }
-}
+
