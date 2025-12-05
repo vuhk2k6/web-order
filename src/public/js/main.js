@@ -822,7 +822,6 @@ const initializeHomePage = async () => {
   renderMenu(items);
   updateCartBadge();
   renderCartDropdown();
-  
   const ctaReservationButton = document.getElementById('cta-reservation');
   const reservationForm = document.getElementById('reservation-form');
   const authOpenButton = document.getElementById('auth-open-button');
