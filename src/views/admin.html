@@ -74,8 +74,8 @@
             </thead>
             <tbody id="admin-orders-body"></tbody>
           </table>
-          <p class="table-empty">
-            Chưa có đơn hàng nào trong hệ thống. Khi xây dựng xong chức năng đặt món, các đơn sẽ hiển thị tại đây.
+          <p id="admin-orders-empty" class="table-empty" style="display: none;">
+            Chưa có đơn hàng nào trong hệ thống.
           </p>
         </div>
       </div>
@@ -113,6 +113,9 @@
               Thêm, sửa hoặc xóa các món ăn trong thực đơn.
             </p>
           </div>
+          <button id="menu-add-button" type="button" class="btn-secondary" aria-label="Thêm món ăn mới">
+            + Thêm món mới
+          </button>
         </div>
         <div class="table-wrapper">
           <table>

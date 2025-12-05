@@ -1,5 +1,6 @@
 const state = {
   menuItems: [],
+  orders: [],
   editingItemId: null
 };
 
@@ -80,7 +81,8 @@ const renderAdminMenuList = () => {
 
     const priceCell = document.createElement('td');
     priceCell.className = 'px-3 py-2 text-xs text-amber-400';
-    priceCell.textContent = item.price;
+    const priceValue = typeof item.price === 'number' ? item.price : parseFloat(item.price) || 0;
+    priceCell.textContent = `${priceValue.toLocaleString('vi-VN')} đ`;
 
     const descriptionCell = document.createElement('td');
     descriptionCell.className = 'px-3 py-2 text-xs text-slate-300';
@@ -126,18 +128,21 @@ const fetchAdminMenu = async () => {
     });
 
     if (!response.ok) {
-      // eslint-disable-next-line no-console
-      console.error('Không thể tải thực đơn trong admin');
+      const errorText = await response.text();
+      console.error('Không thể tải thực đơn trong admin:', response.status, errorText);
       return;
     }
 
     const data = await response.json();
+    console.log('[Admin] Nhận được dữ liệu:', Array.isArray(data) ? `${data.length} món ăn` : 'không phải array', data);
+    
     state.menuItems = Array.isArray(data)
       ? data.map((item) => normalizeMenuItem(item)).filter(Boolean)
       : [];
+    
+    console.log('[Admin] Sau khi normalize:', state.menuItems.length, 'món ăn');
     renderAdminMenuList();
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error('Lỗi khi tải thực đơn trong admin', error);
   }
 };
@@ -152,6 +157,7 @@ const resetMenuForm = () => {
   const imagePreview = getElement('menu-image-preview');
   const messageElement = getElement('menu-message');
   const submitButton = getElement('menu-submit-button');
+  const modalTitle = getElement('menu-modal-title');
 
   if (
     !idInput ||
@@ -179,6 +185,9 @@ const resetMenuForm = () => {
   }
   messageElement.textContent = '';
   submitButton.textContent = 'Lưu món ăn';
+  if (modalTitle) {
+    modalTitle.textContent = 'Thêm / Cập nhật món ăn';
+  }
 
   state.editingItemId = null;
 };
@@ -225,6 +234,7 @@ const handleEditItem = (id) => {
   const imageInput = getElement('menu-image');
   const imagePreview = getElement('menu-image-preview');
   const submitButton = getElement('menu-submit-button');
+  const modalTitle = getElement('menu-modal-title');
 
   if (
     !idInput ||
@@ -247,6 +257,9 @@ const handleEditItem = (id) => {
     imagePreview.style.display = 'block';
   }
   submitButton.textContent = 'Cập nhật món ăn';
+  if (modalTitle) {
+    modalTitle.textContent = 'Chỉnh sửa món ăn';
+  }
 
   state.editingItemId = id;
   openMenuModal();
@@ -388,12 +401,113 @@ const handleMenuFormSubmit = async (event) => {
   }
 };
 
+const renderAdminOrders = () => {
+  const tableBody = getElement('admin-orders-body');
+  const emptyMessage = getElement('admin-orders-empty');
+
+  if (!tableBody) {
+    return;
+  }
+
+  tableBody.innerHTML = '';
+
+  if (!state.orders || state.orders.length === 0) {
+    if (emptyMessage) {
+      emptyMessage.style.display = 'block';
+    }
+    return;
+  }
+
+  if (emptyMessage) {
+    emptyMessage.style.display = 'none';
+  }
+
+  state.orders.forEach((order) => {
+    const row = document.createElement('tr');
+    row.className = 'hover:bg-slate-900/80';
+
+    const orderIdCell = document.createElement('td');
+    orderIdCell.className = 'px-3 py-2 text-xs font-mono text-slate-300';
+    orderIdCell.textContent = order._id ? order._id.substring(0, 8) : '—';
+
+    const customerCell = document.createElement('td');
+    customerCell.className = 'px-3 py-2 text-xs text-slate-100';
+    customerCell.textContent = order.customerName || 'Khách vãng lai';
+
+    const typeCell = document.createElement('td');
+    typeCell.className = 'px-3 py-2 text-xs text-slate-300';
+    typeCell.textContent = order.orderTypeText || order.orderType || '—';
+
+    const totalCell = document.createElement('td');
+    totalCell.className = 'px-3 py-2 text-xs text-amber-400 font-semibold';
+    const totalValue = typeof order.totalAmount === 'number' ? order.totalAmount : parseFloat(order.totalAmount) || 0;
+    totalCell.textContent = `${totalValue.toLocaleString('vi-VN')} đ`;
+
+    const statusCell = document.createElement('td');
+    statusCell.className = 'px-3 py-2 text-xs';
+    const statusBadge = document.createElement('span');
+    statusBadge.className = 'inline-block rounded-full px-2 py-1 text-[10px] font-medium';
+    
+    if (order.status === 'CHO_XAC_NHAN') {
+      statusBadge.className += ' bg-yellow-500/20 text-yellow-300';
+    } else if (order.status === 'HOAN_THANH') {
+      statusBadge.className += ' bg-green-500/20 text-green-300';
+    } else if (order.status === 'DA_HUY') {
+      statusBadge.className += ' bg-red-500/20 text-red-300';
+    } else {
+      statusBadge.className += ' bg-blue-500/20 text-blue-300';
+    }
+    
+    statusBadge.textContent = order.statusText || order.status || '—';
+    statusCell.appendChild(statusBadge);
+
+    const dateCell = document.createElement('td');
+    dateCell.className = 'px-3 py-2 text-xs text-slate-400';
+    dateCell.textContent = order.createdAt || '—';
+
+    row.appendChild(orderIdCell);
+    row.appendChild(customerCell);
+    row.appendChild(typeCell);
+    row.appendChild(totalCell);
+    row.appendChild(statusCell);
+    row.appendChild(dateCell);
+
+    tableBody.appendChild(row);
+  });
+};
+
+const fetchAdminOrders = async () => {
+  try {
+    const response = await fetch('/admin/api/orders', {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'same-origin'
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Không thể tải danh sách đơn hàng:', response.status, errorText);
+      return;
+    }
+
+    const data = await response.json();
+    console.log('[Admin] Nhận được dữ liệu đơn hàng:', Array.isArray(data) ? `${data.length} đơn hàng` : 'không phải array');
+    
+    state.orders = Array.isArray(data) ? data : [];
+    renderAdminOrders();
+  } catch (error) {
+    console.error('Lỗi khi tải danh sách đơn hàng', error);
+  }
+};
+
 const initializeAdminPage = () => {
   const menuForm = getElement('menu-form');
   const resetFormButton = getElement('reset-form-button');
   const modalCloseButton = getElement('menu-modal-close');
   const modalOverlay = getElement('menu-modal-overlay');
   const imageFileInput = getElement('menu-image-file');
+  const addButton = getElement('menu-add-button');
 
   if (menuForm) {
     menuForm.addEventListener('submit', handleMenuFormSubmit);
@@ -415,11 +529,23 @@ const initializeAdminPage = () => {
     });
   }
 
+  if (addButton) {
+    addButton.addEventListener('click', () => {
+      resetMenuForm();
+      const modalTitle = getElement('menu-modal-title');
+      if (modalTitle) {
+        modalTitle.textContent = 'Thêm món ăn mới';
+      }
+      openMenuModal();
+    });
+  }
+
   if (imageFileInput) {
     imageFileInput.addEventListener('change', handleImageFileChange);
   }
 
   fetchAdminMenu();
+  fetchAdminOrders();
 };
 
 if (document.readyState === 'loading') {
