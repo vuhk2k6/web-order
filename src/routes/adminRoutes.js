@@ -2,6 +2,8 @@ const express = require('express');
 const path = require('path');
 const multer = require('multer');
 const { MenuItem } = require('../models/MenuItem');
+const { Order } = require('../models/Order');
+const { Customer } = require('../models/Customer');
 const { uploadImageToS3 } = require('../config/s3');
 
 const router = express.Router();
@@ -41,8 +43,27 @@ router.post('/logout', (req, res) => {
 router.get('/api/menu', async (req, res) => {
   try {
     const items = await MenuItem.find().sort({ createdAt: -1 }).lean();
-    res.json(items);
+    console.log(`[Admin API] Tìm thấy ${items.length} món ăn trong database (từ menuitems)`);
+    
+    const mappedItems = items.map(item => ({
+      ...item,
+      _id: item._id.toString(),
+      id: item._id.toString()
+    }));
+    
+    if (mappedItems.length > 0) {
+      console.log(`[Admin API] Mẫu món ăn đầu tiên:`, {
+        _id: mappedItems[0]._id,
+        id: mappedItems[0].id,
+        name: mappedItems[0].name,
+        price: mappedItems[0].price,
+        image: mappedItems[0].image
+      });
+    }
+    
+    res.json(mappedItems);
   } catch (error) {
+    console.error('[Admin API] Lỗi khi lấy danh sách món ăn:', error);
     res.status(500).json({ message: 'Không thể tải thực đơn', error: error.message });
   }
 });
@@ -63,7 +84,12 @@ router.post('/api/menu', async (req, res) => {
       image: image || ''
     });
 
-    return res.status(201).json(menuItem);
+    const createdItem = await MenuItem.findById(menuItem._id).lean();
+    return res.status(201).json({
+      ...createdItem,
+      _id: createdItem._id.toString(),
+      id: createdItem._id.toString()
+    });
   } catch (error) {
     return res
       .status(500)
@@ -97,13 +123,17 @@ router.put('/api/menu/:id', async (req, res) => {
 
     const updatedItem = await MenuItem.findByIdAndUpdate(id, updateData, {
       new: true
-    });
+    }).lean();
 
     if (!updatedItem) {
       return res.status(404).json({ message: 'Không tìm thấy món ăn' });
     }
 
-    return res.json(updatedItem);
+    return res.json({
+      ...updatedItem,
+      _id: updatedItem._id.toString(),
+      id: updatedItem._id.toString()
+    });
   } catch (error) {
     return res
       .status(500)
@@ -121,11 +151,59 @@ router.delete('/api/menu/:id', async (req, res) => {
       return res.status(404).json({ message: 'Không tìm thấy món ăn' });
     }
 
-    return res.json(deletedItem);
+    return res.json({
+      ...deletedItem.toObject(),
+      _id: deletedItem._id.toString(),
+      id: deletedItem._id.toString()
+    });
   } catch (error) {
     return res
       .status(500)
       .json({ message: 'Không thể xóa món ăn', error: error.message });
+  }
+});
+
+router.get('/api/orders', async (req, res) => {
+  try {
+    const orders = await Order.find()
+      .populate('customer', 'name phone')
+      .populate('promotion', 'name')
+      .sort({ createdAt: -1 })
+      .lean();
+    
+    console.log(`[Admin API] Tìm thấy ${orders.length} đơn hàng trong database`);
+    
+    const mappedOrders = orders.map(order => {
+      const orderTypeMap = {
+        'TAI_CHO': 'Tại chỗ',
+        'ONLINE': 'Giao hàng',
+        'MANG_VE': 'Mang về'
+      };
+      
+      const statusMap = {
+        'CHO_XAC_NHAN': 'Chờ xác nhận',
+        'DA_XAC_NHAN': 'Đã xác nhận',
+        'DANG_CHUAN_BI': 'Đang chuẩn bị',
+        'DANG_GIAO': 'Đang giao',
+        'HOAN_THANH': 'Hoàn thành',
+        'DA_HUY': 'Đã hủy'
+      };
+      
+      return {
+        ...order,
+        _id: order._id.toString(),
+        id: order._id.toString(),
+        orderTypeText: orderTypeMap[order.orderType] || order.orderType,
+        statusText: statusMap[order.status] || order.status,
+        customerName: order.customer ? (order.customer.name || order.customer.phone || 'Khách vãng lai') : 'Khách vãng lai',
+        createdAt: order.createdAt ? new Date(order.createdAt).toLocaleString('vi-VN') : ''
+      };
+    });
+    
+    res.json(mappedOrders);
+  } catch (error) {
+    console.error('[Admin API] Lỗi khi lấy danh sách đơn hàng:', error);
+    res.status(500).json({ message: 'Không thể tải danh sách đơn hàng', error: error.message });
   }
 });
 
