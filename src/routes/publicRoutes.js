@@ -30,6 +30,7 @@ router.get('/checkout', (req, res) => {
 
 router.get('/api/menu', async (req, res) => {
   try {
+    console.log('[API /api/menu] Đang lấy dữ liệu từ collection menuitems...');
     const items = await MenuItem.find().sort({ createdAt: -1 }).lean();
     console.log(`[API /api/menu] Tìm thấy ${items.length} món ăn trong database`);
     
@@ -209,7 +210,7 @@ router.post('/api/orders', async (req, res) => {
       if (menuItem) {
         const orderItem = new OrderItem({
           order: order._id,
-          dish: menuItem._id, // Note: field name is 'dish' but we're using MenuItem
+          dish: menuItem._id, // Note: field name is 'dish' but we're using MenuItem ID
           quantity: item.quantity,
           priceAtOrderTime: item.price
         });

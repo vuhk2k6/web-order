@@ -18,8 +18,6 @@ const formatCurrencyVnd = (value) => {
 const createFullMenuCard = (item) => {
   const card = document.createElement('article');
   card.className = 'menu-card';
-  card.setAttribute('role', 'article');
-  card.setAttribute('aria-label', item.name || 'Món ăn');
 
   const imageWrapper = document.createElement('div');
   imageWrapper.className = 'menu-card-image-wrapper';
@@ -28,14 +26,7 @@ const createFullMenuCard = (item) => {
     const image = document.createElement('img');
     image.src = item.image;
     image.alt = item.name || 'Ảnh món ăn';
-    image.loading = 'lazy';
     imageWrapper.appendChild(image);
-  } else {
-    const placeholder = document.createElement('div');
-    placeholder.textContent = 'Chưa có ảnh';
-    placeholder.style.color = '#94a3b8';
-    placeholder.style.fontSize = '12px';
-    imageWrapper.appendChild(placeholder);
   }
 
   const titleRow = document.createElement('div');
@@ -63,18 +54,14 @@ const createFullMenuCard = (item) => {
   addButton.type = 'button';
   addButton.className = 'menu-add-button';
   addButton.textContent = 'Thêm vào giỏ';
-  addButton.setAttribute('aria-label', `Thêm ${item.name || 'món ăn'} vào giỏ hàng`);
   addButton.addEventListener('click', () => {
     if (window.appCart && typeof window.appCart.addItem === 'function') {
       window.appCart.addItem({
         id: item._id || item.id,
         name: item.name,
         price: item.price,
-        image: item.image || item.imageUrl || ''
+        image: item.image
       });
-      if (typeof window.appCart.open === 'function') {
-        window.appCart.open();
-      }
     }
   });
 
@@ -92,49 +79,68 @@ const renderFullMenu = (items) => {
   const listElement = getMenuElement('full-menu-list');
   const emptyElement = getMenuElement('full-menu-empty');
 
+  console.log('[menu.js] renderFullMenu được gọi với', items ? items.length : 0, 'món ăn');
+
   if (!listElement || !emptyElement) {
-    console.error('Không tìm thấy phần tử DOM: full-menu-list hoặc full-menu-empty');
+    console.error('[menu.js] Không tìm thấy DOM elements:', {
+      listElement: !!listElement,
+      emptyElement: !!emptyElement
+    });
     return;
   }
 
   listElement.innerHTML = '';
 
   if (!items || items.length === 0) {
-    console.log('Không có món ăn để hiển thị');
+    console.log('[menu.js] Không có món ăn để hiển thị');
     emptyElement.style.display = 'block';
     return;
   }
 
-  console.log('Đang render', items.length, 'món ăn');
   emptyElement.style.display = 'none';
+  console.log('[menu.js] Đang render', items.length, 'món ăn...');
 
-  items.forEach((item) => {
-    const card = createFullMenuCard(item);
-    listElement.appendChild(card);
+  items.forEach((item, index) => {
+    try {
+      const card = createFullMenuCard(item);
+      listElement.appendChild(card);
+      if (index === 0) {
+        console.log('[menu.js] Đã render món đầu tiên:', item.name);
+      }
+    } catch (error) {
+      console.error(`[menu.js] Lỗi khi render món ${index}:`, error, item);
+    }
   });
   
-  console.log('Đã render xong', items.length, 'món ăn');
+  console.log('[menu.js] Hoàn tất render menu');
 };
 
 const fetchFullMenu = async () => {
   try {
-    console.log('Đang tải thực đơn từ /api/menu...');
+    console.log('[menu.js] Đang fetch /api/menu...');
     const response = await fetch('/api/menu');
 
     if (!response.ok) {
-      console.error('Không thể tải thực đơn, status:', response.status);
+      console.error('[menu.js] Không thể tải thực đơn, status:', response.status);
       renderFullMenu([]);
       return [];
     }
 
     const data = await response.json();
-    console.log('Đã nhận được dữ liệu:', data.length, 'món ăn');
-    if (data.length > 0) {
-      console.log('Mẫu món ăn đầu tiên:', data[0]);
+    console.log('[menu.js] Nhận được dữ liệu:', Array.isArray(data) ? `${data.length} món ăn` : 'không phải array');
+    
+    if (Array.isArray(data) && data.length > 0) {
+      console.log('[menu.js] Mẫu món ăn đầu tiên:', {
+        _id: data[0]._id,
+        name: data[0].name,
+        price: data[0].price,
+        image: data[0].image
+      });
     }
+    
     return Array.isArray(data) ? data : [];
   } catch (error) {
-    console.error('Lỗi khi tải thực đơn', error);
+    console.error('[menu.js] Lỗi khi tải thực đơn', error);
     return [];
   }
 };
