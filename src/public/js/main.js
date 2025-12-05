@@ -493,45 +493,403 @@ const renderMenu = (items) => {
   });
 };
 
-// Auth functions are now in auth.js
+const setAuthLoadingState = (button, isLoading) => {
+  if (!button) {
+    return;
+  }
+
+  if (isLoading) {
+    button.disabled = true;
+    button.textContent = 'Đang xử lý...';
+  } else {
+    button.disabled = false;
+  }
+};
+
+const authState = {
+  currentUser: null
+};
+
+const updateAuthUi = (user) => {
+  authState.currentUser = user;
+  const authOpenButton = document.getElementById('auth-open-button');
+
+  if (!authOpenButton) {
+    return;
+  }
+
+  if (user) {
+    const initial = user.name ? user.name.trim().charAt(0).toUpperCase() : 'U';
+    authOpenButton.innerHTML = '';
+    const avatarSpan = document.createElement('span');
+    avatarSpan.className = 'auth-avatar-circle';
+    avatarSpan.textContent = initial;
+    authOpenButton.appendChild(avatarSpan);
+    authOpenButton.setAttribute('aria-label', 'Xem trang cá nhân của bạn');
+  } else {
+    authOpenButton.textContent = 'Đăng nhập';
+    authOpenButton.setAttribute(
+      'aria-label',
+      'Đăng nhập hoặc đăng ký tài khoản'
+    );
+  }
+};
+
+const openAuthModal = () => {
+  const overlay = document.getElementById('auth-modal-overlay');
+
+  if (!overlay) {
+    return;
+  }
+
+  overlay.style.display = 'flex';
+};
+
+const closeAuthModal = () => {
+  const overlay = document.getElementById('auth-modal-overlay');
+
+  if (!overlay) {
+    return;
+  }
+
+  overlay.style.display = 'none';
+};
+
+const switchAuthTab = (mode) => {
+  const loginTab = document.getElementById('auth-tab-login');
+  const registerTab = document.getElementById('auth-tab-register');
+  const loginForm = document.getElementById('auth-form-login');
+  const registerForm = document.getElementById('auth-form-register');
+
+  if (!loginTab || !registerTab || !loginForm || !registerForm) {
+    return;
+  }
+
+  const isLogin = mode === 'login';
+
+  loginTab.classList.toggle('active', isLogin);
+  registerTab.classList.toggle('active', !isLogin);
+  loginTab.setAttribute('aria-selected', isLogin ? 'true' : 'false');
+  registerTab.setAttribute('aria-selected', !isLogin ? 'true' : 'false');
+
+  loginForm.style.display = isLogin ? 'grid' : 'none';
+  registerForm.style.display = !isLogin ? 'grid' : 'none';
+};
+
+const fetchCurrentUser = async () => {
+  try {
+    const response = await fetch('/auth/me', {
+      credentials: 'same-origin'
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+    return data.user || null;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Lỗi khi kiểm tra trạng thái đăng nhập', error);
+    return null;
+  }
+};
+
+const handleAuthLoginSubmit = async (event) => {
+  event.preventDefault();
+
+  const phoneInput = document.getElementById('auth-login-phone');
+  const passwordInput = document.getElementById('auth-login-password');
+  const messageElement = document.getElementById('auth-message');
+  const submitButton = document.getElementById('auth-login-submit');
+
+  if (!phoneInput || !passwordInput || !messageElement || !submitButton) {
+    return;
+  }
+
+  const phone = phoneInput.value.trim();
+  const password = passwordInput.value.trim();
+
+  if (!phone || !password) {
+    messageElement.textContent = 'Vui lòng nhập đầy đủ số điện thoại và mật khẩu.';
+    messageElement.className = 'auth-error';
+    messageElement.style.display = 'block';
+    return;
+  }
+
+  setAuthLoadingState(submitButton, true);
+  messageElement.style.display = 'none';
+
+  try {
+    const response = await fetch('/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'same-origin',
+      body: JSON.stringify({ phone, password })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      messageElement.textContent = data.message || 'Đăng nhập thất bại.';
+      messageElement.className = 'auth-error';
+      messageElement.style.display = 'block';
+      return;
+    }
+
+    messageElement.textContent = 'Đăng nhập thành công.';
+    messageElement.className = 'auth-success';
+    messageElement.style.display = 'block';
+
+    updateAuthUi(data.user);
+
+    window.setTimeout(() => {
+      closeAuthModal();
+    }, 600);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Lỗi khi đăng nhập', error);
+    messageElement.textContent = 'Đăng nhập thất bại. Vui lòng thử lại sau.';
+    messageElement.className = 'auth-error';
+    messageElement.style.display = 'block';
+  } finally {
+    setAuthLoadingState(submitButton, false);
+    submitButton.textContent = 'Đăng nhập';
+  }
+};
+
+const handleAuthRegisterSubmit = async (event) => {
+  event.preventDefault();
+
+  const nameInput = document.getElementById('auth-register-name');
+  const phoneInput = document.getElementById('auth-register-phone');
+  const emailInput = document.getElementById('auth-register-email');
+  const passwordInput = document.getElementById('auth-register-password');
+  const messageElement = document.getElementById('auth-message');
+  const submitButton = document.getElementById('auth-register-submit');
+
+  if (
+    !nameInput ||
+    !phoneInput ||
+    !emailInput ||
+    !passwordInput ||
+    !messageElement ||
+    !submitButton
+  ) {
+    return;
+  }
+
+  const name = nameInput.value.trim();
+  const phone = phoneInput.value.trim();
+  const email = emailInput.value.trim();
+  const password = passwordInput.value.trim();
+
+  if (!name || !phone || !password) {
+    messageElement.textContent =
+      'Họ tên, số điện thoại và mật khẩu là bắt buộc.';
+    messageElement.className = 'auth-error';
+    messageElement.style.display = 'block';
+    return;
+  }
+
+  setAuthLoadingState(submitButton, true);
+  messageElement.style.display = 'none';
+
+  try {
+    const response = await fetch('/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'same-origin',
+      body: JSON.stringify({ name, phone, email, password })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      messageElement.textContent =
+        data.message || 'Không thể đăng ký tài khoản. Vui lòng thử lại.';
+      messageElement.className = 'auth-error';
+      messageElement.style.display = 'block';
+      return;
+    }
+
+    messageElement.textContent =
+      'Đăng ký thành công. Bạn đã được đăng nhập tự động.';
+    messageElement.className = 'auth-success';
+    messageElement.style.display = 'block';
+
+    updateAuthUi(data.user);
+
+    window.setTimeout(() => {
+      closeAuthModal();
+    }, 800);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Lỗi khi đăng ký', error);
+    messageElement.textContent =
+      'Không thể đăng ký tài khoản. Vui lòng thử lại sau.';
+    messageElement.className = 'auth-error';
+    messageElement.style.display = 'block';
+  } finally {
+    setAuthLoadingState(submitButton, false);
+    submitButton.textContent = 'Đăng ký';
+  }
+};
+
+const handleScrollToReservation = () => {
+  const reservationSection = document.getElementById('reservation');
+  if (reservationSection) {
+    reservationSection.scrollIntoView({ behavior: 'smooth' });
+  }
+};
+
+const handleSubmitReservation = async (event) => {
+  event.preventDefault();
+  
+  const form = event.target;
+  const formData = new FormData(form);
+  const data = Object.fromEntries(formData);
+  
+  const messageElement = document.getElementById('reservation-message');
+  const submitButton = form.querySelector('button[type="submit"]');
+  
+  if (submitButton) {
+    submitButton.disabled = true;
+    submitButton.textContent = 'Đang gửi...';
+  }
+  
+  if (messageElement) {
+    messageElement.textContent = '';
+    messageElement.style.display = 'none';
+  }
+  
+  try {
+    const response = await fetch('/api/reservations', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'same-origin',
+      body: JSON.stringify(data)
+    });
+    
+    const result = await response.json();
+    
+    if (!response.ok) {
+      if (messageElement) {
+        messageElement.textContent = result.message || 'Không thể gửi yêu cầu đặt bàn. Vui lòng thử lại.';
+        messageElement.className = 'reservation-message reservation-error';
+        messageElement.style.display = 'block';
+      }
+      return;
+    }
+    
+    if (messageElement) {
+      messageElement.textContent = 'Đã gửi yêu cầu đặt bàn thành công! Chúng tôi sẽ liên hệ với bạn sớm nhất.';
+      messageElement.className = 'reservation-message reservation-success';
+      messageElement.style.display = 'block';
+    }
+    
+    form.reset();
+  } catch (error) {
+    console.error('Lỗi khi gửi yêu cầu đặt bàn:', error);
+    if (messageElement) {
+      messageElement.textContent = 'Không thể gửi yêu cầu đặt bàn. Vui lòng thử lại sau.';
+      messageElement.className = 'reservation-message reservation-error';
+      messageElement.style.display = 'block';
+    }
+  } finally {
+    if (submitButton) {
+      submitButton.disabled = false;
+      submitButton.textContent = 'Gửi yêu cầu đặt bàn';
+    }
+  }
+};
+
+const initializeFooterYear = () => {
+  const footerYear = document.getElementById('footer-year');
+  if (footerYear) {
+    footerYear.textContent = new Date().getFullYear();
+  }
+};
 
 const initializeHomePage = async () => {
   const items = await fetchMenu();
   renderMenu(items);
   updateCartBadge();
   renderCartDropdown();
+  
+  const ctaReservationButton = document.getElementById('cta-reservation');
+  const reservationForm = document.getElementById('reservation-form');
+  const authOpenButton = document.getElementById('auth-open-button');
+  const authCloseButton = document.getElementById('auth-close-button');
+  const authOverlay = document.getElementById('auth-modal-overlay');
+  const loginTab = document.getElementById('auth-tab-login');
+  const registerTab = document.getElementById('auth-tab-register');
+  const loginForm = document.getElementById('auth-form-login');
+  const registerForm = document.getElementById('auth-form-register');
 
-  if (typeof window.renderSharedHeader === 'function') {
-    window.renderSharedHeader({
-      logoSubtext: '',
-      activeNavLink: 'home',
-      showAuthButton: true,
-      authButtonText: 'Đăng nhập',
-      authButtonId: 'auth-open-button',
-      onAuthClick: () => {
-        if (window.authState && window.authState.currentUser) {
-          window.location.href = '/profile';
-        } else {
-          if (window.openAuthModal) {
-            window.openAuthModal();
-          }
-        }
+  if (ctaReservationButton) {
+    ctaReservationButton.addEventListener('click', handleScrollToReservation);
+    ctaReservationButton.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        handleScrollToReservation();
       }
     });
   }
 
-  if (typeof window.initializeSharedHeader === 'function') {
-    window.initializeSharedHeader();
+  if (reservationForm) {
+    reservationForm.addEventListener('submit', handleSubmitReservation);
   }
 
-  if (typeof window.initializeAuthModal === 'function') {
-    window.initializeAuthModal();
+  if (authOpenButton) {
+    authOpenButton.addEventListener('click', () => {
+      if (authState.currentUser) {
+        window.location.href = '/profile';
+      } else {
+        switchAuthTab('login');
+        openAuthModal();
+      }
+    });
   }
 
-  if (window.fetchCurrentUser && window.updateAuthUi) {
-    const user = await window.fetchCurrentUser();
-    window.updateAuthUi(user);
+  if (authCloseButton) {
+    authCloseButton.addEventListener('click', closeAuthModal);
   }
+
+  if (authOverlay) {
+    authOverlay.addEventListener('click', (event) => {
+      if (event.target === authOverlay) {
+        closeAuthModal();
+      }
+    });
+  }
+
+  if (loginTab && registerTab && loginForm && registerForm) {
+    loginTab.addEventListener('click', () => switchAuthTab('login'));
+    registerTab.addEventListener('click', () => switchAuthTab('register'));
+  }
+
+  const loginSubmitButton = document.getElementById('auth-login-submit');
+  const registerSubmitButton = document.getElementById('auth-register-submit');
+
+  if (loginForm && loginSubmitButton) {
+    loginForm.addEventListener('submit', handleAuthLoginSubmit);
+  }
+
+  if (registerForm && registerSubmitButton) {
+    registerForm.addEventListener('submit', handleAuthRegisterSubmit);
+  }
+
+  fetchCurrentUser().then((user) => {
+    updateAuthUi(user);
+  });
+
+  initializeFooterYear();
 };
 
 const shouldInitializeHomePage = () => {
@@ -547,7 +905,8 @@ if (typeof window !== 'undefined') {
     renderDropdown: renderCartDropdown,
     setupListeners: setupCartListeners,
     getItems: () => [...cartState.items],
-    open: openCartDropdown
+    open: openCartDropdown,
+    updatePosition: updateCartDropdownPosition
   };
 }
 
