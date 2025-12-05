@@ -13,13 +13,9 @@ const renderSharedHeader = (options = {}) => {
     <header class="navbar">
       <div class="container navbar-inner">
         <div class="navbar-left">
-          <div class="logo-mark" tabindex="0" aria-label="Logo nhà hàng">
-            G
-          </div>
-          <div class="flex flex-col">
-            <span class="logo-text-main">Carot</span>
-            <span class="logo-text-sub">${logoSubtext}</span>
-          </div>
+          <a href="/" class="logo-mark-link" tabindex="0" aria-label="Về trang chủ">
+            <img src="/img/logo.png" alt="Logo nhà hàng CAFRROTSFUD" class="logo-mark" />
+          </a>
         </div>
         <nav class="navbar-center" aria-label="Thanh điều hướng chính">
           <a href="/" class="navbar-link ${activeNavLink === 'home' ? 'active' : ''}" tabindex="0">Trang chủ</a>
@@ -79,6 +75,16 @@ const renderSharedHeader = (options = {}) => {
     return;
   }
 
+  // Check if header already exists to avoid re-rendering
+  const existingHeader = container?.querySelector('.navbar');
+  if (existingHeader && container.children.length > 0) {
+    // Header already exists, just update cart badge
+    if (typeof window.appCart !== 'undefined' && window.appCart) {
+      window.appCart.updateBadge();
+    }
+    return;
+  }
+
   if (container) {
     container.innerHTML = headerHTML;
   } else {
@@ -103,50 +109,109 @@ const renderSharedHeader = (options = {}) => {
   }
 
   // Setup cart and auth after a small delay to ensure DOM is ready
-  window.setTimeout(() => {
-    initializeSharedHeader();
-    
-    if (typeof window.initializeAuthModal === 'function') {
-      window.initializeAuthModal();
-    }
-  }, 50);
-  
-  if (typeof window.fetchCurrentUser === 'function' && typeof window.updateAuthUi === 'function') {
-    window.fetchCurrentUser().then((user) => {
-      if (user) {
-        const authButton = document.getElementById(authButtonId);
-        if (authButton) {
-          if (authButtonId === 'auth-open-button') {
-            const initial = user.name ? user.name.trim().charAt(0).toUpperCase() : 'U';
-            authButton.innerHTML = '';
-            const avatarSpan = document.createElement('span');
-            avatarSpan.className = 'auth-avatar-circle';
-            avatarSpan.textContent = initial;
-            authButton.appendChild(avatarSpan);
-            authButton.setAttribute('aria-label', 'Xem trang cá nhân của bạn');
-          } else if (authButtonId === 'profile-logout-button') {
-            authButton.textContent = 'Đăng xuất';
-            authButton.setAttribute('aria-label', 'Đăng xuất khỏi tài khoản');
-          }
-        }
-      }
+  // Use requestAnimationFrame for smoother rendering
+  if (window.requestAnimationFrame) {
+    window.requestAnimationFrame(() => {
+      window.setTimeout(() => {
+        initializeSharedHeader();
+      }, 0);
     });
+  } else {
+    window.setTimeout(() => {
+      initializeSharedHeader();
+    }, 50);
   }
 };
 
 const initializeSharedHeader = () => {
-  if (typeof window.appCart !== 'undefined' && window.appCart) {
-    window.appCart.updateBadge();
-    window.appCart.renderDropdown();
-    window.appCart.setupListeners();
-  } else {
+  // Ensure cart is initialized from localStorage
+  if (typeof window.appCart === 'undefined' || !window.appCart) {
+    // Wait for main.js to initialize cart
     window.setTimeout(() => {
       if (typeof window.appCart !== 'undefined' && window.appCart) {
         window.appCart.updateBadge();
         window.appCart.renderDropdown();
         window.appCart.setupListeners();
+      } else {
+        // If still not available, try again
+        window.setTimeout(initializeSharedHeader, 100);
       }
     }, 100);
+    return;
+  }
+  
+  // Cart is available, initialize it
+  window.appCart.updateBadge();
+  window.appCart.renderDropdown();
+  window.appCart.setupListeners();
+  
+  // Setup auth modal if available (use initializeAuthModal if available, otherwise setup manually)
+  if (typeof window.initializeAuthModal === 'function') {
+    window.initializeAuthModal();
+  } else if (typeof window.openAuthModal === 'function' && typeof window.closeAuthModal === 'function') {
+    const authOpenButton = document.getElementById('auth-open-button');
+    const authCloseButton = document.getElementById('auth-close-button');
+    const authOverlay = document.getElementById('auth-modal-overlay');
+    const loginTab = document.getElementById('auth-tab-login');
+    const registerTab = document.getElementById('auth-tab-register');
+    const loginForm = document.getElementById('auth-form-login');
+    const registerForm = document.getElementById('auth-form-register');
+    
+    if (authOpenButton) {
+      authOpenButton.addEventListener('click', () => {
+        if (window.authState && window.authState.currentUser) {
+          window.location.href = '/profile';
+        } else {
+          if (typeof window.switchAuthTab === 'function') {
+            window.switchAuthTab('login');
+          }
+          window.openAuthModal();
+        }
+      });
+    }
+    
+    if (authCloseButton) {
+      authCloseButton.addEventListener('click', window.closeAuthModal);
+    }
+    
+    if (authOverlay) {
+      authOverlay.addEventListener('click', (event) => {
+        if (event.target === authOverlay) {
+          window.closeAuthModal();
+        }
+      });
+    }
+    
+    if (loginTab) {
+      loginTab.addEventListener('click', () => {
+        if (typeof window.switchAuthTab === 'function') {
+          window.switchAuthTab('login');
+        }
+      });
+    }
+    
+    if (registerTab) {
+      registerTab.addEventListener('click', () => {
+        if (typeof window.switchAuthTab === 'function') {
+          window.switchAuthTab('register');
+        }
+      });
+    }
+    
+    if (loginForm && typeof window.handleAuthLoginSubmit === 'function') {
+      loginForm.addEventListener('submit', window.handleAuthLoginSubmit);
+    }
+    
+    if (registerForm && typeof window.handleAuthRegisterSubmit === 'function') {
+      registerForm.addEventListener('submit', window.handleAuthRegisterSubmit);
+    }
+  }
+  
+  // Fetch and update auth UI
+  if (typeof window.fetchCurrentUser === 'function' && typeof window.updateAuthUi === 'function') {
+    window.fetchCurrentUser().then((user) => {
+      window.updateAuthUi(user);
+    });
   }
 };
 

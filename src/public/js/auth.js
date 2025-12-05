@@ -311,6 +311,8 @@ if (typeof window !== 'undefined') {
   window.switchAuthTab = switchAuthTab;
   window.initializeAuth = initializeAuth;
   window.initializeAuthModal = initializeAuthModal;
+  window.handleAuthLoginSubmit = handleAuthLoginSubmit;
+  window.handleAuthRegisterSubmit = handleAuthRegisterSubmit;
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeAuth);

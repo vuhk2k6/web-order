@@ -1,18 +1,22 @@
 /* eslint-disable no-console */
 const getMenuElement = (id) => document.getElementById(id);
 
-const formatCurrencyVnd = (value) => {
-  if (!value) {
-    return '';
+// formatCurrencyVnd is defined in main.js - wait for it to be available
+const getFormatCurrencyVnd = () => {
+  if (window.formatCurrencyVnd) {
+    return window.formatCurrencyVnd;
   }
-
-  const numberValue = Number(value);
-
-  if (Number.isNaN(numberValue)) {
-    return value;
-  }
-
-  return `${numberValue.toLocaleString('vi-VN')} đ`;
+  // Fallback if main.js hasn't loaded yet
+  return (value) => {
+    if (!value) {
+      return '';
+    }
+    const numberValue = Number(value);
+    if (Number.isNaN(numberValue)) {
+      return value;
+    }
+    return `${numberValue.toLocaleString('vi-VN')} đ`;
+  };
 };
 
 const createFullMenuCard = (item) => {
@@ -38,7 +42,7 @@ const createFullMenuCard = (item) => {
 
   const price = document.createElement('p');
   price.className = 'menu-card-price';
-  price.textContent = formatCurrencyVnd(item.price);
+  price.textContent = getFormatCurrencyVnd()(item.price);
 
   titleRow.appendChild(title);
   titleRow.appendChild(price);
@@ -54,14 +58,67 @@ const createFullMenuCard = (item) => {
   addButton.type = 'button';
   addButton.className = 'menu-add-button';
   addButton.textContent = 'Thêm vào giỏ';
-  addButton.addEventListener('click', () => {
-    if (window.appCart && typeof window.appCart.addItem === 'function') {
-      window.appCart.addItem({
+  addButton.setAttribute('aria-label', `Thêm ${item.name || 'món ăn'} vào giỏ hàng`);
+  
+  addButton.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    
+    // Prevent double-click
+    if (addButton.disabled) {
+      return;
+    }
+    
+    // Wait for cart to be available
+    let cartReady = false;
+    let attempts = 0;
+    const maxAttempts = 20;
+    
+    while (!cartReady && attempts < maxAttempts) {
+      if (window.appCart && typeof window.appCart.addItem === 'function') {
+        cartReady = true;
+      } else {
+        await new Promise((resolve) => window.setTimeout(resolve, 50));
+        attempts++;
+      }
+    }
+    
+    if (!cartReady) {
+      console.error('Cart không khả dụng sau', maxAttempts, 'lần thử');
+      return;
+    }
+    
+    // Disable button temporarily
+    const originalText = addButton.textContent;
+    addButton.disabled = true;
+    addButton.textContent = 'Đang thêm...';
+    
+    try {
+      const success = window.appCart.addItem({
         id: item._id || item.id,
         name: item.name,
         price: item.price,
-        image: item.image
+        image: item.image,
+        quantity: 1
       });
+      
+      if (success) {
+        addButton.textContent = 'Đã thêm ✓';
+        window.setTimeout(() => {
+          addButton.disabled = false;
+          addButton.textContent = originalText;
+        }, 1000);
+      } else {
+        addButton.textContent = 'Lỗi';
+        window.setTimeout(() => {
+          addButton.disabled = false;
+          addButton.textContent = originalText;
+        }, 1500);
+      }
+    } catch (error) {
+      console.error('Lỗi khi thêm vào giỏ hàng:', error);
+      addButton.disabled = false;
+      addButton.textContent = originalText;
     }
   });
 
@@ -146,60 +203,63 @@ const fetchFullMenu = async () => {
 };
 
 const initializeMenuPage = async () => {
-  const renderHeader = async () => {
-    if (typeof window.renderSharedHeader === 'function') {
-      let authButtonText = 'Đăng nhập';
-      
-      if (typeof window.fetchCurrentUser === 'function') {
-        const user = await window.fetchCurrentUser();
-        if (user) {
-          const initial = user.name ? user.name.trim().charAt(0).toUpperCase() : 'U';
-          authButtonText = initial;
-        }
+  // Check if header is already rendered
+  const container = document.getElementById('shared-header');
+  const headerExists = container && container.children.length > 0;
+  
+  // Only render header if not already rendered
+  if (!headerExists && typeof window.renderSharedHeader === 'function') {
+    let authButtonText = 'Đăng nhập';
+    
+    if (typeof window.fetchCurrentUser === 'function') {
+      const user = await window.fetchCurrentUser();
+      if (user) {
+        const initial = user.name ? user.name.trim().charAt(0).toUpperCase() : 'U';
+        authButtonText = initial;
       }
-      
-      window.renderSharedHeader({
-        logoSubtext: 'Thực đơn nhà hàng',
-        activeNavLink: 'menu',
-        showAuthButton: true,
-        authButtonText: authButtonText,
-        authButtonId: 'auth-open-button',
-        onAuthClick: () => {
-          if (window.authState && window.authState.currentUser) {
-            window.location.href = '/profile';
+    }
+    
+    window.renderSharedHeader({
+      logoSubtext: 'Thực đơn nhà hàng',
+      activeNavLink: 'menu',
+      showAuthButton: true,
+      authButtonText: authButtonText,
+      authButtonId: 'auth-open-button',
+      onAuthClick: () => {
+        if (window.authState && window.authState.currentUser) {
+          window.location.href = '/profile';
+        } else {
+          if (typeof window.switchAuthTab === 'function' && typeof window.openAuthModal === 'function') {
+            window.switchAuthTab('login');
+            window.openAuthModal();
           } else {
-            if (typeof window.switchAuthTab === 'function' && typeof window.openAuthModal === 'function') {
-              window.switchAuthTab('login');
-              window.openAuthModal();
-            } else {
-              window.location.href = '/';
-            }
+            window.location.href = '/';
           }
         }
-      });
-      return true;
-    }
-    return false;
-  };
-
-  let headerRendered = false;
-  let attempts = 0;
-  const maxAttempts = 10;
-
-  while (!headerRendered && attempts < maxAttempts) {
-    headerRendered = await renderHeader();
-    if (!headerRendered) {
-      await new Promise((resolve) => window.setTimeout(resolve, 50));
-      attempts++;
+      }
+    });
+    
+    // Wait for header to be initialized
+    await new Promise((resolve) => window.setTimeout(resolve, 50));
+  }
+  
+  // Wait a bit for cart to be initialized
+  await new Promise((resolve) => window.setTimeout(resolve, 50));
+  
+  // Ensure cart is initialized (only update, don't re-render)
+  if (typeof window.appCart !== 'undefined' && window.appCart) {
+    window.appCart.updateBadge();
+    // Only render dropdown if it doesn't exist
+    const dropdown = document.getElementById('cart-dropdown');
+    if (!dropdown || !dropdown.querySelector('.cart-dropdown-panel')) {
+      window.appCart.renderDropdown();
     }
   }
   
-  if (typeof window.initializeAuth === 'function') {
+  // Initialize auth only if not already initialized
+  if (typeof window.initializeAuth === 'function' && !window.__authInitialized) {
     await window.initializeAuth();
-  }
-
-  if (!headerRendered) {
-    console.warn('Không thể render header sau', maxAttempts, 'lần thử');
+    window.__authInitialized = true;
   }
 
 
@@ -229,44 +289,21 @@ const initializeMenuPage = async () => {
   renderFullMenu(filteredItems);
 };
 
+// Prevent multiple initializations
+let menuPageInitialized = false;
+
 const startMenuPage = () => {
+  if (menuPageInitialized) {
+    return;
+  }
+  menuPageInitialized = true;
   initializeMenuPage();
 };
 
-const ensureHeaderRendered = () => {
-  const container = document.getElementById('shared-header');
-  if (container && container.children.length === 0) {
-    if (typeof window.renderSharedHeader === 'function') {
-      window.renderSharedHeader({
-        logoSubtext: 'Thực đơn nhà hàng',
-        activeNavLink: 'menu',
-        showAuthButton: true,
-        authButtonText: 'Đăng nhập',
-        authButtonId: 'auth-open-button',
-        onAuthClick: () => {
-          if (window.authState && window.authState.currentUser) {
-            window.location.href = '/profile';
-          } else {
-            window.location.href = '/';
-          }
-        }
-      });
-    }
-  }
-};
-
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    ensureHeaderRendered();
-    startMenuPage();
-  });
+  document.addEventListener('DOMContentLoaded', startMenuPage);
 } else {
-  ensureHeaderRendered();
   startMenuPage();
 }
-
-window.addEventListener('load', () => {
-  ensureHeaderRendered();
-});
 
 
