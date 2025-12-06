@@ -13,23 +13,37 @@
   <div id="shared-header"></div>
 
   <main class="main-content menu-page-main">
-    <section class="menu-hero">
-      <h1 class="menu-hero-title">Thực đơn nhà hàng</h1>
-      <p class="menu-hero-text">
-        Khám phá toàn bộ món ăn và thức uống tại Carot. Bạn có thể tìm kiếm nhanh theo tên món và xem chi tiết trước
-        khi đặt.
-      </p>
-      <div class="menu-toolbar">
-        <input id="menu-search" type="text" class="form-input menu-search-input"
-          placeholder="Tìm món theo tên (ví dụ: bò, mì, salad...)" aria-label="Tìm kiếm món ăn" />
-        <div class="menu-toolbar-actions">
-          <button type="button" class="menu-secondary-button" aria-label="Xem giỏ hàng hiện tại">
-            Xem giỏ hàng
-          </button>
-          <button type="button" class="menu-secondary-button" aria-label="Quay lại trang chủ"
-            onclick="window.location.href='/'">
-            Về trang chủ
-          </button>
+    <!-- Menu Navigation Tabs -->
+    <section class="menu-nav-section">
+      <div class="container">
+        <div class="menu-nav-wrapper">
+          <nav class="menu-nav-tabs" role="tablist" aria-label="Danh mục thực đơn">
+            <button type="button" class="menu-nav-tab active" data-category="all" role="tab" aria-selected="true">
+              Tất cả
+            </button>
+            <button type="button" class="menu-nav-tab" data-category="combo" role="tab" aria-selected="false">
+              Combo
+            </button>
+            <button type="button" class="menu-nav-tab" data-category="main" role="tab" aria-selected="false">
+              Khai vị
+            </button>
+            <button type="button" class="menu-nav-tab" data-category="appetizer" role="tab" aria-selected="false">
+              Món chính
+            </button>
+            <button type="button" class="menu-nav-tab" data-category="drink" role="tab" aria-selected="false">
+              Món chay
+            </button>
+            <button type="button" class="menu-nav-tab" data-category="dessert" role="tab" aria-selected="false">
+              Thức uống
+            </button>
+            <button type="button" class="menu-nav-tab" data-category="vegetarian" role="tab" aria-selected="false">
+              Tráng miệng
+            </button>
+          </nav>
+          <div class="menu-nav-search">
+            <input id="menu-search" type="text" class="form-input menu-search-input"
+              placeholder="Tìm món theo tên (ví dụ: bò, mì, salad...)" aria-label="Tìm kiếm món ăn" />
+          </div>
         </div>
       </div>
     </section>
@@ -44,69 +58,121 @@
 
   <div id="auth-modal-overlay" class="auth-modal-overlay" aria-hidden="true">
     <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
-      <div class="auth-modal-header">
-        <h2 id="auth-modal-title" class="auth-modal-title">Tài khoản khách hàng</h2>
-        <button type="button" id="auth-close-button" class="btn-text">
-          Đóng
-        </button>
-      </div>
-      <div class="auth-tabs" role="tablist">
-        <button type="button" id="auth-tab-login" class="auth-tab active" role="tab" aria-selected="true">
-          Đăng nhập
-        </button>
-        <button type="button" id="auth-tab-register" class="auth-tab" role="tab" aria-selected="false">
-          Đăng ký
-        </button>
-      </div>
-      <div class="auth-body">
-        <form id="auth-form-login" class="form" aria-label="Form đăng nhập khách hàng">
-          <div>
-            <label for="auth-login-phone" class="form-label">Số điện thoại</label>
-            <input id="auth-login-phone" name="phone" type="tel" class="form-input" placeholder="VD: 09xx xxx xxx"
-              required />
+      <button type="button" id="auth-close-button" class="auth-close-button" aria-label="Đóng">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="auth-modal-content">
+        <div class="auth-modal-illustration">
+          <img src="/img/loginout.jpg" alt="Illustration" class="auth-illustration-img" />
+        </div>
+        <div class="auth-modal-form-wrapper">
+          <div class="auth-tabs" role="tablist">
+            <button type="button" id="auth-tab-login" class="auth-tab active" role="tab" aria-selected="true">
+              Đăng nhập
+            </button>
+            <button type="button" id="auth-tab-register" class="auth-tab" role="tab" aria-selected="false">
+              Tạo tài khoản
+            </button>
           </div>
-          <div>
-            <label for="auth-login-password" class="form-label">Mật khẩu</label>
-            <input id="auth-login-password" name="password" type="password" class="form-input"
-              placeholder="Mật khẩu của bạn" required />
-          </div>
-          <button id="auth-login-submit" type="submit" class="btn-primary auth-submit">
-            Đăng nhập
-          </button>
-        </form>
+          <div class="auth-body">
+            <form id="auth-form-login" class="form" aria-label="Form đăng nhập khách hàng">
+              <div>
+                <label for="auth-login-phone" class="form-label">Số điện thoại</label>
+                <input id="auth-login-phone" name="phone" type="tel" class="form-input" placeholder="Nhập số điện thoại của bạn"
+                  required />
+              </div>
+              <div>
+                <label for="auth-login-password" class="form-label">Mật khẩu</label>
+                <input id="auth-login-password" name="password" type="password" class="form-input"
+                  placeholder="Nhập mật khẩu của bạn" required />
+                <a href="#" id="auth-forgot-password-link" class="auth-forgot-password" aria-label="Quên mật khẩu">Quên mật khẩu?</a>
+              </div>
+              <button id="auth-login-submit" type="submit" class="btn-primary auth-submit">
+                Đăng nhập
+              </button>
+            </form>
 
-        <form id="auth-form-register" class="form" aria-label="Form đăng ký tài khoản khách hàng"
-          style="display: none;">
-          <div>
-            <label for="auth-register-name" class="form-label">Họ và tên</label>
-            <input id="auth-register-name" name="name" type="text" class="form-input"
-              placeholder="Nhập họ và tên của bạn" required />
-          </div>
-          <div>
-            <label for="auth-register-phone" class="form-label">Số điện thoại</label>
-            <input id="auth-register-phone" name="phone" type="tel" class="form-input"
-              placeholder="VD: 09xx xxx xxx" required />
-          </div>
-          <div>
-            <label for="auth-register-email" class="form-label">Email</label>
-            <input id="auth-register-email" name="email" type="email" class="form-input"
-              placeholder="you@example.com" />
-          </div>
-          <div>
-            <label for="auth-register-password" class="form-label">Mật khẩu</label>
-            <input id="auth-register-password" name="password" type="password" class="form-input"
-              placeholder="Tối thiểu 6 ký tự" required />
-          </div>
-          <button id="auth-register-submit" type="submit" class="btn-primary auth-submit">
-            Đăng ký
-          </button>
-        </form>
+            <form id="auth-form-register" class="form" aria-label="Form đăng ký tài khoản khách hàng"
+              style="display: none;">
+              <div>
+                <label for="auth-register-phone" class="form-label">Số điện thoại</label>
+                <input id="auth-register-phone" name="phone" type="tel" class="form-input"
+                  placeholder="Nhập số điện thoại của bạn" required />
+              </div>
+              <div>
+                <label for="auth-register-lastname" class="form-label">Họ</label>
+                <input id="auth-register-lastname" name="lastname" type="text" class="form-input"
+                  placeholder="Nhập họ của bạn" required />
+              </div>
+              <div>
+                <label for="auth-register-firstname" class="form-label">Tên</label>
+                <input id="auth-register-firstname" name="firstname" type="text" class="form-input"
+                  placeholder="Nhập tên của bạn" required />
+              </div>
+              <div>
+                <label for="auth-register-email" class="form-label">Email</label>
+                <input id="auth-register-email" name="email" type="email" class="form-input"
+                  placeholder="Nhập email của bạn" />
+              </div>
+              <div>
+                <label for="auth-register-password" class="form-label">Mật khẩu</label>
+                <input id="auth-register-password" name="password" type="password" class="form-input"
+                  placeholder="Nhập mật khẩu của bạn" required />
+              </div>
+              <div>
+                <label for="auth-register-confirm-password" class="form-label">Xác nhận mật khẩu</label>
+                <input id="auth-register-confirm-password" name="confirmPassword" type="password" class="form-input"
+                  placeholder="Xác nhận mật khẩu của bạn" required />
+              </div>
+              <button id="auth-register-submit" type="submit" class="btn-primary auth-submit">
+                Tạo tài khoản
+              </button>
+            </form>
 
-        <p id="auth-message" class="auth-error" aria-live="polite" style="display: none;"></p>
+            <p id="auth-message" class="auth-error" aria-live="polite" style="display: none;"></p>
+          </div>
+        </div>
       </div>
-      <p class="auth-footer">
-        Lưu ý: Tài khoản khách hàng được dùng để lưu lịch sử đơn hàng và tích điểm thành viên.
-      </p>
+    </div>
+  </div>
+
+  <!-- Forgot Password Modal -->
+  <div id="forgot-password-modal-overlay" class="auth-modal-overlay" aria-hidden="true" style="display: none;">
+    <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="forgot-password-modal-title">
+      <button type="button" id="forgot-password-close-button" class="auth-close-button" aria-label="Đóng">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="auth-modal-content">
+        <div class="auth-modal-illustration">
+          <img src="/img/loginout.jpg" alt="Illustration" class="auth-illustration-img" />
+        </div>
+        <div class="auth-modal-form-wrapper">
+          <h2 id="forgot-password-modal-title" class="auth-modal-title" style="margin-bottom: 24px;">Quên mật khẩu</h2>
+          <p class="auth-forgot-password-text" style="margin-bottom: 24px; color: #64748b; font-size: 14px; line-height: 1.6;">
+            Nhập số điện thoại hoặc email của bạn. Chúng tôi sẽ gửi mã xác nhận để đặt lại mật khẩu.
+          </p>
+          <form id="forgot-password-form" class="form" aria-label="Form quên mật khẩu">
+            <div>
+              <label for="forgot-password-phone" class="form-label">Số điện thoại hoặc Email</label>
+              <input id="forgot-password-phone" name="phoneOrEmail" type="text" class="form-input"
+                placeholder="Nhập số điện thoại hoặc email của bạn" required />
+            </div>
+            <button id="forgot-password-submit" type="submit" class="btn-primary auth-submit">
+              Gửi mã xác nhận
+            </button>
+          </form>
+          <p id="forgot-password-message" class="auth-error" aria-live="polite" style="display: none; margin-top: 16px;"></p>
+          <div style="margin-top: 24px; text-align: center;">
+            <a href="#" id="forgot-password-back-link" class="auth-forgot-password" style="text-align: center; display: inline-block;">
+              Quay lại đăng nhập
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -121,6 +187,47 @@
   </footer>
 
   <script src="/js/auth.js" defer></script>
+  <!-- Menu Detail Modal -->
+  <div id="menu-detail-modal-overlay" class="menu-detail-modal-overlay" aria-hidden="true" style="display: none;">
+    <div class="menu-detail-modal" role="dialog" aria-modal="true" aria-labelledby="menu-detail-modal-title">
+      <button type="button" id="menu-detail-close-button" class="menu-detail-close-button" aria-label="Đóng">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="menu-detail-content">
+        <div class="menu-detail-image-wrapper">
+          <img id="menu-detail-image" src="" alt="" class="menu-detail-image" />
+        </div>
+        <div class="menu-detail-info">
+          <h2 id="menu-detail-title" class="menu-detail-title"></h2>
+          <div class="menu-detail-price-wrapper">
+            <span id="menu-detail-price" class="menu-detail-price"></span>
+            <span id="menu-detail-price-old" class="menu-detail-price-old" style="display: none;"></span>
+          </div>
+          <div class="menu-detail-description-wrapper">
+            <p id="menu-detail-description" class="menu-detail-description"></p>
+          </div>
+          <div class="menu-detail-specs">
+            <div class="menu-detail-spec-item">
+              <span class="menu-detail-spec-label">Thành phần:</span>
+              <span id="menu-detail-ingredients" class="menu-detail-spec-value"></span>
+            </div>
+            <div class="menu-detail-spec-item">
+              <span class="menu-detail-spec-label">Calo:</span>
+              <span id="menu-detail-calories" class="menu-detail-spec-value"></span>
+            </div>
+          </div>
+          <div class="menu-detail-actions">
+            <button type="button" id="menu-detail-add-button" class="menu-detail-add-button">
+              Thêm giỏ hàng
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="/js/header.js" defer></script>
   <script src="/js/main.js" defer></script>
   <script src="/js/menu.js" defer></script>

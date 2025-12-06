@@ -37,7 +37,9 @@
         </button>
         <button id="auth-open-button" type="button" class="btn-login" tabindex="0"
           aria-label="Đăng nhập hoặc đăng ký tài khoản">
-          Đăng nhập
+          <span class="btn-login-text">Đăng nhập</span>
+          <span class="btn-login-separator">/</span>
+          <span class="btn-login-text">Đăng ký</span>
         </button>
       </div>
     </div>
@@ -69,13 +71,13 @@
     <section class="container hero">
       <div class="hero-grid">
         <div>
-          <p class="hero-label">CARROTSFUD RESTAURANT</p>
+          <p class="hero-label">CAFRROTSFUD RESTAURANT</p>
           <h1 class="hero-title">
-            Trải nghiệm ẩm thực <span>thượng hạng</span> giữa lòng thành phố
+            Thực phẩm <span>sạch & tự nhiên</span> cho cuộc sống lành mạnh
         </h1>
           <p class="hero-text">
-          Hòa mình trong không gian sang trọng và thưởng thức những món ăn tinh tế được chế biến từ nguyên liệu tươi
-          ngon nhất, bởi các đầu bếp giàu kinh nghiệm.
+          Khám phá thực đơn đa dạng với các món ăn organic, giàu dinh dưỡng và được chế biến từ nguyên liệu tự nhiên. 
+          Tất cả đều được chọn lọc kỹ lưỡng, đảm bảo tươi ngon và an toàn cho sức khỏe.
         </p>
           <div class="hero-actions">
           <a href="/menu"
@@ -112,7 +114,7 @@
               <video autoplay muted loop playsinline class="hero-card-video" id="hero-video" tabindex="0">
                 <source src="/img/vidkgian1.mp4" type="video/mp4">
               </video>
-            </div>
+          </div>
         </div>
       </div>
       </div>
@@ -123,7 +125,7 @@
         <div>
           <h2 class="section-title">Dịch vụ dành cho bạn</h2>
           <p class="section-subtitle">
-            Đặt món online, giữ chỗ trước và tích điểm thành viên ngay trên một trang duy nhất.
+            Đặt món online, giao hàng tận nơi và tích điểm thành viên để nhận ưu đãi đặc biệt.
           </p>
         </div>
       </div>
@@ -131,27 +133,28 @@
         <article class="promo-card">
           <p class="promo-label orange">Đặt món online</p>
           <p>
-            Xem toàn bộ thực đơn và tạo đơn hàng giao tận nơi hoặc mang đi.
-            Mọi món ăn đều được kết nối trực tiếp tới hệ thống đơn hàng.
+            Xem toàn bộ thực đơn organic và tự nhiên, đặt hàng giao tận nơi hoặc mang đi.
+            Tất cả món ăn đều được chế biến từ nguyên liệu sạch, tươi ngon và giàu dinh dưỡng.
           </p>
           <a href="/menu" class="promo-cta" aria-label="Xem menu và đặt hàng online">
             Xem menu &amp; đặt hàng
           </a>
         </article>
         <article class="promo-card">
-          <p class="promo-label blue">Đặt bàn trước</p>
+          <p class="promo-label blue">Giao hàng tận nơi</p>
           <p>
-            Chọn ngày, giờ và số lượng khách trước khi đến nhà hàng, giúp bạn luôn có chỗ ngồi đẹp và phục vụ nhanh.
+            Đặt món và nhận giao hàng nhanh chóng, đảm bảo thực phẩm tươi ngon đến tay bạn.
+            Phục vụ trong khu vực nội thành với thời gian giao hàng linh hoạt.
           </p>
-          <a href="#reservation" class="promo-cta" aria-label="Đi tới form đặt bàn">
-            Chọn bàn ngay
+          <a href="/menu" class="promo-cta" aria-label="Đặt món giao hàng">
+            Đặt món ngay
           </a>
         </article>
         <article class="promo-card">
           <p class="promo-label green">Tích điểm thành viên</p>
           <p>
-            Mỗi hóa đơn đều được quy đổi thành điểm thưởng, dùng để nhận ưu đãi
-            và quà tặng dành riêng cho thành viên thân thiết.
+            Mỗi đơn hàng healthy đều được quy đổi thành điểm thưởng, dùng để nhận ưu đãi
+            và quà tặng đặc biệt dành riêng cho thành viên thân thiết.
           </p>
           <a href="#membership" class="promo-cta" aria-label="Tìm hiểu chương trình thành viên">
             Tìm hiểu ưu đãi
@@ -165,7 +168,8 @@
         <div>
           <h2 class="section-title">Thực đơn nổi bật</h2>
           <p class="section-subtitle">
-            Một vài món ăn được yêu thích nhất, được lấy trực tiếp từ hệ thống thực đơn của nhà hàng.
+            Khám phá các món ăn organic, giàu dinh dưỡng được yêu thích nhất, 
+            được chế biến từ nguyên liệu sạch và tươi ngon.
           </p>
         </div>
       </div>
@@ -177,36 +181,41 @@
       </p>
     </section>
 
-    <section id="promotions" class="promotions container">
-      <div>
-        <h2 class="section-title">Ưu đãi hiện tại</h2>
-        <p class="section-subtitle">
-          Tận hưởng các chương trình khuyến mãi hấp dẫn khi đặt bàn trực tuyến tại Gourmet House.
-        </p>
-        <p class="section-subtitle">
-          Chúng tôi thường xuyên cập nhật những gói ưu đãi theo mùa và dịp đặc biệt để bạn có thêm lý do ghé thăm.
-        </p>
+    <section id="promotions" class="section container">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Ưu đãi hiện tại</h2>
+          <p class="section-subtitle">
+            Tận hưởng các chương trình khuyến mãi hấp dẫn khi đặt món online.
+          </p>
+          <p class="section-subtitle">
+            Chúng tôi thường xuyên cập nhật những gói ưu đãi đặc biệt cho thực phẩm organic và tự nhiên 
+            để bạn có thêm lý do lựa chọn lối sống lành mạnh.
+          </p>
+        </div>
       </div>
       <div class="promotions-grid">
         <div class="promo-card">
-          <p class="promo-label orange">Combo nhóm bạn</p>
-          <p>Giảm <span class="font-semibold">15%</span> cho hóa đơn từ 4
-            khách trở lên khi đặt bàn trước 24 giờ.</p>
+          <p class="promo-label orange">Combo dinh dưỡng</p>
+          <p>Giảm <span class="font-semibold">20%</span> cho combo từ 3 món trở lên. 
+            Áp dụng cho tất cả các món organic và thực phẩm sạch.</p>
         </div>
         <div class="promo-card">
-          <p class="promo-label blue">Ưu đãi giờ vàng</p>
-          <p>Tặng món tráng miệng đặc biệt cho khách đến trong khung giờ <span
-              class="font-semibold">17:00 - 18:30</span>.</p>
+          <p class="promo-label blue">Giao hàng miễn phí</p>
+          <p>Miễn phí giao hàng cho đơn hàng từ <span class="font-semibold">200.000đ</span> trở lên. 
+            Áp dụng trong khu vực nội thành.</p>
         </div>
         <div class="promo-card">
-          <p class="promo-label green">Kỷ niệm ngày đặc biệt</p>
-          <p>Trang trí bàn theo chủ đề miễn phí cho các dịp sinh nhật, kỷ niệm.</p>
+          <p class="promo-label green">Thực phẩm organic</p>
+          <p>Ưu đãi đặc biệt cho các món ăn làm từ nguyên liệu organic, 
+            đảm bảo 100% tự nhiên và tốt cho sức khỏe.</p>
         </div>
         <div class="promo-card">
-          <p class="promo-label gray">Đặt bàn online</p>
-          <p>Ưu tiên chọn vị trí đẹp và phục vụ nhanh chóng khi đặt bàn qua website.</p>
-          <a href="#reservation" class="promo-cta">
-            Đặt bàn ngay
+          <p class="promo-label gray">Đặt món online</p>
+          <p>Đặt món online và nhận ưu tiên giao hàng nhanh, 
+            đảm bảo thực phẩm tươi ngon đến tay bạn.</p>
+          <a href="/menu" class="promo-cta">
+            Đặt món ngay
           </a>
         </div>
       </div>
@@ -215,50 +224,56 @@
     <section id="reservation" class="reservation container">
       <h2 class="reservation-title">Đặt bàn</h2>
       <p class="reservation-text">
-        Vui lòng để lại thông tin, chúng tôi sẽ liên hệ xác nhận trong thời gian sớm nhất.
+        Đặt bàn trước để đảm bảo chỗ ngồi cho bạn và người thân. Chúng tôi sẽ xác nhận đặt bàn và chuẩn bị không gian phù hợp nhất cho trải nghiệm ẩm thực của bạn.
       </p>
       <form id="reservation-form" class="form" aria-label="Form đặt bàn">
         <div>
-          <label for="name" class="form-label">Họ và tên</label>
+          <label for="name" class="form-label">HỌ VÀ TÊN</label>
           <input id="name" name="name" type="text" required
             class="form-input"
             placeholder="Nhập họ và tên của bạn" />
         </div>
         <div class="form-row">
           <div>
-            <label for="phone" class="form-label">Số điện thoại</label>
+            <label for="phone" class="form-label">SỐ ĐIỆN THOẠI</label>
             <input id="phone" name="phone" type="tel" required
               class="form-input"
               placeholder="VD: 09xx xxx xxx" />
           </div>
           <div>
-            <label for="guests" class="form-label">Số lượng khách</label>
+            <label for="guests" class="form-label">SỐ LƯỢNG KHÁCH</label>
             <input id="guests" name="guests" type="number" min="1" max="50" required
               class="form-input"
               placeholder="VD: 4" />
           </div>
         </div>
         <div class="form-row">
-          <div>
-            <label for="date" class="form-label">Ngày</label>
+          <div class="form-input-wrapper">
+            <label for="date" class="form-label">NGÀY</label>
             <input id="date" name="date" type="date" required
-              class="form-input" />
+              class="form-input form-input-date" placeholder="dd/mm/yyyy" />
+            <svg class="form-input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8 2V6M16 2V6M3 10H21M5 4H19C20.1046 4 21 4.89543 21 6V20C21 21.1046 20.1046 22 19 22H5C3.89543 22 3 21.1046 3 20V6C3 4.89543 3.89543 4 5 4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
           </div>
-          <div>
-            <label for="time" class="form-label">Giờ</label>
+          <div class="form-input-wrapper">
+            <label for="time" class="form-label">GIỜ</label>
             <input id="time" name="time" type="time" required
-              class="form-input" />
+              class="form-input form-input-time" placeholder="--:--" />
+            <svg class="form-input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+              <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
           </div>
         </div>
         <div>
-          <label for="note" class="form-label">Ghi chú</label>
+          <label for="note" class="form-label">GHI CHÚ</label>
           <textarea id="note" name="note" rows="3"
             class="form-textarea"
-            placeholder="Yêu cầu đặc biệt (nếu có)"></textarea>
+            placeholder="Yêu cầu đặc biệt về chỗ ngồi, dịp kỷ niệm, hoặc yêu cầu về món ăn (nếu có)"></textarea>
         </div>
-        <button type="submit"
-          class="btn-primary btn-reserve">
-          Gửi yêu cầu đặt bàn
+        <button type="submit" class="btn-reserve">
+          GỬI YÊU CẦU ĐẶT BÀN
         </button>
         <p id="reservation-message" class="reservation-message" aria-live="polite"></p>
       </form>
@@ -269,18 +284,24 @@
         <div>
           <h2 class="section-title">Chương trình thành viên</h2>
           <p class="section-subtitle">
-            Tích điểm cho mỗi lần dùng bữa hoặc đặt hàng online, đổi lấy ưu đãi độc quyền chỉ dành cho thành viên.
+            Tích điểm cho mỗi đơn hàng, đổi lấy ưu đãi đặc biệt và quà tặng organic 
+            chỉ dành cho thành viên thân thiết.
           </p>
         </div>
       </div>
       <div class="promotions-grid" aria-label="Thông tin chương trình thành viên">
-        <article class="promo-card">
+        <article class="promo-card" id="membership-register-card" role="button" tabindex="0" aria-label="Đăng ký thành viên để tích điểm">
           <p class="promo-label green">Tích điểm tự động</p>
-          <p>Mỗi đơn hàng sẽ tự động cộng điểm vào tài khoản thành viên của bạn.</p>
+          <p>Mỗi đơn hàng sẽ tự động cộng điểm vào tài khoản thành viên của bạn. 
+            Điểm có thể dùng để giảm giá hoặc đổi quà tặng organic.</p>
+          <button type="button" class="promo-cta" aria-label="Đăng ký thành viên ngay">
+            Đăng ký ngay
+          </button>
         </article>
         <article class="promo-card">
           <p class="promo-label orange">Nâng hạng và ưu đãi</p>
-          <p>Càng chi tiêu nhiều, hạng của bạn càng cao và ưu đãi càng hấp dẫn.</p>
+          <p>Càng mua nhiều, hạng của bạn càng cao và ưu đãi càng hấp dẫn. 
+            Nhận thêm ưu đãi đặc biệt cho thành viên VIP.</p>
         </article>
       </div>
     </section>
@@ -290,28 +311,43 @@
         <div>
           <h2 class="section-title">Khách hàng nói gì về chúng tôi</h2>
           <p class="section-subtitle">
-            Một vài cảm nhận tiêu biểu được tổng hợp từ các đánh giá món ăn trên hệ thống.
+            Một vài cảm nhận tiêu biểu từ khách hàng về chất lượng thực phẩm và dịch vụ của chúng tôi.
           </p>
         </div>
       </div>
-      <div class="promotions-grid" aria-label="Đánh giá của khách hàng">
-        <article class="promo-card">
-          <p class="promo-label blue">Anh Minh, Quận 1</p>
-          <p>
-            “Bò bít tết chín vừa, sốt rất đậm đà. Không gian sang trọng phù hợp tiếp khách và hẹn hò.”
-          </p>
+      <div class="reviews-grid" aria-label="Đánh giá của khách hàng">
+        <article class="review-card">
+          <div class="review-header">
+            <p class="review-label blue">Anh Minh, Quận 1</p>
+          </div>
+          <div class="review-content">
+            <p class="review-text">
+              "Thực phẩm rất tươi ngon và đảm bảo chất lượng. Mình rất yên tâm khi mua ở đây, 
+              đặc biệt là các món organic rất ngon và bổ dưỡng."
+            </p>
+          </div>
         </article>
-        <article class="promo-card">
-          <p class="promo-label orange">Chị Lan, Quận 3</p>
-          <p>
-            “Mì Ý hải sản tươi, khẩu phần vừa đủ. Đặt món online giao nhanh và đúng yêu cầu.”
-          </p>
+        <article class="review-card">
+          <div class="review-header">
+            <p class="review-label orange">Chị Lan, Quận 3</p>
+          </div>
+          <div class="review-content">
+            <p class="review-text">
+              "Giao hàng nhanh, thực phẩm luôn tươi ngon. Mình đã đặt nhiều lần và rất hài lòng với chất lượng. 
+              Đặc biệt thích các combo dinh dưỡng, vừa ngon vừa tiết kiệm."
+            </p>
+          </div>
         </article>
-        <article class="promo-card">
-          <p class="promo-label green">Bạn Huy, Quận 7</p>
-          <p>
-            “Tích điểm thành viên rất có lợi, mình thường dùng điểm để được giảm giá khi đi nhóm bạn.”
-          </p>
+        <article class="review-card">
+          <div class="review-header">
+            <p class="review-label green">Bạn Huy, Quận 7</p>
+          </div>
+          <div class="review-content">
+            <p class="review-text">
+              "Tích điểm thành viên rất có lợi, mình thường dùng điểm để được giảm giá khi mua hàng. 
+              Chương trình ưu đãi rất hấp dẫn và phù hợp với nhu cầu ăn uống lành mạnh."
+            </p>
+          </div>
         </article>
       </div>
     </section>
@@ -319,79 +355,171 @@
 
   <div id="auth-modal-overlay" class="auth-modal-overlay" aria-hidden="true">
     <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
-      <div class="auth-modal-header">
-        <h2 id="auth-modal-title" class="auth-modal-title">Tài khoản khách hàng</h2>
-        <button type="button" id="auth-close-button" class="btn-text">
-          Đóng
-        </button>
-      </div>
-      <div class="auth-tabs" role="tablist">
-        <button type="button" id="auth-tab-login" class="auth-tab active" role="tab" aria-selected="true">
-          Đăng nhập
-        </button>
-        <button type="button" id="auth-tab-register" class="auth-tab" role="tab" aria-selected="false">
-          Đăng ký
-        </button>
-      </div>
-      <div class="auth-body">
-        <form id="auth-form-login" class="form" aria-label="Form đăng nhập khách hàng">
-          <div>
-            <label for="auth-login-phone" class="form-label">Số điện thoại</label>
-            <input id="auth-login-phone" name="phone" type="tel" class="form-input" placeholder="VD: 09xx xxx xxx"
-              required />
+      <button type="button" id="auth-close-button" class="auth-close-button" aria-label="Đóng">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="auth-modal-content">
+        <div class="auth-modal-illustration">
+          <img src="/img/loginout.jpg" alt="Illustration" class="auth-illustration-img" />
+        </div>
+        <div class="auth-modal-form-wrapper">
+          <div class="auth-tabs" role="tablist">
+            <button type="button" id="auth-tab-login" class="auth-tab active" role="tab" aria-selected="true">
+              Đăng nhập
+            </button>
+            <button type="button" id="auth-tab-register" class="auth-tab" role="tab" aria-selected="false">
+              Tạo tài khoản
+            </button>
           </div>
-          <div>
-            <label for="auth-login-password" class="form-label">Mật khẩu</label>
-            <input id="auth-login-password" name="password" type="password" class="form-input"
-              placeholder="Mật khẩu của bạn" required />
-          </div>
-          <button id="auth-login-submit" type="submit" class="btn-primary auth-submit">
-            Đăng nhập
-          </button>
-        </form>
+            <div class="auth-body">
+              <form id="auth-form-login" class="form" aria-label="Form đăng nhập khách hàng">
+                <div>
+                  <label for="auth-login-phone" class="form-label">Số điện thoại</label>
+                  <input id="auth-login-phone" name="phone" type="tel" class="form-input" placeholder="Nhập số điện thoại của bạn"
+                    required />
+                </div>
+                <div>
+                  <label for="auth-login-password" class="form-label">Mật khẩu</label>
+                  <input id="auth-login-password" name="password" type="password" class="form-input"
+                    placeholder="Nhập mật khẩu của bạn" required />
+                  <a href="#" id="auth-forgot-password-link" class="auth-forgot-password" aria-label="Quên mật khẩu">Quên mật khẩu?</a>
+                </div>
+                <button id="auth-login-submit" type="submit" class="btn-primary auth-submit">
+                  Đăng nhập
+                </button>
+              </form>
 
-        <form id="auth-form-register" class="form" aria-label="Form đăng ký tài khoản khách hàng"
-          style="display: none;">
-          <div>
-            <label for="auth-register-name" class="form-label">Họ và tên</label>
-            <input id="auth-register-name" name="name" type="text" class="form-input"
-              placeholder="Nhập họ và tên của bạn" required />
-          </div>
-          <div>
-            <label for="auth-register-phone" class="form-label">Số điện thoại</label>
-            <input id="auth-register-phone" name="phone" type="tel" class="form-input"
-              placeholder="VD: 09xx xxx xxx" required />
-          </div>
-          <div>
-            <label for="auth-register-email" class="form-label">Email</label>
-            <input id="auth-register-email" name="email" type="email" class="form-input"
-              placeholder="you@example.com" />
-          </div>
-          <div>
-            <label for="auth-register-password" class="form-label">Mật khẩu</label>
-            <input id="auth-register-password" name="password" type="password" class="form-input"
-              placeholder="Tối thiểu 6 ký tự" required />
-          </div>
-          <button id="auth-register-submit" type="submit" class="btn-primary auth-submit">
-            Đăng ký
-          </button>
-        </form>
+              <form id="auth-form-register" class="form" aria-label="Form đăng ký tài khoản khách hàng"
+                style="display: none;">
+                <div>
+                  <label for="auth-register-phone" class="form-label">Số điện thoại</label>
+                  <input id="auth-register-phone" name="phone" type="tel" class="form-input"
+                    placeholder="Nhập số điện thoại của bạn" required />
+                </div>
+                <div>
+                  <label for="auth-register-lastname" class="form-label">Họ</label>
+                  <input id="auth-register-lastname" name="lastname" type="text" class="form-input"
+                    placeholder="Nhập họ của bạn" required />
+                </div>
+                <div>
+                  <label for="auth-register-firstname" class="form-label">Tên</label>
+                  <input id="auth-register-firstname" name="firstname" type="text" class="form-input"
+                    placeholder="Nhập tên của bạn" required />
+                </div>
+                <div>
+                  <label for="auth-register-email" class="form-label">Email</label>
+                  <input id="auth-register-email" name="email" type="email" class="form-input"
+                    placeholder="Nhập email của bạn" />
+                  </div>
+                <div>
+                  <label for="auth-register-password" class="form-label">Mật khẩu</label>
+                  <input id="auth-register-password" name="password" type="password" class="form-input"
+                    placeholder="Nhập mật khẩu của bạn" required />
+                </div>
+                <div>
+                  <label for="auth-register-confirm-password" class="form-label">Xác nhận mật khẩu</label>
+                  <input id="auth-register-confirm-password" name="confirmPassword" type="password" class="form-input"
+                    placeholder="Xác nhận mật khẩu của bạn" required />
+                </div>
+                <button id="auth-register-submit" type="submit" class="btn-primary auth-submit">
+                  Tạo tài khoản
+                </button>
+              </form>
 
-        <p id="auth-message" class="auth-error" aria-live="polite" style="display: none;"></p>
+              <p id="auth-message" class="auth-error" aria-live="polite" style="display: none;"></p>
+            </div>
+          </div>
+        </div>
       </div>
-      <p class="auth-footer">
-        Lưu ý: Tài khoản khách hàng được dùng để lưu lịch sử đơn hàng và tích điểm thành viên.
-      </p>
     </div>
   </div>
 
   <footer class="footer">
     <div class="container footer-inner">
-      <p>© <span id="footer-year"></span> CAFRROTSFUD. All rights reserved.</p>
-      <p>Địa chỉ: 123 Đường Ẩm Thực, Quận 1, TP. Hồ Chí Minh · Điện thoại: 0900 000 000 · Email:
-        contact@gourmethouse.vn</p>
-      <p>Giờ mở cửa: 10:00 - 22:00 · Theo dõi chúng tôi trên Facebook · Instagram</p>
-      <p>Phương thức thanh toán: Momo · ZaloPay · Thẻ tín dụng · Tiền mặt tại nhà hàng</p>
+      <div class="footer-grid">
+        <!-- Column 1: Logo & Contact -->
+        <div class="footer-column">
+          <div class="footer-logo">
+            <img src="/img/logo.png" alt="Logo CAFRROTSFUD" class="footer-logo-img" />
+            <p class="footer-logo-text">Thực phẩm sạch & tự nhiên cho cuộc sống lành mạnh</p>
+          </div>
+          <div class="footer-contact">
+            <p>Điện thoại: <a href="tel:0900000000">0900 000 000</a></p>
+            <p>Email: <a href="mailto:contact@cafrrotsfud.vn">contact@cafrrotsfud.vn</a></p>
+            <p>Địa chỉ: 123 Đường Ẩm Thực, Quận 1, TP. Hồ Chí Minh</p>
+          </div>
+        </div>
+
+        <!-- Column 2: Về nhà hàng -->
+        <div class="footer-column">
+          <h3 class="footer-column-title">VỀ NHÀ HÀNG</h3>
+          <ul class="footer-links">
+            <li><a href="/">Trang chủ</a></li>
+            <li><a href="/menu">Thực đơn</a></li>
+            <li><a href="#reservation">Đặt bàn</a></li>
+            <li><a href="#reviews">Đánh giá</a></li>
+          </ul>
+        </div>
+
+        <!-- Column 3: Hỗ trợ -->
+        <div class="footer-column">
+          <h3 class="footer-column-title">HỖ TRỢ</h3>
+          <ul class="footer-links">
+            <li><a href="#reservation">Đặt bàn trực tuyến</a></li>
+            <li><a href="/menu">Đặt món online</a></li>
+            <li><a href="#membership">Chương trình thành viên</a></li>
+            <li><a href="tel:0900000000">Liên hệ hỗ trợ</a></li>
+          </ul>
+        </div>
+
+        <!-- Column 4: Tiện ích -->
+        <div class="footer-column">
+          <h3 class="footer-column-title">TIỆN ÍCH</h3>
+          <ul class="footer-links">
+            <li><a href="/menu">Xem thực đơn</a></li>
+            <li><a href="#reservation">Đặt bàn nhanh</a></li>
+            <li><a href="#membership">Tích điểm thành viên</a></li>
+            <li><a href="/profile">Tài khoản của tôi</a></li>
+          </ul>
+        </div>
+
+        <!-- Column 5: Thông tin pháp lý -->
+        <div class="footer-column">
+          <h3 class="footer-column-title">THÔNG TIN PHÁP LÝ</h3>
+          <div class="footer-legal">
+            <p>Công ty TNHH CAFRROTSFUD</p>
+            <p>Địa chỉ: 123 Đường Ẩm Thực, Quận 1, TP. Hồ Chí Minh, Việt Nam</p>
+            <p>Mã số thuế: 0123456789</p>
+            <p>Giấy phép kinh doanh số: 01/GP-KD do Sở Kế hoạch và Đầu tư TP. HCM cấp</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Bottom: Copyright & Social -->
+      <div class="footer-bottom">
+        <div class="footer-copyright">
+          <p>© <span id="footer-year"></span> CAFRROTSFUD. Nền tảng đặt món và đặt bàn hàng đầu Việt Nam. All rights reserved.</p>
+        </div>
+        <div class="footer-social">
+          <a href="#" class="footer-social-link" aria-label="YouTube" target="_blank" rel="noopener noreferrer">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+            </svg>
+          </a>
+          <a href="#" class="footer-social-link" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+            </svg>
+          </a>
+          <a href="#" class="footer-social-link" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+            </svg>
+          </a>
+        </div>
+      </div>
     </div>
   </footer>
 
@@ -426,6 +554,86 @@
     </div>
   </div>
 
+  <!-- Forgot Password Modal -->
+  <div id="forgot-password-modal-overlay" class="auth-modal-overlay" aria-hidden="true" style="display: none;">
+    <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="forgot-password-modal-title">
+      <button type="button" id="forgot-password-close-button" class="auth-close-button" aria-label="Đóng">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="auth-modal-content">
+        <div class="auth-modal-illustration">
+          <img src="/img/loginout.jpg" alt="Illustration" class="auth-illustration-img" />
+        </div>
+        <div class="auth-modal-form-wrapper">
+          <h2 id="forgot-password-modal-title" class="auth-modal-title" style="margin-bottom: 24px;">Quên mật khẩu</h2>
+          <p class="auth-forgot-password-text" style="margin-bottom: 24px; color: #64748b; font-size: 14px; line-height: 1.6;">
+            Nhập số điện thoại hoặc email của bạn. Chúng tôi sẽ gửi mã xác nhận để đặt lại mật khẩu.
+          </p>
+          <form id="forgot-password-form" class="form" aria-label="Form quên mật khẩu">
+            <div>
+              <label for="forgot-password-phone" class="form-label">Số điện thoại hoặc Email</label>
+              <input id="forgot-password-phone" name="phoneOrEmail" type="text" class="form-input"
+                placeholder="Nhập số điện thoại hoặc email của bạn" required />
+            </div>
+            <button id="forgot-password-submit" type="submit" class="btn-primary auth-submit">
+              Gửi mã xác nhận
+            </button>
+          </form>
+          <p id="forgot-password-message" class="auth-error" aria-live="polite" style="display: none; margin-top: 16px;"></p>
+          <div style="margin-top: 24px; text-align: center;">
+            <a href="#" id="forgot-password-back-link" class="auth-forgot-password" style="text-align: center; display: inline-block;">
+              Quay lại đăng nhập
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Menu Detail Modal -->
+  <div id="menu-detail-modal-overlay" class="menu-detail-modal-overlay" aria-hidden="true" style="display: none;">
+    <div class="menu-detail-modal" role="dialog" aria-modal="true" aria-labelledby="menu-detail-modal-title">
+      <button type="button" id="menu-detail-close-button" class="menu-detail-close-button" aria-label="Đóng">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="menu-detail-content">
+        <div class="menu-detail-image-wrapper">
+          <img id="menu-detail-image" src="" alt="" class="menu-detail-image" />
+        </div>
+        <div class="menu-detail-info">
+          <h2 id="menu-detail-title" class="menu-detail-title"></h2>
+          <div class="menu-detail-price-wrapper">
+            <span id="menu-detail-price" class="menu-detail-price"></span>
+            <span id="menu-detail-price-old" class="menu-detail-price-old" style="display: none;"></span>
+          </div>
+          <div class="menu-detail-description-wrapper">
+            <p id="menu-detail-description" class="menu-detail-description"></p>
+          </div>
+          <div class="menu-detail-specs">
+            <div class="menu-detail-spec-item">
+              <span class="menu-detail-spec-label">Thành phần:</span>
+              <span id="menu-detail-ingredients" class="menu-detail-spec-value"></span>
+            </div>
+            <div class="menu-detail-spec-item">
+              <span class="menu-detail-spec-label">Calo:</span>
+              <span id="menu-detail-calories" class="menu-detail-spec-value"></span>
+            </div>
+          </div>
+          <div class="menu-detail-actions">
+            <button type="button" id="menu-detail-add-button" class="menu-detail-add-button">
+              Thêm giỏ hàng
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/auth.js" defer></script>
   <script src="/js/main.js" defer></script>
 </body>
 

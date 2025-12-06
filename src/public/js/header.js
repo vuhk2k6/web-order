@@ -37,8 +37,12 @@ const renderSharedHeader = (options = {}) => {
           </button>
           ${showAuthButton ? `
             <button id="${authButtonId}" type="button" class="btn-login" tabindex="0"
-              aria-label="${authButtonText === 'Đăng nhập' ? 'Đăng nhập hoặc đăng ký tài khoản' : 'Đăng xuất khỏi tài khoản'}">
-              ${authButtonText}
+              aria-label="${authButtonText === 'Đăng nhập' || authButtonText.includes('Đăng nhập') ? 'Đăng nhập hoặc đăng ký tài khoản' : 'Đăng xuất khỏi tài khoản'}">
+              ${authButtonText === 'Đăng nhập' || authButtonText.includes('Đăng nhập') ? `
+                <span class="btn-login-text">Đăng nhập</span>
+                <span class="btn-login-separator">/</span>
+                <span class="btn-login-text">Đăng ký</span>
+              ` : authButtonText}
             </button>
           ` : ''}
         </div>
@@ -147,7 +151,10 @@ const initializeSharedHeader = () => {
   
   // Setup auth modal if available (use initializeAuthModal if available, otherwise setup manually)
   if (typeof window.initializeAuthModal === 'function') {
-    window.initializeAuthModal();
+    // Wait a bit to ensure auth.js is fully loaded
+    window.setTimeout(() => {
+      window.initializeAuthModal();
+    }, 100);
   } else if (typeof window.openAuthModal === 'function' && typeof window.closeAuthModal === 'function') {
     const authOpenButton = document.getElementById('auth-open-button');
     const authCloseButton = document.getElementById('auth-close-button');
@@ -158,14 +165,36 @@ const initializeSharedHeader = () => {
     const registerForm = document.getElementById('auth-form-register');
     
     if (authOpenButton) {
-      authOpenButton.addEventListener('click', () => {
+      // Remove existing listeners by replacing button
+      const newAuthButton = authOpenButton.cloneNode(true);
+      if (authOpenButton.parentNode) {
+        authOpenButton.parentNode.replaceChild(newAuthButton, authOpenButton);
+      }
+      
+      const handleAuthClick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('[Auth] Button clicked (header.js)');
+        
         if (window.authState && window.authState.currentUser) {
           window.location.href = '/profile';
         } else {
           if (typeof window.switchAuthTab === 'function') {
             window.switchAuthTab('login');
           }
-          window.openAuthModal();
+          if (typeof window.openAuthModal === 'function') {
+            window.openAuthModal();
+          } else {
+            console.error('[Auth] openAuthModal is not available');
+          }
+        }
+      };
+      
+      newAuthButton.addEventListener('click', handleAuthClick);
+      newAuthButton.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleAuthClick(e);
         }
       });
     }
