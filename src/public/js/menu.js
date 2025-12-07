@@ -1,6 +1,172 @@
 /* eslint-disable no-console */
 const getMenuElement = (id) => document.getElementById(id);
 
+// Menu Detail Modal Functions
+const openMenuDetailModal = (item) => {
+  const overlay = getMenuElement('menu-detail-modal-overlay');
+  if (!overlay) {
+    console.error('Không tìm thấy menu detail modal overlay');
+    return;
+  }
+
+  // Set content
+  const image = getMenuElement('menu-detail-image');
+  const title = getMenuElement('menu-detail-title');
+  const price = getMenuElement('menu-detail-price');
+  const priceOld = getMenuElement('menu-detail-price-old');
+  const description = getMenuElement('menu-detail-description');
+  const ingredients = getMenuElement('menu-detail-ingredients');
+  const calories = getMenuElement('menu-detail-calories');
+  const addButton = getMenuElement('menu-detail-add-button');
+
+  if (image) {
+    image.src = item.image || '';
+    image.alt = item.name || 'Ảnh món ăn';
+  }
+
+  if (title) {
+    title.textContent = item.name || 'Món ăn';
+  }
+
+  if (price) {
+    price.textContent = getFormatCurrencyVnd()(item.price);
+  }
+
+  if (priceOld && item.originalPrice && item.originalPrice > item.price) {
+    priceOld.textContent = getFormatCurrencyVnd()(item.originalPrice);
+    priceOld.style.display = 'inline';
+  } else if (priceOld) {
+    priceOld.style.display = 'none';
+  }
+
+  if (description) {
+    description.textContent = item.description || 'Món ăn đặc biệt của nhà hàng.';
+  }
+
+  if (ingredients) {
+    ingredients.textContent = item.ingredients || item.ingredientsList || 'Đang cập nhật';
+  }
+
+  if (calories) {
+    calories.textContent = item.calories ? `${item.calories} kcal` : 'Đang cập nhật';
+  }
+
+  // Setup add button
+  if (addButton) {
+    const handleAddToCart = async (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+
+      if (addButton.disabled) {
+        return;
+      }
+
+      let cartReady = false;
+      let attempts = 0;
+      const maxAttempts = 20;
+
+      while (!cartReady && attempts < maxAttempts) {
+        if (window.appCart && typeof window.appCart.addItem === 'function') {
+          cartReady = true;
+        } else {
+          await new Promise((resolve) => window.setTimeout(resolve, 50));
+          attempts++;
+        }
+      }
+
+      if (!cartReady) {
+        console.error('Cart không khả dụng');
+        return;
+      }
+
+      const originalText = addButton.textContent;
+      addButton.disabled = true;
+      addButton.textContent = 'Đang thêm...';
+
+      try {
+        const success = window.appCart.addItem({
+          id: item._id || item.id,
+          name: item.name,
+          price: item.price,
+          image: item.image,
+          quantity: 1
+        });
+
+        if (success) {
+          addButton.textContent = 'Đã thêm ✓';
+          window.setTimeout(() => {
+            addButton.disabled = false;
+            addButton.textContent = originalText;
+            closeMenuDetailModal();
+          }, 1000);
+        } else {
+          addButton.textContent = 'Lỗi';
+          window.setTimeout(() => {
+            addButton.disabled = false;
+            addButton.textContent = originalText;
+          }, 1500);
+        }
+      } catch (error) {
+        console.error('Lỗi khi thêm vào giỏ hàng:', error);
+        addButton.disabled = false;
+        addButton.textContent = originalText;
+      }
+    };
+
+    // Remove old listeners and add new one
+    const newAddButton = addButton.cloneNode(true);
+    addButton.parentNode.replaceChild(newAddButton, addButton);
+    newAddButton.addEventListener('click', handleAddToCart);
+  }
+
+  // Show modal
+  overlay.style.display = 'flex';
+  overlay.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+};
+
+const closeMenuDetailModal = () => {
+  const overlay = getMenuElement('menu-detail-modal-overlay');
+  if (!overlay) {
+    return;
+  }
+
+  overlay.style.display = 'none';
+  overlay.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+};
+
+// Initialize menu detail modal
+const initializeMenuDetailModal = () => {
+  const closeButton = getMenuElement('menu-detail-close-button');
+  const overlay = getMenuElement('menu-detail-modal-overlay');
+
+  if (closeButton) {
+    closeButton.addEventListener('click', closeMenuDetailModal);
+  }
+
+  if (overlay) {
+    overlay.addEventListener('click', (event) => {
+      if (event.target === overlay) {
+        closeMenuDetailModal();
+      }
+    });
+  }
+
+  // Close on Escape key
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && overlay && overlay.style.display === 'flex') {
+      closeMenuDetailModal();
+    }
+  });
+};
+
+// Expose functions globally
+if (typeof window !== 'undefined') {
+  window.openMenuDetailModal = openMenuDetailModal;
+  window.closeMenuDetailModal = closeMenuDetailModal;
+}
+
 // formatCurrencyVnd is defined in main.js - wait for it to be available
 const getFormatCurrencyVnd = () => {
   if (window.formatCurrencyVnd) {
@@ -22,6 +188,7 @@ const getFormatCurrencyVnd = () => {
 const createFullMenuCard = (item) => {
   const card = document.createElement('article');
   card.className = 'menu-card';
+  card.setAttribute('data-category', item.category || 'all');
 
   const imageWrapper = document.createElement('div');
   imageWrapper.className = 'menu-card-image-wrapper';
@@ -33,6 +200,9 @@ const createFullMenuCard = (item) => {
     imageWrapper.appendChild(image);
   }
 
+  const cardContent = document.createElement('div');
+  cardContent.className = 'menu-card-content';
+
   const titleRow = document.createElement('div');
   titleRow.className = 'menu-card-title-row';
 
@@ -40,24 +210,35 @@ const createFullMenuCard = (item) => {
   title.className = 'menu-card-title';
   title.textContent = item.name || 'Món ăn';
 
-  const price = document.createElement('p');
+  const priceContainer = document.createElement('div');
+  const price = document.createElement('span');
   price.className = 'menu-card-price';
   price.textContent = getFormatCurrencyVnd()(item.price);
+  priceContainer.appendChild(price);
+
+  if (item.originalPrice && item.originalPrice > item.price) {
+    const oldPrice = document.createElement('span');
+    oldPrice.className = 'menu-card-price-old';
+    oldPrice.textContent = getFormatCurrencyVnd()(item.originalPrice);
+    priceContainer.appendChild(oldPrice);
+  }
 
   titleRow.appendChild(title);
-  titleRow.appendChild(price);
+  titleRow.appendChild(priceContainer);
 
   const description = document.createElement('p');
   description.className = 'menu-card-description';
   description.textContent = item.description || 'Món ăn đặc biệt của nhà hàng.';
 
-  const actions = document.createElement('div');
-  actions.className = 'menu-card-actions';
+  // Actions container for buttons
+  const actionsContainer = document.createElement('div');
+  actionsContainer.className = 'menu-card-actions';
 
+  // Add to cart button
   const addButton = document.createElement('button');
   addButton.type = 'button';
   addButton.className = 'menu-add-button';
-  addButton.textContent = 'Thêm vào giỏ';
+  addButton.textContent = 'Thêm giỏ hàng';
   addButton.setAttribute('aria-label', `Thêm ${item.name || 'món ăn'} vào giỏ hàng`);
   
   addButton.addEventListener('click', async (e) => {
@@ -122,12 +303,33 @@ const createFullMenuCard = (item) => {
     }
   });
 
-  actions.appendChild(addButton);
+  // View details button
+  const viewButton = document.createElement('button');
+  viewButton.type = 'button';
+  viewButton.className = 'menu-view-button';
+  viewButton.textContent = 'Xem chi tiết';
+  viewButton.setAttribute('aria-label', `Xem chi tiết ${item.name || 'món ăn'}`);
+  
+  viewButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    // Open detail modal
+    if (window.openMenuDetailModal) {
+      window.openMenuDetailModal(item);
+    } else {
+      console.warn('openMenuDetailModal không khả dụng');
+    }
+  });
+
+  actionsContainer.appendChild(viewButton);
+  actionsContainer.appendChild(addButton);
+
+  cardContent.appendChild(titleRow);
+  cardContent.appendChild(description);
+  cardContent.appendChild(actionsContainer);
 
   card.appendChild(imageWrapper);
-  card.appendChild(titleRow);
-  card.appendChild(description);
-  card.appendChild(actions);
+  card.appendChild(cardContent);
 
   return card;
 };
@@ -286,6 +488,38 @@ const initializeMenuPage = async () => {
     searchInput.addEventListener('input', applyFilter);
   }
 
+  // Setup category filter
+  const tabs = document.querySelectorAll('.menu-nav-tab');
+  const menuList = getMenuElement('full-menu-list');
+  
+  if (tabs.length && menuList) {
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        // Remove active class from all tabs
+        tabs.forEach((t) => {
+          t.classList.remove('active');
+          t.setAttribute('aria-selected', 'false');
+        });
+
+        // Add active class to clicked tab
+        tab.classList.add('active');
+        tab.setAttribute('aria-selected', 'true');
+
+        const category = tab.getAttribute('data-category');
+        const cards = menuList.querySelectorAll('.menu-card');
+        
+        cards.forEach((card) => {
+          const cardCategory = card.getAttribute('data-category') || 'all';
+          if (category === 'all' || cardCategory === category) {
+            card.style.display = '';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+  }
+
   renderFullMenu(filteredItems);
 };
 
@@ -297,6 +531,7 @@ const startMenuPage = () => {
     return;
   }
   menuPageInitialized = true;
+  initializeMenuDetailModal();
   initializeMenuPage();
 };
 

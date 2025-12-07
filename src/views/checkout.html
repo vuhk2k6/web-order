@@ -279,6 +279,126 @@
   <script>
     document.getElementById('footer-year').textContent = new Date().getFullYear();
   </script>
+  <div id="auth-modal-overlay" class="auth-modal-overlay" aria-hidden="true">
+    <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
+      <button type="button" id="auth-close-button" class="auth-close-button" aria-label="Đóng">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="auth-modal-content">
+        <div class="auth-modal-illustration">
+          <img src="/img/loginout.jpg" alt="Illustration" class="auth-illustration-img" />
+        </div>
+        <div class="auth-modal-form-wrapper">
+          <div class="auth-tabs" role="tablist">
+            <button type="button" id="auth-tab-login" class="auth-tab active" role="tab" aria-selected="true">
+              Đăng nhập
+            </button>
+            <button type="button" id="auth-tab-register" class="auth-tab" role="tab" aria-selected="false">
+              Tạo tài khoản
+            </button>
+          </div>
+          <div class="auth-body">
+            <form id="auth-form-login" class="form" aria-label="Form đăng nhập khách hàng">
+              <div>
+                <label for="auth-login-phone" class="form-label">Số điện thoại</label>
+                <input id="auth-login-phone" name="phone" type="tel" class="form-input" placeholder="Nhập số điện thoại của bạn"
+                  required />
+              </div>
+              <div>
+                <label for="auth-login-password" class="form-label">Mật khẩu</label>
+                <input id="auth-login-password" name="password" type="password" class="form-input"
+                  placeholder="Nhập mật khẩu của bạn" required />
+                <a href="#" id="auth-forgot-password-link" class="auth-forgot-password" aria-label="Quên mật khẩu">Quên mật khẩu?</a>
+              </div>
+              <button id="auth-login-submit" type="submit" class="btn-primary auth-submit">
+                Đăng nhập
+              </button>
+            </form>
+
+            <form id="auth-form-register" class="form" aria-label="Form đăng ký tài khoản khách hàng"
+              style="display: none;">
+              <div>
+                <label for="auth-register-phone" class="form-label">Số điện thoại</label>
+                <input id="auth-register-phone" name="phone" type="tel" class="form-input"
+                  placeholder="Nhập số điện thoại của bạn" required />
+              </div>
+              <div>
+                <label for="auth-register-lastname" class="form-label">Họ</label>
+                <input id="auth-register-lastname" name="lastname" type="text" class="form-input"
+                  placeholder="Nhập họ của bạn" required />
+              </div>
+              <div>
+                <label for="auth-register-firstname" class="form-label">Tên</label>
+                <input id="auth-register-firstname" name="firstname" type="text" class="form-input"
+                  placeholder="Nhập tên của bạn" required />
+              </div>
+              <div>
+                <label for="auth-register-email" class="form-label">Email</label>
+                <input id="auth-register-email" name="email" type="email" class="form-input"
+                  placeholder="Nhập email của bạn" />
+              </div>
+              <div>
+                <label for="auth-register-password" class="form-label">Mật khẩu</label>
+                <input id="auth-register-password" name="password" type="password" class="form-input"
+                  placeholder="Nhập mật khẩu của bạn" required />
+              </div>
+              <div>
+                <label for="auth-register-confirm-password" class="form-label">Xác nhận mật khẩu</label>
+                <input id="auth-register-confirm-password" name="confirmPassword" type="password" class="form-input"
+                  placeholder="Xác nhận mật khẩu của bạn" required />
+              </div>
+              <button id="auth-register-submit" type="submit" class="btn-primary auth-submit">
+                Tạo tài khoản
+              </button>
+            </form>
+
+            <p id="auth-message" class="auth-error" aria-live="polite" style="display: none;"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Forgot Password Modal -->
+  <div id="forgot-password-modal-overlay" class="auth-modal-overlay" aria-hidden="true" style="display: none;">
+    <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="forgot-password-modal-title">
+      <button type="button" id="forgot-password-close-button" class="auth-close-button" aria-label="Đóng">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="auth-modal-content">
+        <div class="auth-modal-illustration">
+          <img src="/img/loginout.jpg" alt="Illustration" class="auth-illustration-img" />
+        </div>
+        <div class="auth-modal-form-wrapper">
+          <h2 id="forgot-password-modal-title" class="auth-modal-title" style="margin-bottom: 24px;">Quên mật khẩu</h2>
+          <p class="auth-forgot-password-text" style="margin-bottom: 24px; color: #64748b; font-size: 14px; line-height: 1.6;">
+            Nhập số điện thoại hoặc email của bạn. Chúng tôi sẽ gửi mã xác nhận để đặt lại mật khẩu.
+          </p>
+          <form id="forgot-password-form" class="form" aria-label="Form quên mật khẩu">
+            <div>
+              <label for="forgot-password-phone" class="form-label">Số điện thoại hoặc Email</label>
+              <input id="forgot-password-phone" name="phoneOrEmail" type="text" class="form-input"
+                placeholder="Nhập số điện thoại hoặc email của bạn" required />
+            </div>
+            <button id="forgot-password-submit" type="submit" class="btn-primary auth-submit">
+              Gửi mã xác nhận
+            </button>
+          </form>
+          <p id="forgot-password-message" class="auth-error" aria-live="polite" style="display: none; margin-top: 16px;"></p>
+          <div style="margin-top: 24px; text-align: center;">
+            <a href="#" id="forgot-password-back-link" class="auth-forgot-password" style="text-align: center; display: inline-block;">
+              Quay lại đăng nhập
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="/js/header.js" defer></script>
   <script src="/js/auth.js" defer></script>
   <script src="/js/main.js" defer></script>

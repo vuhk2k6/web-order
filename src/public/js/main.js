@@ -477,9 +477,7 @@ if (typeof window !== 'undefined') {
 const createMenuCard = (item) => {
   const card = document.createElement('article');
   card.className = 'menu-card';
-  card.tabIndex = 0;
-  card.setAttribute('role', 'article');
-  card.setAttribute('aria-label', item.name);
+  card.setAttribute('data-category', item.category || 'all');
 
   const imageWrapper = document.createElement('div');
   imageWrapper.className = 'menu-card-image-wrapper';
@@ -487,10 +485,13 @@ const createMenuCard = (item) => {
   if (item.image) {
     const image = document.createElement('img');
     image.src = item.image;
-    image.alt = item.name || 'Món ăn';
+    image.alt = item.name || 'Ảnh món ăn';
     image.loading = 'lazy';
     imageWrapper.appendChild(image);
   }
+
+  const cardContent = document.createElement('div');
+  cardContent.className = 'menu-card-content';
 
   const titleRow = document.createElement('div');
   titleRow.className = 'menu-card-title-row';
@@ -499,12 +500,21 @@ const createMenuCard = (item) => {
   title.className = 'menu-card-title';
   title.textContent = item.name || 'Món ăn';
 
-  const price = document.createElement('p');
+  const priceContainer = document.createElement('div');
+  const price = document.createElement('span');
   price.className = 'menu-card-price';
   price.textContent = formatCurrencyVnd(item.price);
+  priceContainer.appendChild(price);
+
+  if (item.originalPrice && item.originalPrice > item.price) {
+    const oldPrice = document.createElement('span');
+    oldPrice.className = 'menu-card-price-old';
+    oldPrice.textContent = formatCurrencyVnd(item.originalPrice);
+    priceContainer.appendChild(oldPrice);
+  }
 
   titleRow.appendChild(title);
-  titleRow.appendChild(price);
+  titleRow.appendChild(priceContainer);
 
   const description = document.createElement('p');
   description.className = 'menu-card-description';
@@ -513,27 +523,60 @@ const createMenuCard = (item) => {
   const actions = document.createElement('div');
   actions.className = 'menu-card-actions';
 
+  const viewButton = document.createElement('button');
+  viewButton.type = 'button';
+  viewButton.className = 'menu-view-button';
+  viewButton.textContent = 'Xem chi tiết';
+  viewButton.setAttribute('aria-label', `Xem chi tiết ${item.name || 'món ăn'}`);
+  
+  viewButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    // Open detail modal
+    if (window.openMenuDetailModal) {
+      window.openMenuDetailModal(item);
+    } else {
+      console.warn('openMenuDetailModal không khả dụng');
+    }
+  });
+
   const addButton = document.createElement('button');
   addButton.type = 'button';
   addButton.className = 'menu-add-button';
-  addButton.textContent = 'Thêm vào giỏ';
+  addButton.textContent = 'Thêm giỏ hàng';
   addButton.setAttribute('aria-label', `Thêm ${item.name || 'món ăn'} vào giỏ hàng`);
 
-  addButton.addEventListener('click', (e) => {
+  addButton.addEventListener('click', async (e) => {
     e.stopPropagation();
     e.preventDefault();
-    
-    // Prevent double-click
+
     if (addButton.disabled) {
       return;
     }
-    
-    // Disable button temporarily
+
+    let cartReady = false;
+    let attempts = 0;
+    const maxAttempts = 20;
+
+    while (!cartReady && attempts < maxAttempts) {
+      if (window.appCart && typeof window.appCart.addItem === 'function') {
+        cartReady = true;
+      } else {
+        await new Promise((resolve) => window.setTimeout(resolve, 50));
+        attempts++;
+      }
+    }
+
+    if (!cartReady) {
+      console.error('Cart không khả dụng sau', maxAttempts, 'lần thử');
+      return;
+    }
+
     const originalText = addButton.textContent;
     addButton.disabled = true;
     addButton.textContent = 'Đang thêm...';
-    
-    if (window.appCart && typeof window.appCart.addItem === 'function') {
+
+    try {
       const success = window.appCart.addItem({
         id: item._id || item.id,
         name: item.name,
@@ -541,7 +584,7 @@ const createMenuCard = (item) => {
         image: item.image,
         quantity: 1
       });
-      
+
       if (success) {
         addButton.textContent = 'Đã thêm ✓';
         window.setTimeout(() => {
@@ -555,19 +598,22 @@ const createMenuCard = (item) => {
           addButton.textContent = originalText;
         }, 1500);
       }
-    } else {
-      console.error('Cart không khả dụng');
+    } catch (error) {
+      console.error('Lỗi khi thêm vào giỏ hàng:', error);
       addButton.disabled = false;
       addButton.textContent = originalText;
     }
   });
 
+  actions.appendChild(viewButton);
   actions.appendChild(addButton);
 
+  cardContent.appendChild(titleRow);
+  cardContent.appendChild(description);
+  cardContent.appendChild(actions);
+
   card.appendChild(imageWrapper);
-  card.appendChild(titleRow);
-  card.appendChild(description);
-  card.appendChild(actions);
+  card.appendChild(cardContent);
 
   return card;
 };
@@ -621,7 +667,7 @@ const handleScrollToReservation = () => {
     return;
   }
 
-  reservationSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    reservationSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
 const handleSubmitReservation = (event) => {
@@ -633,7 +679,7 @@ const handleSubmitReservation = (event) => {
   const dateInput = document.getElementById('date');
   const timeInput = document.getElementById('time');
   const messageElement = document.getElementById('reservation-message');
-
+  
   if (
     !nameInput ||
     !phoneInput ||
@@ -660,14 +706,14 @@ const handleSubmitReservation = (event) => {
 
   messageElement.textContent =
     'Cảm ơn bạn! Chúng tôi đã ghi nhận yêu cầu và sẽ liên hệ xác nhận trong thời gian sớm nhất.';
-  messageElement.className = 'reservation-message success';
-  messageElement.style.display = 'block';
+    messageElement.className = 'reservation-message success';
+    messageElement.style.display = 'block';
 
   window.setTimeout(() => {
     const form = document.getElementById('reservation-form');
     if (form) {
       form.reset();
-    }
+  }
   }, 500);
 };
 
@@ -839,6 +885,39 @@ const navigateGallery = (direction) => {
   renderGalleryThumbnails();
 };
 
+// Initialize menu detail modal for homepage
+const initializeHomePageMenuDetailModal = () => {
+  const closeButton = document.getElementById('menu-detail-close-button');
+  const overlay = document.getElementById('menu-detail-modal-overlay');
+
+  if (closeButton) {
+    closeButton.addEventListener('click', () => {
+      if (window.closeMenuDetailModal) {
+        window.closeMenuDetailModal();
+      }
+    });
+  }
+
+  if (overlay) {
+    overlay.addEventListener('click', (event) => {
+      if (event.target === overlay) {
+        if (window.closeMenuDetailModal) {
+          window.closeMenuDetailModal();
+        }
+      }
+    });
+  }
+
+  // Close on Escape key
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && overlay && overlay.style.display === 'flex') {
+      if (window.closeMenuDetailModal) {
+        window.closeMenuDetailModal();
+      }
+    }
+  });
+};
+
 const initializeHomePage = () => {
   const heroVideo = document.getElementById('hero-video');
   const ctaReservationButton = document.getElementById('cta-reservation');
@@ -857,7 +936,7 @@ const initializeHomePage = () => {
 
   // Initialize menu
   fetchMenu().then((items) => {
-    renderMenu(items);
+  renderMenu(items);
   });
 
   // Initialize cart
@@ -957,18 +1036,8 @@ const initializeHomePage = () => {
     reservationForm.addEventListener('submit', handleSubmitReservation);
   }
 
-  // Auth handlers - use functions from auth.js
-  if (authOpenButton) {
-    authOpenButton.addEventListener('click', () => {
-      if (window.authState && window.authState.currentUser) {
-        window.location.href = '/profile';
-      } else {
-        if (typeof window.openAuthModal === 'function') {
-          window.openAuthModal();
-        }
-      }
-    });
-  }
+  // Auth handlers will be set up by initializeAuthModal
+  // Don't set up here to avoid conflicts
 
   if (authCloseButton) {
     authCloseButton.addEventListener('click', () => {
@@ -1004,6 +1073,43 @@ const initializeHomePage = () => {
     });
   }
 
+  // Membership register card - open auth modal with register tab
+  const membershipRegisterCard = document.getElementById('membership-register-card');
+  if (membershipRegisterCard) {
+    const handleMembershipCardClick = (e) => {
+      // Don't trigger if clicking the button inside
+      if (e.target.closest('.promo-cta')) {
+        return;
+      }
+      e.preventDefault();
+      if (typeof window.switchAuthTab === 'function' && typeof window.openAuthModal === 'function') {
+        window.switchAuthTab('register');
+        window.openAuthModal();
+      }
+    };
+
+    membershipRegisterCard.addEventListener('click', handleMembershipCardClick);
+    membershipRegisterCard.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleMembershipCardClick(e);
+      }
+    });
+
+    // Button inside card
+    const registerButton = membershipRegisterCard.querySelector('.promo-cta');
+    if (registerButton) {
+      registerButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof window.switchAuthTab === 'function' && typeof window.openAuthModal === 'function') {
+          window.switchAuthTab('register');
+          window.openAuthModal();
+        }
+      });
+    }
+  }
+
   if (loginForm) {
     loginForm.addEventListener('submit', (event) => {
       if (typeof window.handleAuthLoginSubmit === 'function') {
@@ -1026,9 +1132,39 @@ const initializeHomePage = () => {
   // Fetch current user - use function from auth.js
   if (typeof window.fetchCurrentUser === 'function' && typeof window.updateAuthUi === 'function') {
     window.fetchCurrentUser().then((user) => {
-      window.updateAuthUi(user);
+    window.updateAuthUi(user);
     });
   }
+
+  // Ensure auth modal is initialized on homepage
+  // Wait for auth.js to be fully loaded
+  let retryCount = 0;
+  const maxRetries = 10;
+  
+  const initAuth = () => {
+    if (typeof window.initializeAuthModal === 'function') {
+      console.log('[Auth] Initializing auth modal');
+      window.initializeAuthModal();
+    } else if (retryCount < maxRetries) {
+      retryCount++;
+      window.setTimeout(initAuth, 100);
+    } else {
+      console.error('[Auth] Failed to initialize after', maxRetries, 'attempts');
+      // Fallback: setup manually if functions are available
+      if (typeof window.openAuthModal === 'function' && typeof window.switchAuthTab === 'function') {
+        const btn = document.getElementById('auth-open-button');
+        if (btn) {
+          btn.addEventListener('click', () => {
+            window.switchAuthTab('login');
+            window.openAuthModal();
+          });
+        }
+      }
+    }
+  };
+  
+  // Start initialization after a short delay
+  window.setTimeout(initAuth, 150);
 };
 
 const shouldInitializeHomePage = () => {
@@ -1041,8 +1177,12 @@ const shouldInitializeHomePage = () => {
 
 if (shouldInitializeHomePage()) {
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeHomePage);
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeHomePageMenuDetailModal();
+      initializeHomePage();
+    });
   } else {
+    initializeHomePageMenuDetailModal();
     initializeHomePage();
   }
 }
