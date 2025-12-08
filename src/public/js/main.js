@@ -10,7 +10,8 @@ const loadCartItems = () => {
     return Array.isArray(parsed)
       ? parsed.map((item) => ({
           ...item,
-          size: item.size || 'Vừa (M)'
+          size: item.size || 'Vừa (M)',
+          note: item.note || ''
         }))
       : [];
   } catch (error) {
@@ -52,7 +53,6 @@ const renderCartDropdown = () => {
   const emptyMessage = document.getElementById('cart-empty');
   const totalElement = document.getElementById('cart-total');
   const checkoutButton = document.getElementById('cart-checkout-button');
-  const viewCartLink = document.querySelector('.cart-view-button');
 
   if (!itemsContainer || !emptyMessage || !totalElement || !checkoutButton) {
     return;
@@ -81,7 +81,7 @@ const renderCartDropdown = () => {
         const itemTotal = itemPrice * itemQuantity;
         
         return `
-        <div class="cart-item" data-item-id="${itemId}">
+        <div class="cart-item" data-item-id="${itemId}" data-item-size="${itemSize}">
           ${itemImage ? `
             <img src="${itemImage}" alt="${itemName}" class="cart-item-image" />
           ` : `
@@ -98,13 +98,13 @@ const renderCartDropdown = () => {
             <p class="cart-item-size">${itemSize}</p>
             <p class="cart-item-price-unit">${itemPrice.toLocaleString('vi-VN')} đ</p>
             <div class="cart-item-quantity">
-              <button type="button" class="cart-quantity-btn cart-quantity-decrease" data-item-id="${itemId}" aria-label="Giảm số lượng">
+              <button type="button" class="cart-quantity-btn cart-quantity-decrease" data-item-id="${itemId}" data-item-size="${itemSize}" aria-label="Giảm số lượng">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </button>
-              <input type="number" class="cart-quantity-input" value="${itemQuantity}" min="1" data-item-id="${itemId}" aria-label="Số lượng" />
-              <button type="button" class="cart-quantity-btn cart-quantity-increase" data-item-id="${itemId}" aria-label="Tăng số lượng">
+              <input type="number" class="cart-quantity-input" value="${itemQuantity}" min="1" data-item-id="${itemId}" data-item-size="${itemSize}" aria-label="Số lượng" />
+              <button type="button" class="cart-quantity-btn cart-quantity-increase" data-item-id="${itemId}" data-item-size="${itemSize}" aria-label="Tăng số lượng">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
@@ -113,7 +113,7 @@ const renderCartDropdown = () => {
           </div>
           <div class="cart-item-right">
             <p class="cart-item-price">${itemTotal.toLocaleString('vi-VN')} đ</p>
-            <button type="button" class="cart-item-remove" data-item-id="${itemId}" aria-label="Xóa sản phẩm">
+            <button type="button" class="cart-item-remove" data-item-id="${itemId}" data-item-size="${itemSize}" aria-label="Xóa sản phẩm">
               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
@@ -216,23 +216,29 @@ const addItemToCart = (payload) => {
     return false;
   }
 
-  // Find existing item
+  // Find existing item - check both id and size to allow same item with different sizes
   const existingIndex = cartState.items.findIndex(
-    (i) => i.id === itemId
+    (i) => i.id === itemId && (i.size || 'Vừa (M)') === itemSize
   );
 
   if (existingIndex >= 0) {
-    // Item already exists, increase quantity
-    cartState.items[existingIndex].quantity += quantityToAdd;
+    // Item with same id and size already exists, increase quantity but preserve note
+    const existingItem = cartState.items[existingIndex];
+    cartState.items[existingIndex] = {
+      ...existingItem,
+      quantity: existingItem.quantity + quantityToAdd
+      // Keep existing note, don't overwrite
+    };
   } else {
-    // New item, add to cart
+    // New item (different id or size), add to cart
     cartState.items.push({
       id: itemId,
       name: itemName,
       price: itemPrice,
       image: itemImage,
       size: itemSize,
-      quantity: quantityToAdd
+      quantity: quantityToAdd,
+      note: payload.note || ''
     });
   }
 
@@ -369,9 +375,14 @@ const closeHomeMenuDetailModal = () => {
   document.body.style.overflow = '';
 };
 
-const updateCartItemQuantity = (itemId, newQuantity) => {
+const updateCartItemQuantity = (itemId, newQuantity, itemSize = null) => {
   const quantity = Math.max(1, Math.floor(Number(newQuantity)) || 1);
-  const itemIndex = cartState.items.findIndex((i) => i.id === String(itemId));
+  const size = itemSize || 'Vừa (M)';
+  
+  // Find item by both id and size
+  const itemIndex = cartState.items.findIndex(
+    (i) => i.id === String(itemId) && (i.size || 'Vừa (M)') === size
+  );
   
   if (itemIndex >= 0) {
     cartState.items[itemIndex].quantity = quantity;
@@ -381,8 +392,13 @@ const updateCartItemQuantity = (itemId, newQuantity) => {
   }
 };
 
-const removeCartItem = (itemId) => {
-  const itemIndex = cartState.items.findIndex((i) => i.id === String(itemId));
+const removeCartItem = (itemId, itemSize = null) => {
+  const size = itemSize || 'Vừa (M)';
+  
+  // Find item by both id and size
+  const itemIndex = cartState.items.findIndex(
+    (i) => i.id === String(itemId) && (i.size || 'Vừa (M)') === size
+  );
   
   if (itemIndex >= 0) {
     cartState.items.splice(itemIndex, 1);
@@ -398,9 +414,12 @@ const attachCartItemListeners = () => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       const itemId = btn.getAttribute('data-item-id');
-      const item = cartState.items.find((i) => i.id === String(itemId));
+      const itemSize = btn.getAttribute('data-item-size') || 'Vừa (M)';
+      const item = cartState.items.find(
+        (i) => i.id === String(itemId) && (i.size || 'Vừa (M)') === itemSize
+      );
       if (item && item.quantity > 1) {
-        updateCartItemQuantity(itemId, item.quantity - 1);
+        updateCartItemQuantity(itemId, item.quantity - 1, itemSize);
       }
     });
   });
@@ -410,9 +429,12 @@ const attachCartItemListeners = () => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       const itemId = btn.getAttribute('data-item-id');
-      const item = cartState.items.find((i) => i.id === String(itemId));
+      const itemSize = btn.getAttribute('data-item-size') || 'Vừa (M)';
+      const item = cartState.items.find(
+        (i) => i.id === String(itemId) && (i.size || 'Vừa (M)') === itemSize
+      );
       if (item) {
-        updateCartItemQuantity(itemId, item.quantity + 1);
+        updateCartItemQuantity(itemId, item.quantity + 1, itemSize);
       }
     });
   });
@@ -422,14 +444,18 @@ const attachCartItemListeners = () => {
     input.addEventListener('change', (e) => {
       e.stopPropagation();
       const itemId = input.getAttribute('data-item-id');
+      const itemSize = input.getAttribute('data-item-size') || 'Vừa (M)';
       const newQuantity = input.value;
-      updateCartItemQuantity(itemId, newQuantity);
+      updateCartItemQuantity(itemId, newQuantity, itemSize);
     });
 
     input.addEventListener('blur', (e) => {
       e.stopPropagation();
       const itemId = input.getAttribute('data-item-id');
-      const item = cartState.items.find((i) => i.id === String(itemId));
+      const itemSize = input.getAttribute('data-item-size') || 'Vừa (M)';
+      const item = cartState.items.find(
+        (i) => i.id === String(itemId) && (i.size || 'Vừa (M)') === itemSize
+      );
       if (item && input.value !== String(item.quantity)) {
         input.value = item.quantity;
       }
@@ -441,7 +467,8 @@ const attachCartItemListeners = () => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       const itemId = btn.getAttribute('data-item-id');
-      removeCartItem(itemId);
+      const itemSize = btn.getAttribute('data-item-size') || 'Vừa (M)';
+      removeCartItem(itemId, itemSize);
     });
   });
 };
@@ -533,12 +560,6 @@ const setupCartListeners = () => {
     checkoutButton.addEventListener('click', handleCheckoutClick);
   }
 
-  if (viewCartLink) {
-    viewCartLink.addEventListener('click', () => {
-      closeCartDropdown();
-      window.location.href = '/cart';
-    });
-  }
   
   // Close dropdown when clicking outside
   const existingClickHandler = window.cartOutsideClickHandler;
@@ -573,6 +594,43 @@ const setupCartListeners = () => {
   window.addEventListener('resize', window.cartResizeHandler);
 };
 
+// Sync cart state across tabs/pages
+const syncCartFromStorage = () => {
+  try {
+    const stored = localStorage.getItem('cartItems');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) {
+        cartState.items = parsed;
+        // Update UI
+        updateCartBadge();
+        renderCartDropdown();
+      }
+    }
+  } catch (error) {
+    console.error('Lỗi khi đồng bộ giỏ hàng từ storage:', error);
+  }
+};
+
+// Listen for storage events to sync cart across tabs
+if (typeof window !== 'undefined') {
+  // Storage event (only fires in other tabs)
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'cartItems') {
+      syncCartFromStorage();
+    }
+  });
+  
+  // Custom event for same-tab synchronization
+  window.addEventListener('cartUpdated', (e) => {
+    if (e.detail && e.detail.items) {
+      cartState.items = e.detail.items;
+      updateCartBadge();
+      renderCartDropdown();
+    }
+  });
+}
+
 // Initialize cart immediately when script loads
 if (typeof window !== 'undefined') {
   // Initialize cart state from localStorage
@@ -589,17 +647,38 @@ if (typeof window !== 'undefined') {
     close: closeCartDropdown,
     updatePosition: updateCartDropdownPosition,
     removeItem: removeCartItem,
-    updateQuantity: updateCartItemQuantity
+    updateQuantity: updateCartItemQuantity,
+    sync: syncCartFromStorage,
+    reload: () => {
+      cartState.items = loadCartItems();
+      updateCartBadge();
+      renderCartDropdown();
+    }
   };
   
   // Update badge immediately on load
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
       updateCartBadge();
+      // Ensure header is initialized
+      if (typeof window.initializeSharedHeader === 'function') {
+        window.initializeSharedHeader();
+      }
     });
   } else {
     updateCartBadge();
+    // Ensure header is initialized
+    if (typeof window.initializeSharedHeader === 'function') {
+      window.initializeSharedHeader();
+    }
   }
+  
+  // Sync cart on visibility change (when user switches back to tab)
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      syncCartFromStorage();
+    }
+  });
 }
 
 const formatCurrencyVnd = (value) => {

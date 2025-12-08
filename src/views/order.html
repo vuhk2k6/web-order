@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chi tiết đơn hàng - Nhà hàng</title>
+  <link rel="stylesheet" href="/@style/main.css" />
+  <link rel="stylesheet" href="/@style/order.css" />
+</head>
+
+<body class="page order-page">
+  <div id="shared-header"></div>
+
+  <main class="main-content">
+    <div class="container">
+      <div class="order-detail-container">
+        <h1 class="page-title">Chi tiết đơn hàng</h1>
+
+        <!-- Loading State -->
+        <div id="order-loading" class="order-loading">
+          <p>Đang tải thông tin đơn hàng...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="order-error" class="order-error" style="display: none;">
+          <h2>Không thể tải đơn hàng</h2>
+          <p id="error-message"></p>
+          <a href="/" class="btn-primary">Về trang chủ</a>
+        </div>
+
+        <!-- Order Content -->
+        <div id="order-content" class="order-content" style="display: none;">
+          <!-- Order Header -->
+          <div class="order-header">
+            <div class="order-header-item">
+              <span class="order-label">Mã đơn hàng:</span>
+              <strong class="order-value" id="order-id">—</strong>
+            </div>
+            <div class="order-header-item">
+              <span class="order-label">Trạng thái:</span>
+              <span class="order-status" id="order-status">—</span>
+            </div>
+            <div class="order-header-item">
+              <span class="order-label">Ngày đặt:</span>
+              <span class="order-value" id="order-date">—</span>
+            </div>
+          </div>
+
+          <!-- Payment Success Message -->
+          <div id="payment-success-message" class="order-message success" style="display: none;">
+            <h2>Thanh toán thành công!</h2>
+            <p>Cảm ơn bạn đã thanh toán. Đơn hàng của bạn đã được tiếp nhận và đang được xử lý.</p>
+          </div>
+
+          <!-- Order Info -->
+          <div class="order-section">
+            <h2 class="section-title">Thông tin đơn hàng</h2>
+            <div class="order-info-grid">
+              <div class="order-info-item">
+                <span class="info-label">Loại đơn hàng:</span>
+                <span class="info-value" id="order-type">—</span>
+              </div>
+              <div class="order-info-item" id="delivery-info" style="display: none;">
+                <span class="info-label">Địa chỉ giao hàng:</span>
+                <div class="info-value" id="delivery-address">—</div>
+              </div>
+              <div class="order-info-item" id="dinein-info" style="display: none;">
+                <span class="info-label">Số bàn:</span>
+                <span class="info-value" id="table-number">—</span>
+              </div>
+              <div class="order-info-item" id="customer-info" style="display: none;">
+                <span class="info-label">Khách hàng:</span>
+                <span class="info-value" id="customer-name">—</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Order Items -->
+          <div class="order-section">
+            <h2 class="section-title">Danh sách món ăn</h2>
+            <div id="order-items-list" class="order-items-list">
+              <!-- Items will be loaded here -->
+            </div>
+          </div>
+
+          <!-- Payment Info -->
+          <div class="order-section" id="payment-section" style="display: none;">
+            <h2 class="section-title">Thông tin thanh toán</h2>
+            <div class="order-info-grid">
+              <div class="order-info-item">
+                <span class="info-label">Phương thức:</span>
+                <span class="info-value" id="payment-method">—</span>
+              </div>
+              <div class="order-info-item">
+                <span class="info-label">Mã giao dịch:</span>
+                <span class="info-value" id="transaction-code">—</span>
+              </div>
+              <div class="order-info-item">
+                <span class="info-label">Thời gian thanh toán:</span>
+                <span class="info-value" id="payment-date">—</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Order Summary -->
+          <div class="order-section">
+            <h2 class="section-title">Tổng kết</h2>
+            <div class="order-summary">
+              <div class="summary-row">
+                <span>Tạm tính:</span>
+                <span id="subtotal-amount">0 đ</span>
+              </div>
+              <div class="summary-row" id="promo-row" style="display: none;">
+                <span>Khuyến mãi:</span>
+                <span id="promo-discount">-0 đ</span>
+              </div>
+              <div class="summary-row" id="delivery-fee-row" style="display: none;">
+                <span>Phí giao hàng:</span>
+                <span id="delivery-fee-amount">0 đ</span>
+              </div>
+              <div class="summary-row summary-total">
+                <span>Tổng cộng:</span>
+                <strong id="total-amount">0 đ</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="order-actions">
+            <a href="/menu" class="btn-secondary">Đặt thêm món</a>
+            <a href="/" class="btn-primary">Về trang chủ</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <p>© <span id="footer-year"></span> Gourmet House. All rights reserved.</p>
+      <p>Địa chỉ: 123 Đường Ẩm Thực, Quận 1, TP. Hồ Chí Minh · Điện thoại: 0900 000 000 · Email:
+        contact@gourmethouse.vn</p>
+      <p>Giờ mở cửa: 10:00 - 22:00 · Theo dõi chúng tôi trên Facebook · Instagram</p>
+      <p>Phương thức thanh toán: MoMo · Tiền mặt tại nhà hàng</p>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('footer-year').textContent = new Date().getFullYear();
+  </script>
+  <div id="auth-modal-overlay" class="auth-modal-overlay" aria-hidden="true">
+    <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
+      <button type="button" id="auth-close-button" class="auth-close-button" aria-label="Đóng">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="auth-modal-content">
+        <div class="auth-modal-illustration">
+          <img src="/img/loginout.jpg" alt="Illustration" class="auth-illustration-img" />
+        </div>
+        <div class="auth-modal-form-wrapper">
+          <div class="auth-tabs" role="tablist">
+            <button type="button" id="auth-tab-login" class="auth-tab active" role="tab" aria-selected="true">
+              Đăng nhập
+            </button>
+            <button type="button" id="auth-tab-register" class="auth-tab" role="tab" aria-selected="false">
+              Tạo tài khoản
+            </button>
+          </div>
+          <div class="auth-body">
+            <form id="auth-form-login" class="form" aria-label="Form đăng nhập khách hàng">
+              <div>
+                <label for="auth-login-phone" class="form-label">Số điện thoại</label>
+                <input id="auth-login-phone" name="phone" type="tel" class="form-input" placeholder="Nhập số điện thoại của bạn"
+                  required />
+              </div>
+              <div>
+                <label for="auth-login-password" class="form-label">Mật khẩu</label>
+                <input id="auth-login-password" name="password" type="password" class="form-input"
+                  placeholder="Nhập mật khẩu của bạn" required />
+                <a href="#" id="auth-forgot-password-link" class="auth-forgot-password" aria-label="Quên mật khẩu">Quên mật khẩu?</a>
+              </div>
+              <button id="auth-login-submit" type="submit" class="btn-primary auth-submit">
+                Đăng nhập
+              </button>
+            </form>
+
+            <form id="auth-form-register" class="form" aria-label="Form đăng ký tài khoản khách hàng"
+              style="display: none;">
+              <div>
+                <label for="auth-register-phone" class="form-label">Số điện thoại</label>
+                <input id="auth-register-phone" name="phone" type="tel" class="form-input"
+                  placeholder="Nhập số điện thoại của bạn" required />
+              </div>
+              <div>
+                <label for="auth-register-lastname" class="form-label">Họ</label>
+                <input id="auth-register-lastname" name="lastname" type="text" class="form-input"
+                  placeholder="Nhập họ của bạn" required />
+              </div>
+              <div>
+                <label for="auth-register-firstname" class="form-label">Tên</label>
+                <input id="auth-register-firstname" name="firstname" type="text" class="form-input"
+                  placeholder="Nhập tên của bạn" required />
+              </div>
+              <div>
+                <label for="auth-register-email" class="form-label">Email</label>
+                <input id="auth-register-email" name="email" type="email" class="form-input"
+                  placeholder="Nhập email của bạn" />
+              </div>
+              <div>
+                <label for="auth-register-password" class="form-label">Mật khẩu</label>
+                <input id="auth-register-password" name="password" type="password" class="form-input"
+                  placeholder="Nhập mật khẩu của bạn" required />
+              </div>
+              <div>
+                <label for="auth-register-confirm-password" class="form-label">Xác nhận mật khẩu</label>
+                <input id="auth-register-confirm-password" name="confirmPassword" type="password" class="form-input"
+                  placeholder="Xác nhận mật khẩu của bạn" required />
+              </div>
+              <button id="auth-register-submit" type="submit" class="btn-primary auth-submit">
+                Tạo tài khoản
+              </button>
+            </form>
+
+            <p id="auth-message" class="auth-error" aria-live="polite" style="display: none;"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Forgot Password Modal -->
+  <div id="forgot-password-modal-overlay" class="auth-modal-overlay" aria-hidden="true" style="display: none;">
+    <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="forgot-password-modal-title">
+      <button type="button" id="forgot-password-close-button" class="auth-close-button" aria-label="Đóng">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="auth-modal-content">
+        <div class="auth-modal-illustration">
+          <img src="/img/loginout.jpg" alt="Illustration" class="auth-illustration-img" />
+        </div>
+        <div class="auth-modal-form-wrapper">
+          <h2 id="forgot-password-modal-title" class="auth-modal-title" style="margin-bottom: 24px;">Quên mật khẩu</h2>
+          <p class="auth-forgot-password-text" style="margin-bottom: 24px; color: #64748b; font-size: 14px; line-height: 1.6;">
+            Nhập số điện thoại hoặc email của bạn. Chúng tôi sẽ gửi mã xác nhận để đặt lại mật khẩu.
+          </p>
+          <form id="forgot-password-form" class="form" aria-label="Form quên mật khẩu">
+            <div>
+              <label for="forgot-password-phone" class="form-label">Số điện thoại hoặc Email</label>
+              <input id="forgot-password-phone" name="phoneOrEmail" type="text" class="form-input"
+                placeholder="Nhập số điện thoại hoặc email của bạn" required />
+            </div>
+            <button id="forgot-password-submit" type="submit" class="btn-primary auth-submit">
+              Gửi mã xác nhận
+            </button>
+          </form>
+          <p id="forgot-password-message" class="auth-error" aria-live="polite" style="display: none; margin-top: 16px;"></p>
+          <div style="margin-top: 24px; text-align: center;">
+            <a href="#" id="forgot-password-back-link" class="auth-forgot-password" style="text-align: center; display: inline-block;">
+              Quay lại đăng nhập
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/header.js" defer></script>
+  <script src="/js/auth.js" defer></script>
+  <script src="/js/main.js" defer></script>
+  <script src="/js/order.js" defer></script>
+</body>
+
+</html>
+

@@ -50,13 +50,13 @@
       </header>
 
       <main id="orders-main" class="admin-content">
+        <!-- Đơn chưa hoàn thành -->
         <section class="panel">
           <div class="panel-block-header">
             <div>
-              <h2 class="panel-title">Danh sách đơn hàng</h2>
-              <p class="panel-text">Theo dõi và cập nhật trạng thái đơn tại chỗ, giao hàng, mang về.</p>
+              <h2 class="panel-title">Đơn chưa hoàn thành</h2>
+              <p class="panel-text">Theo dõi và cập nhật trạng thái các đơn hàng đang xử lý.</p>
             </div>
-            <button type="button" class="btn-secondary" aria-label="Xuất danh sách đơn">Xuất báo cáo</button>
           </div>
           <div class="table-wrapper">
             <table>
@@ -68,11 +68,39 @@
                   <th>Tổng tiền</th>
                   <th>Trạng thái</th>
                   <th>Ngày tạo</th>
+                  <th>Thao tác</th>
                 </tr>
               </thead>
-              <tbody id="admin-orders-body"></tbody>
+              <tbody id="admin-orders-active-body"></tbody>
             </table>
-            <p id="admin-orders-empty" class="table-empty" style="display: none;">Chưa có đơn hàng nào trong hệ thống.</p>
+            <p id="admin-orders-active-empty" class="table-empty" style="display: none;">Không có đơn hàng chưa hoàn thành.</p>
+          </div>
+        </section>
+
+        <!-- Đơn đã hoàn thành -->
+        <section class="panel" style="margin-top: 2rem;">
+          <div class="panel-block-header">
+            <div>
+              <h2 class="panel-title">Đơn đã hoàn thành</h2>
+              <p class="panel-text">Lịch sử các đơn hàng đã hoàn thành.</p>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Mã đơn</th>
+                  <th>Khách hàng</th>
+                  <th>Loại</th>
+                  <th>Tổng tiền</th>
+                  <th>Trạng thái</th>
+                  <th>Ngày tạo</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="admin-orders-completed-body"></tbody>
+            </table>
+            <p id="admin-orders-completed-empty" class="table-empty" style="display: none;">Chưa có đơn hàng nào đã hoàn thành.</p>
           </div>
         </section>
       </main>
@@ -91,9 +119,14 @@
           <p class="panel-text"><strong>Khách hàng:</strong> <span id="od-customer">—</span></p>
           <p class="panel-text"><strong>Loại đơn:</strong> <span id="od-type">—</span></p>
           <p class="panel-text"><strong>Trạng thái:</strong> <span id="od-status">—</span></p>
+          <p class="panel-text" id="od-cancel-reason-row" style="display: none;"><strong>Lý do hủy:</strong> <span id="od-cancel-reason">—</span></p>
           <p class="panel-text"><strong>Tổng tiền:</strong> <span id="od-total">—</span></p>
           <p class="panel-text"><strong>Khuyến mãi:</strong> <span id="od-promo">—</span></p>
           <p class="panel-text"><strong>Ngày tạo:</strong> <span id="od-created">—</span></p>
+        </div>
+        <div id="od-items-row" style="margin-top: 20px; display: none;">
+          <h3 style="margin: 0 0 12px 0; font-size: 16px; font-weight: 600; color: #1f2937;">Danh sách món ăn</h3>
+          <div id="od-items" style="background: #f9fafb; border-radius: 8px; overflow: hidden;"></div>
         </div>
       </div>
     </div>

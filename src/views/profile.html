@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Thông tin tài khoản - Nhà hàng</title>
+  <title>Thông tin tài khoản - CAFRROTSFUD</title>
   <link rel="stylesheet" href="/@style/main.css" />
   <link rel="stylesheet" href="/@style/profile.css" />
 </head>
@@ -13,164 +13,215 @@
   <div id="shared-header"></div>
 
   <main class="profile-main main-content">
-    <section class="profile-card">
-      <div class="profile-card-header">
-        <div class="profile-avatar" id="profile-avatar" aria-hidden="true">U</div>
-        <div class="profile-card-title">
-          <h1 id="profile-name">Khách hàng</h1>
+    <!-- Profile Header Card -->
+    <section class="profile-header-card">
+      <div class="profile-header-content">
+        <div class="profile-avatar-large" id="profile-avatar" aria-hidden="true">U</div>
+        <div class="profile-header-info">
+          <h1 id="profile-name" class="profile-name">Khách hàng</h1>
           <p id="profile-account-type" class="profile-account-type">Tài khoản khách</p>
+          <p id="profile-member-since" class="profile-member-since">Thành viên từ <span id="profile-created-at">Đang tải...</span></p>
+        </div>
         </div>
       </div>
-      <div class="profile-info">
-        <div class="profile-info-row">
-          <span class="profile-info-label">Họ và tên</span>
-          <span id="profile-name-detail" class="profile-info-value">Đang tải...</span>
-        </div>
-        <div class="profile-info-row">
-          <span class="profile-info-label">Số điện thoại</span>
-          <span id="profile-phone" class="profile-info-value">Đang tải...</span>
-        </div>
-        <div class="profile-info-row">
-          <span class="profile-info-label">Email</span>
-          <span id="profile-email" class="profile-info-value">Đang tải...</span>
-        </div>
-        <div class="profile-info-row">
-          <span class="profile-info-label">Ngày tạo tài khoản</span>
-          <span id="profile-created-at" class="profile-info-value">Đang tải...</span>
-        </div>
-      </div>
-      <p id="profile-message" class="profile-message" aria-live="polite"></p>
     </section>
+
+    <!-- Stats Cards -->
+    <div class="profile-stats-grid" id="profile-stats-section">
+      <div class="stat-card stat-card-orders">
+        <div class="stat-card-icon">📦</div>
+        <div class="stat-card-content">
+          <p class="stat-card-label">Tổng đơn hàng</p>
+          <p class="stat-card-value" id="stat-total-orders">0</p>
+        </div>
+      </div>
+      <div class="stat-card stat-card-spent">
+        <div class="stat-card-icon">💰</div>
+        <div class="stat-card-content">
+          <p class="stat-card-label">Tổng đã chi</p>
+          <p class="stat-card-value" id="stat-total-spent">0 đ</p>
+        </div>
+      </div>
+      <div class="stat-card stat-card-points">
+        <div class="stat-card-icon">⭐</div>
+        <div class="stat-card-content">
+          <p class="stat-card-label">Điểm tích lũy</p>
+          <p class="stat-card-value" id="stat-points">0</p>
+        </div>
+      </div>
+      <div class="stat-card stat-card-completed">
+        <div class="stat-card-icon">✅</div>
+        <div class="stat-card-content">
+          <p class="stat-card-label">Đơn hoàn thành</p>
+          <p class="stat-card-value" id="stat-completed-orders">0</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="profile-content-grid">
+      <!-- Left Column -->
+      <div class="profile-content-left">
+        <!-- Personal Info Card -->
+        <section class="profile-card">
+          <div class="profile-card-header">
+            <h2 class="profile-card-title">Thông tin cá nhân</h2>
+          </div>
+          <div class="profile-info">
+            <div class="profile-info-row">
+              <span class="profile-info-label">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Họ và tên
+              </span>
+              <span id="profile-name-detail" class="profile-info-value">Đang tải...</span>
+            </div>
+            <div class="profile-info-row">
+              <span class="profile-info-label">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Số điện thoại
+              </span>
+              <span id="profile-phone" class="profile-info-value">Đang tải...</span>
+            </div>
+            <div class="profile-info-row">
+              <span class="profile-info-label">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <polyline points="22,6 12,13 2,6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Email
+              </span>
+              <span id="profile-email" class="profile-info-value">Đang tải...</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Saved Addresses Card -->
+        <section class="profile-card" id="profile-addresses-section" style="display: none;">
+          <div class="profile-card-header">
+            <h2 class="profile-card-title">Địa chỉ đã lưu</h2>
+          </div>
+          <div id="profile-addresses-list" class="profile-addresses-list">
+            <!-- Addresses will be rendered here -->
+          </div>
+          <p id="profile-addresses-empty" class="profile-empty-message" style="display: none;">
+            Chưa có địa chỉ nào được lưu.
+          </p>
+        </section>
+      </div>
+
+      <!-- Right Column -->
+      <div class="profile-content-right">
+        <!-- Recent Orders Card -->
+        <section class="profile-card" id="profile-orders-section" style="display: none;">
+          <div class="profile-card-header">
+            <h2 class="profile-card-title">Đơn hàng gần đây</h2>
+            <a href="/orders" class="profile-card-action">Xem tất cả</a>
+          </div>
+          <div id="profile-orders-list" class="profile-orders-list">
+            <!-- Orders will be rendered here -->
+          </div>
+          <p id="profile-orders-empty" class="profile-empty-message" style="display: none;">
+            Bạn chưa có đơn hàng nào.
+          </p>
+        </section>
+
+      </div>
+    </div>
+
+    <p id="profile-message" class="profile-message" aria-live="polite"></p>
   </main>
+
   <footer class="footer">
     <div class="container footer-inner">
-      <p>© <span id="footer-year"></span> Gourmet House. All rights reserved.</p>
-      <p>Địa chỉ: 123 Đường Ẩm Thực, Quận 1, TP. Hồ Chí Minh · Điện thoại: 0900 000 000 · Email:
-        contact@gourmethouse.vn</p>
-      <p>Giờ mở cửa: 10:00 - 22:00 · Theo dõi chúng tôi trên Facebook · Instagram</p>
-      <p>Phương thức thanh toán: Momo · ZaloPay · Thẻ tín dụng · Tiền mặt tại nhà hàng</p>
+      <div class="footer-grid">
+        <!-- Column 1: Logo & Contact -->
+        <div class="footer-column">
+          <div class="footer-logo">
+            <img src="/img/logo.png" alt="Logo CAFRROTSFUD" class="footer-logo-img" />
+            <p class="footer-logo-text">Thực phẩm sạch & tự nhiên cho cuộc sống lành mạnh</p>
+          </div>
+          <div class="footer-contact">
+            <p>Điện thoại: <a href="tel:0900000000">0900 000 000</a></p>
+            <p>Email: <a href="mailto:contact@cafrrotsfud.vn">contact@cafrrotsfud.vn</a></p>
+            <p>Địa chỉ: 123 Đường Ẩm Thực, Quận 1, TP. Hồ Chí Minh</p>
+          </div>
+        </div>
+
+        <!-- Column 2: Về nhà hàng -->
+        <div class="footer-column">
+          <h3 class="footer-column-title">VỀ NHÀ HÀNG</h3>
+          <ul class="footer-links">
+            <li><a href="/">Trang chủ</a></li>
+            <li><a href="/menu">Thực đơn</a></li>
+            <li><a href="#reservation">Đặt bàn</a></li>
+            <li><a href="#reviews">Đánh giá</a></li>
+          </ul>
+        </div>
+
+        <!-- Column 3: Hỗ trợ -->
+        <div class="footer-column">
+          <h3 class="footer-column-title">HỖ TRỢ</h3>
+          <ul class="footer-links">
+            <li><a href="#reservation">Đặt bàn trực tuyến</a></li>
+            <li><a href="/menu">Đặt món online</a></li>
+            <li><a href="#membership">Chương trình thành viên</a></li>
+            <li><a href="tel:0900000000">Liên hệ hỗ trợ</a></li>
+          </ul>
+        </div>
+
+        <!-- Column 4: Tiện ích -->
+        <div class="footer-column">
+          <h3 class="footer-column-title">TIỆN ÍCH</h3>
+          <ul class="footer-links">
+            <li><a href="/menu">Xem thực đơn</a></li>
+            <li><a href="#reservation">Đặt bàn nhanh</a></li>
+            <li><a href="#membership">Tích điểm thành viên</a></li>
+            <li><a href="/profile">Tài khoản của tôi</a></li>
+          </ul>
+        </div>
+
+        <!-- Column 5: Thông tin pháp lý -->
+        <div class="footer-column">
+          <h3 class="footer-column-title">THÔNG TIN PHÁP LÝ</h3>
+          <div class="footer-legal">
+            <p>Công ty TNHH CAFRROTSFUD</p>
+            <p>Địa chỉ: 123 Đường Ẩm Thực, Quận 1, TP. Hồ Chí Minh, Việt Nam</p>
+            <p>Mã số thuế: 0123456789</p>
+            <p>Giấy phép kinh doanh số: 01/GP-KD do Sở Kế hoạch và Đầu tư TP. HCM cấp</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Bottom: Copyright & Social -->
+      <div class="footer-bottom">
+        <div class="footer-copyright">
+          <p>© <span id="footer-year"></span> CAFRROTSFUD. Nền tảng đặt món và đặt bàn hàng đầu Việt Nam. All rights reserved.</p>
+        </div>
+        <div class="footer-social">
+          <a href="#" class="footer-social-link" aria-label="YouTube" target="_blank" rel="noopener noreferrer">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+            </svg>
+          </a>
+          <a href="#" class="footer-social-link" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+            </svg>
+          </a>
+          <a href="#" class="footer-social-link" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+            </svg>
+          </a>
+        </div>
+      </div>
     </div>
   </footer>
-
-  <div id="auth-modal-overlay" class="auth-modal-overlay" aria-hidden="true">
-    <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
-      <button type="button" id="auth-close-button" class="auth-close-button" aria-label="Đóng">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-      <div class="auth-modal-content">
-        <div class="auth-modal-illustration">
-          <img src="/img/loginout.jpg" alt="Illustration" class="auth-illustration-img" />
-        </div>
-        <div class="auth-modal-form-wrapper">
-          <div class="auth-tabs" role="tablist">
-            <button type="button" id="auth-tab-login" class="auth-tab active" role="tab" aria-selected="true">
-              Đăng nhập
-            </button>
-            <button type="button" id="auth-tab-register" class="auth-tab" role="tab" aria-selected="false">
-              Tạo tài khoản
-            </button>
-          </div>
-          <div class="auth-body">
-            <form id="auth-form-login" class="form" aria-label="Form đăng nhập khách hàng">
-              <div>
-                <label for="auth-login-phone" class="form-label">Số điện thoại</label>
-                <input id="auth-login-phone" name="phone" type="tel" class="form-input" placeholder="Nhập số điện thoại của bạn"
-                  required />
-              </div>
-              <div>
-                <label for="auth-login-password" class="form-label">Mật khẩu</label>
-                <input id="auth-login-password" name="password" type="password" class="form-input"
-                  placeholder="Nhập mật khẩu của bạn" required />
-                <a href="#" id="auth-forgot-password-link" class="auth-forgot-password" aria-label="Quên mật khẩu">Quên mật khẩu?</a>
-              </div>
-              <button id="auth-login-submit" type="submit" class="btn-primary auth-submit">
-                Đăng nhập
-              </button>
-            </form>
-
-            <form id="auth-form-register" class="form" aria-label="Form đăng ký tài khoản khách hàng"
-              style="display: none;">
-              <div>
-                <label for="auth-register-phone" class="form-label">Số điện thoại</label>
-                <input id="auth-register-phone" name="phone" type="tel" class="form-input"
-                  placeholder="Nhập số điện thoại của bạn" required />
-              </div>
-              <div>
-                <label for="auth-register-lastname" class="form-label">Họ</label>
-                <input id="auth-register-lastname" name="lastname" type="text" class="form-input"
-                  placeholder="Nhập họ của bạn" required />
-              </div>
-              <div>
-                <label for="auth-register-firstname" class="form-label">Tên</label>
-                <input id="auth-register-firstname" name="firstname" type="text" class="form-input"
-                  placeholder="Nhập tên của bạn" required />
-              </div>
-              <div>
-                <label for="auth-register-email" class="form-label">Email</label>
-                <input id="auth-register-email" name="email" type="email" class="form-input"
-                  placeholder="Nhập email của bạn" />
-              </div>
-              <div>
-                <label for="auth-register-password" class="form-label">Mật khẩu</label>
-                <input id="auth-register-password" name="password" type="password" class="form-input"
-                  placeholder="Nhập mật khẩu của bạn" required />
-              </div>
-              <div>
-                <label for="auth-register-confirm-password" class="form-label">Xác nhận mật khẩu</label>
-                <input id="auth-register-confirm-password" name="confirmPassword" type="password" class="form-input"
-                  placeholder="Xác nhận mật khẩu của bạn" required />
-              </div>
-              <button id="auth-register-submit" type="submit" class="btn-primary auth-submit">
-                Tạo tài khoản
-              </button>
-            </form>
-
-            <p id="auth-message" class="auth-error" aria-live="polite" style="display: none;"></p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Forgot Password Modal -->
-  <div id="forgot-password-modal-overlay" class="auth-modal-overlay" aria-hidden="true" style="display: none;">
-    <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="forgot-password-modal-title">
-      <button type="button" id="forgot-password-close-button" class="auth-close-button" aria-label="Đóng">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-      <div class="auth-modal-content">
-        <div class="auth-modal-illustration">
-          <img src="/img/loginout.jpg" alt="Illustration" class="auth-illustration-img" />
-        </div>
-        <div class="auth-modal-form-wrapper">
-          <h2 id="forgot-password-modal-title" class="auth-modal-title" style="margin-bottom: 24px;">Quên mật khẩu</h2>
-          <p class="auth-forgot-password-text" style="margin-bottom: 24px; color: #64748b; font-size: 14px; line-height: 1.6;">
-            Nhập số điện thoại hoặc email của bạn. Chúng tôi sẽ gửi mã xác nhận để đặt lại mật khẩu.
-          </p>
-          <form id="forgot-password-form" class="form" aria-label="Form quên mật khẩu">
-            <div>
-              <label for="forgot-password-phone" class="form-label">Số điện thoại hoặc Email</label>
-              <input id="forgot-password-phone" name="phoneOrEmail" type="text" class="form-input"
-                placeholder="Nhập số điện thoại hoặc email của bạn" required />
-            </div>
-            <button id="forgot-password-submit" type="submit" class="btn-primary auth-submit">
-              Gửi mã xác nhận
-            </button>
-          </form>
-          <p id="forgot-password-message" class="auth-error" aria-live="polite" style="display: none; margin-top: 16px;"></p>
-          <div style="margin-top: 24px; text-align: center;">
-            <a href="#" id="forgot-password-back-link" class="auth-forgot-password" style="text-align: center; display: inline-block;">
-              Quay lại đăng nhập
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <script src="/js/auth.js" defer></script>
   <script src="/js/header.js" defer></script>
@@ -179,5 +230,3 @@
 </body>
 
 </html>
-
-

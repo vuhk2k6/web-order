@@ -47,13 +47,44 @@
       </header>
 
       <main id="reservations-main" class="admin-content">
+        <!-- Table Map Section -->
+        <section class="panel">
+          <div class="panel-block-header">
+            <div>
+              <h2 class="panel-title">Sơ đồ bàn</h2>
+              <p class="panel-text">Cập nhật trạng thái bàn trực tiếp tại quán.</p>
+            </div>
+            <button type="button" class="btn-secondary" aria-label="Làm mới sơ đồ bàn" onclick="fetchAdminTables()">Làm mới</button>
+          </div>
+          
+          <div class="admin-table-legend">
+            <div class="admin-legend-item">
+              <div class="admin-legend-color admin-legend-available"></div>
+              <span>Bàn trống</span>
+            </div>
+            <div class="admin-legend-item">
+              <div class="admin-legend-color admin-legend-reserved"></div>
+              <span>Đã đặt (chưa xác nhận/chưa đến giờ)</span>
+            </div>
+            <div class="admin-legend-item">
+              <div class="admin-legend-color admin-legend-occupied"></div>
+              <span>Đang dùng</span>
+            </div>
+          </div>
+          
+          <div id="admin-table-map-container" class="admin-table-map-container">
+            <!-- Tables will be rendered here -->
+          </div>
+        </section>
+
+        <!-- Reservations List Section -->
         <section class="panel">
           <div class="panel-block-header">
             <div>
               <h2 class="panel-title">Danh sách đặt bàn</h2>
               <p class="panel-text">Xác nhận, gán bàn và cập nhật trạng thái.</p>
             </div>
-            <button type="button" class="btn-secondary" aria-label="Làm mới danh sách">Làm mới</button>
+            <button type="button" class="btn-secondary" aria-label="Làm mới danh sách" onclick="fetchAdminReservations()">Làm mới</button>
           </div>
           <div class="table-wrapper">
             <table>
@@ -61,10 +92,12 @@
                 <tr>
                   <th>Mã đặt bàn</th>
                   <th>Khách hàng</th>
+                  <th>Số điện thoại</th>
                   <th>Số khách</th>
                   <th>Ngày giờ</th>
-                  <th>Trạng thái</th>
                   <th>Bàn</th>
+                  <th>Trạng thái</th>
+                  <th>Thao tác</th>
                 </tr>
               </thead>
               <tbody id="admin-reservations-body"></tbody>

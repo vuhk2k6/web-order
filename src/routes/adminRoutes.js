@@ -4,6 +4,8 @@ const multer = require('multer');
 const { MenuItem } = require('../models/MenuItem');
 const { Promotion } = require('../models/Promotion'); // đảm bảo đăng ký model trước khi populate
 const { Order } = require('../models/Order');
+const { OrderItem } = require('../models/OrderItem');
+const { Category } = require('../models/Category');
 const { Customer } = require('../models/Customer');
 const { Member } = require('../models/Member');
 const { PointTransaction } = require('../models/PointTransaction');
@@ -41,6 +43,9 @@ router.get('/reservations/', (req, res) => {
   const reservationsPath = path.join(__dirname, '..', 'views', 'admin-reservations.html');
   res.sendFile(reservationsPath);
 });
+
+// Note: API routes should be defined before catch-all routes
+// The /api/reservations route is defined later in this file
 
 router.get('/menu', (req, res) => {
   const menuPath = path.join(__dirname, '..', 'views', 'admin-menu.html');
@@ -169,13 +174,21 @@ router.post('/logout', (req, res) => {
 
 router.get('/api/menu', async (req, res) => {
   try {
-    const items = await MenuItem.find().sort({ createdAt: -1 }).lean();
+    const items = await MenuItem.find()
+      .populate('category', 'name _id')
+      .sort({ createdAt: -1 })
+      .lean();
     console.log(`[Admin API] Tìm thấy ${items.length} món ăn trong database (từ menuitems)`);
     
     const mappedItems = items.map(item => ({
       ...item,
       _id: item._id.toString(),
-      id: item._id.toString()
+      id: item._id.toString(),
+      category: item.category ? {
+        _id: item.category._id.toString(),
+        id: item.category._id.toString(),
+        name: item.category.name
+      } : null
     }));
     
     if (mappedItems.length > 0) {
@@ -184,7 +197,8 @@ router.get('/api/menu', async (req, res) => {
         id: mappedItems[0].id,
         name: mappedItems[0].name,
         price: mappedItems[0].price,
-        image: mappedItems[0].image
+        image: mappedItems[0].image,
+        category: mappedItems[0].category
       });
     }
     
@@ -196,7 +210,7 @@ router.get('/api/menu', async (req, res) => {
 });
 
 router.post('/api/menu', async (req, res) => {
-  const { name, price, description, image } = req.body;
+  const { name, price, description, image, category, sizeOptions } = req.body;
 
   if (!name || !price) {
     return res.status(400).json({ message: 'Tên và giá món là bắt buộc' });
@@ -204,18 +218,49 @@ router.post('/api/menu', async (req, res) => {
 
   try {
     const parsedPrice = Number(price);
+    
+    // Validate category if provided
+    let categoryId = null;
+    if (category) {
+      const categoryObj = await Category.findById(category);
+      if (!categoryObj) {
+        return res.status(400).json({ message: 'Danh mục không hợp lệ' });
+      }
+      categoryId = category;
+    }
+    
+    // Validate và format sizeOptions
+    let formattedSizeOptions = [];
+    if (Array.isArray(sizeOptions) && sizeOptions.length > 0) {
+      formattedSizeOptions = sizeOptions
+        .filter(opt => opt && opt.name && opt.name.trim())
+        .map(opt => ({
+          name: opt.name.trim(),
+          additionalPrice: Number(opt.additionalPrice) || 0
+        }));
+    }
+
     const menuItem = await MenuItem.create({
       name,
       price: Number.isNaN(parsedPrice) ? 0 : parsedPrice,
       description: description || '',
-      image: image || ''
+      image: image || '',
+      category: categoryId,
+      sizeOptions: formattedSizeOptions
     });
 
-    const createdItem = await MenuItem.findById(menuItem._id).lean();
+    const createdItem = await MenuItem.findById(menuItem._id)
+      .populate('category', 'name _id')
+      .lean();
     return res.status(201).json({
       ...createdItem,
       _id: createdItem._id.toString(),
-      id: createdItem._id.toString()
+      id: createdItem._id.toString(),
+      category: createdItem.category ? {
+        _id: createdItem.category._id.toString(),
+        id: createdItem.category._id.toString(),
+        name: createdItem.category.name
+      } : null
     });
   } catch (error) {
     return res
@@ -226,7 +271,7 @@ router.post('/api/menu', async (req, res) => {
 
 router.put('/api/menu/:id', async (req, res) => {
   const { id } = req.params;
-  const { name, price, description, image } = req.body;
+  const { name, price, description, image, category, sizeOptions } = req.body;
 
   try {
     const updateData = {};
@@ -248,9 +293,38 @@ router.put('/api/menu/:id', async (req, res) => {
       updateData.image = image;
     }
 
+    // Handle category update
+    if (category !== undefined) {
+      if (category === '' || category === null) {
+        updateData.category = null;
+      } else {
+        const categoryObj = await Category.findById(category);
+        if (!categoryObj) {
+          return res.status(400).json({ message: 'Danh mục không hợp lệ' });
+        }
+        updateData.category = category;
+      }
+    }
+
+    // Validate và format sizeOptions nếu được cung cấp
+    if (sizeOptions !== undefined) {
+      if (Array.isArray(sizeOptions)) {
+        updateData.sizeOptions = sizeOptions
+          .filter(opt => opt && opt.name && opt.name.trim())
+          .map(opt => ({
+            name: opt.name.trim(),
+            additionalPrice: Number(opt.additionalPrice) || 0
+          }));
+      } else {
+        updateData.sizeOptions = [];
+      }
+    }
+
     const updatedItem = await MenuItem.findByIdAndUpdate(id, updateData, {
       new: true
-    }).lean();
+    })
+      .populate('category', 'name _id')
+      .lean();
 
     if (!updatedItem) {
       return res.status(404).json({ message: 'Không tìm thấy món ăn' });
@@ -259,7 +333,12 @@ router.put('/api/menu/:id', async (req, res) => {
     return res.json({
       ...updatedItem,
       _id: updatedItem._id.toString(),
-      id: updatedItem._id.toString()
+      id: updatedItem._id.toString(),
+      category: updatedItem.category ? {
+        _id: updatedItem.category._id.toString(),
+        id: updatedItem.category._id.toString(),
+        name: updatedItem.category.name
+      } : null
     });
   } catch (error) {
     return res
@@ -309,11 +388,13 @@ router.get('/api/orders', async (req, res) => {
       
       const statusMap = {
         'CHO_XAC_NHAN': 'Chờ xác nhận',
+        'CHO_THANH_TOAN': 'Chờ thanh toán',
         'DA_XAC_NHAN': 'Đã xác nhận',
         'DANG_CHUAN_BI': 'Đang chuẩn bị',
         'DANG_GIAO': 'Đang giao',
         'HOAN_THANH': 'Hoàn thành',
-        'DA_HUY': 'Đã hủy'
+        'DA_HUY': 'Đã hủy',
+        'THANH_TOAN_THAT_BAI': 'Thanh toán thất bại'
       };
       
       return {
@@ -323,7 +404,8 @@ router.get('/api/orders', async (req, res) => {
         orderTypeText: orderTypeMap[order.orderType] || order.orderType,
         statusText: statusMap[order.status] || order.status,
         customerName: order.customer ? (order.customer.name || order.customer.phone || 'Khách vãng lai') : 'Khách vãng lai',
-        createdAt: order.createdAt ? new Date(order.createdAt).toLocaleString('vi-VN') : ''
+        createdAt: order.createdAt ? new Date(order.createdAt).toLocaleString('vi-VN') : '',
+        cancelReason: order.cancelReason || null
       };
     });
     
@@ -331,6 +413,159 @@ router.get('/api/orders', async (req, res) => {
   } catch (error) {
     console.error('[Admin API] Lỗi khi lấy danh sách đơn hàng:', error);
     res.status(500).json({ message: 'Không thể tải danh sách đơn hàng', error: error.message });
+  }
+});
+
+// Get order detail with items
+router.get('/api/orders/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const order = await Order.findById(id)
+      .populate('customer', 'name phone')
+      .populate('promotion', 'name')
+      .lean();
+
+    if (!order) {
+      return res.status(404).json({ message: 'Không tìm thấy đơn hàng' });
+    }
+
+    // Get order items with menu item details
+    const orderItems = await OrderItem.find({ order: order._id }).lean();
+    const items = await Promise.all(orderItems.map(async (item) => {
+      try {
+        const menuItem = item.dish ? await MenuItem.findById(item.dish).lean() : null;
+        return {
+          name: menuItem?.name || 'Món không xác định',
+          quantity: item.quantity || 1,
+          price: item.priceAtOrderTime || 0,
+          total: (item.quantity || 1) * (item.priceAtOrderTime || 0),
+          size: item.selectedSize || null,
+          note: item.note || null
+        };
+      } catch (error) {
+        console.error('[Admin API] Error processing order item:', error);
+        return {
+          name: 'Món không xác định',
+          quantity: item.quantity || 1,
+          price: item.priceAtOrderTime || 0,
+          total: (item.quantity || 1) * (item.priceAtOrderTime || 0),
+          size: item.selectedSize || null,
+          note: item.note || null
+        };
+      }
+    }));
+
+    const orderTypeMap = {
+      'TAI_CHO': 'Tại chỗ',
+      'ONLINE': 'Giao hàng',
+      'MANG_VE': 'Mang về'
+    };
+    
+    const statusMap = {
+      'CHO_XAC_NHAN': 'Chờ xác nhận',
+      'CHO_THANH_TOAN': 'Chờ thanh toán',
+      'DA_XAC_NHAN': 'Đã xác nhận',
+      'DANG_CHUAN_BI': 'Đang chuẩn bị',
+      'DANG_GIAO': 'Đang giao',
+      'HOAN_THANH': 'Hoàn thành',
+      'DA_HUY': 'Đã hủy',
+      'THANH_TOAN_THAT_BAI': 'Thanh toán thất bại'
+    };
+
+    const orderDetail = {
+      ...order,
+      _id: order._id.toString(),
+      id: order._id.toString(),
+      orderTypeText: orderTypeMap[order.orderType] || order.orderType,
+      statusText: statusMap[order.status] || order.status,
+      customerName: order.customer ? (order.customer.name || order.customer.phone || 'Khách vãng lai') : 'Khách vãng lai',
+      createdAt: order.createdAt ? new Date(order.createdAt).toLocaleString('vi-VN') : '',
+      cancelReason: order.cancelReason || null,
+      items
+    };
+
+    res.json(orderDetail);
+  } catch (error) {
+    console.error('[Admin API] Lỗi khi lấy chi tiết đơn hàng:', error);
+    res.status(500).json({ message: 'Không thể tải chi tiết đơn hàng', error: error.message });
+  }
+});
+
+// Update order status
+router.put('/api/orders/:id/status', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, cancelReason } = req.body;
+
+    const validStatuses = [
+      'CHO_XAC_NHAN',
+      'CHO_THANH_TOAN',
+      'DA_XAC_NHAN',
+      'DANG_CHUAN_BI',
+      'DANG_GIAO',
+      'HOAN_THANH',
+      'DA_HUY',
+      'THANH_TOAN_THAT_BAI'
+    ];
+
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: 'Trạng thái không hợp lệ' });
+    }
+
+    // Build update object
+    const updateData = { status };
+    if (cancelReason) {
+      updateData.cancelReason = cancelReason;
+    }
+
+    const order = await Order.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true }
+    )
+      .populate('customer', 'name phone')
+      .populate('promotion', 'name')
+      .lean();
+
+    if (!order) {
+      return res.status(404).json({ message: 'Không tìm thấy đơn hàng' });
+    }
+
+    const orderTypeMap = {
+      'TAI_CHO': 'Tại chỗ',
+      'ONLINE': 'Giao hàng',
+      'MANG_VE': 'Mang về'
+    };
+    
+    const statusMap = {
+      'CHO_XAC_NHAN': 'Chờ xác nhận',
+      'CHO_THANH_TOAN': 'Chờ thanh toán',
+      'DA_XAC_NHAN': 'Đã xác nhận',
+      'DANG_CHUAN_BI': 'Đang chuẩn bị',
+      'DANG_GIAO': 'Đang giao',
+      'HOAN_THANH': 'Hoàn thành',
+      'DA_HUY': 'Đã hủy',
+      'THANH_TOAN_THAT_BAI': 'Thanh toán thất bại'
+    };
+
+    const updatedOrder = {
+      ...order,
+      _id: order._id.toString(),
+      id: order._id.toString(),
+      orderTypeText: orderTypeMap[order.orderType] || order.orderType,
+      statusText: statusMap[order.status] || order.status,
+      customerName: order.customer ? (order.customer.name || order.customer.phone || 'Khách vãng lai') : 'Khách vãng lai',
+      createdAt: order.createdAt ? new Date(order.createdAt).toLocaleString('vi-VN') : '',
+      cancelReason: order.cancelReason || null
+    };
+
+    res.json({
+      message: 'Cập nhật trạng thái đơn hàng thành công',
+      order: updatedOrder
+    });
+  } catch (error) {
+    console.error('[Admin API] Lỗi khi cập nhật trạng thái đơn hàng:', error);
+    res.status(500).json({ message: 'Không thể cập nhật trạng thái đơn hàng', error: error.message });
   }
 });
 
@@ -392,6 +627,380 @@ router.post(
     }
   }
 );
+
+// Category CRUD routes
+router.get('/api/categories', async (req, res) => {
+  try {
+    const categories = await Category.find().sort({ name: 1 }).lean();
+    const mappedCategories = categories.map(cat => ({
+      ...cat,
+      _id: cat._id.toString(),
+      id: cat._id.toString()
+    }));
+    res.json(mappedCategories);
+  } catch (error) {
+    console.error('[Admin API] Lỗi khi lấy danh sách danh mục:', error);
+    res.status(500).json({ message: 'Không thể tải danh sách danh mục', error: error.message });
+  }
+});
+
+router.post('/api/categories', async (req, res) => {
+  const { name, description } = req.body;
+
+  if (!name || !name.trim()) {
+    return res.status(400).json({ message: 'Tên danh mục là bắt buộc' });
+  }
+
+  try {
+    // Check if category with same name exists
+    const existing = await Category.findOne({ name: name.trim() });
+    if (existing) {
+      return res.status(400).json({ message: 'Danh mục với tên này đã tồn tại' });
+    }
+
+    const category = await Category.create({
+      name: name.trim(),
+      description: description || ''
+    });
+
+    const createdCategory = await Category.findById(category._id).lean();
+    return res.status(201).json({
+      ...createdCategory,
+      _id: createdCategory._id.toString(),
+      id: createdCategory._id.toString()
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: 'Không thể tạo danh mục mới', error: error.message });
+  }
+});
+
+router.put('/api/categories/:id', async (req, res) => {
+  const { id } = req.params;
+  const { name, description } = req.body;
+
+  try {
+    const updateData = {};
+
+    if (name !== undefined) {
+      if (!name.trim()) {
+        return res.status(400).json({ message: 'Tên danh mục không được để trống' });
+      }
+      // Check if another category with same name exists
+      const existing = await Category.findOne({ name: name.trim(), _id: { $ne: id } });
+      if (existing) {
+        return res.status(400).json({ message: 'Danh mục với tên này đã tồn tại' });
+      }
+      updateData.name = name.trim();
+    }
+
+    if (description !== undefined) {
+      updateData.description = description || '';
+    }
+
+    const updatedCategory = await Category.findByIdAndUpdate(id, updateData, {
+      new: true
+    }).lean();
+
+    if (!updatedCategory) {
+      return res.status(404).json({ message: 'Không tìm thấy danh mục' });
+    }
+
+    return res.json({
+      ...updatedCategory,
+      _id: updatedCategory._id.toString(),
+      id: updatedCategory._id.toString()
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: 'Không thể cập nhật danh mục', error: error.message });
+  }
+});
+
+router.delete('/api/categories/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Check if any menu items use this category
+    const itemsWithCategory = await MenuItem.countDocuments({ category: id });
+    if (itemsWithCategory > 0) {
+      return res.status(400).json({ 
+        message: `Không thể xóa danh mục này vì có ${itemsWithCategory} món ăn đang sử dụng. Vui lòng xóa hoặc chuyển các món ăn sang danh mục khác trước.` 
+      });
+    }
+
+    const deletedCategory = await Category.findByIdAndDelete(id);
+
+    if (!deletedCategory) {
+      return res.status(404).json({ message: 'Không tìm thấy danh mục' });
+    }
+
+    return res.json({ message: 'Xóa danh mục thành công' });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: 'Không thể xóa danh mục', error: error.message });
+  }
+});
+
+// Get all tables with reservation info for admin
+router.get('/api/tables', async (req, res) => {
+  try {
+    console.log('[Admin API] GET /admin/api/tables - Request received');
+    const { Table } = require('../models/Table');
+    const { ReservationTable } = require('../models/ReservationTable');
+    const { Reservation } = require('../models/Reservation');
+    
+    const tables = await Table.find({}).sort({ name: 1 }).lean();
+    console.log(`[Admin API] Found ${tables.length} tables`);
+    const now = new Date();
+    
+    // Get all active reservations
+    const activeReservations = await Reservation.find({
+      status: { $in: ['DANG_CHO', 'XAC_NHAN'] }
+    }).lean();
+    
+    const reservationIds = activeReservations.map(r => r._id);
+    
+    let reservationTables = [];
+    if (reservationIds.length > 0) {
+      reservationTables = await ReservationTable.find({
+        reservation: { $in: reservationIds }
+      })
+      .populate('table', 'name seats location status _id')
+      .populate('reservation', 'status reservedAt')
+      .lean();
+    }
+    
+    console.log(`[Admin API] Found ${reservationTables.length} reservation-table links`);
+    
+    // Create map: tableId -> reservation info
+    const tableReservationMap = {};
+    reservationTables.forEach(rt => {
+      // Handle both populated and non-populated table field
+      const tableId = rt.table && typeof rt.table === 'object' && rt.table._id
+        ? rt.table._id.toString()
+        : (rt.table ? rt.table.toString() : null);
+      
+      if (tableId && rt.reservation) {
+        if (!tableReservationMap[tableId]) {
+          tableReservationMap[tableId] = [];
+        }
+        const reservationData = typeof rt.reservation === 'object' ? rt.reservation : {};
+        tableReservationMap[tableId].push({
+          status: reservationData.status || rt.reservation?.status,
+          reservedAt: reservationData.reservedAt || rt.reservation?.reservedAt
+        });
+      }
+    });
+    
+    const tablesData = tables.map(table => {
+      const tableId = table._id.toString();
+      const reservations = tableReservationMap[tableId] || [];
+      
+      // Determine display status
+      let displayStatus = table.status; // TRONG, DANG_DUNG, DANG_DON
+      let hasReservedPending = false;
+      
+      if (table.status === 'TRONG' && reservations.length > 0) {
+        // Check if there's a reservation that's not confirmed or not yet time
+        hasReservedPending = reservations.some(r => {
+          const reservedTime = new Date(r.reservedAt);
+          return r.status === 'DANG_CHO' || reservedTime > now;
+        });
+        
+        if (hasReservedPending) {
+          displayStatus = 'RESERVED';
+        }
+      }
+      
+      return {
+        id: tableId,
+        name: table.name,
+        seats: table.seats,
+        location: table.location || '',
+        status: table.status,
+        displayStatus: displayStatus, // TRONG, DANG_DUNG, DANG_DON, RESERVED
+        reservations: reservations.map(r => ({
+          status: r.status,
+          reservedAt: r.reservedAt ? new Date(r.reservedAt).toISOString() : null
+        }))
+      };
+    });
+    
+    res.json(tablesData);
+  } catch (error) {
+    console.error('[Admin API] Error fetching tables:', error);
+    res.status(500).json({ message: 'Không thể lấy danh sách bàn', error: error.message });
+  }
+});
+
+// Update table status
+router.put('/api/tables/:id', async (req, res) => {
+  try {
+    const { Table } = require('../models/Table');
+    const { id } = req.params;
+    const { status } = req.body;
+    
+    if (!status || !['TRONG', 'DANG_DUNG', 'DANG_DON'].includes(status)) {
+      return res.status(400).json({ message: 'Trạng thái không hợp lệ' });
+    }
+    
+    const table = await Table.findById(id);
+    if (!table) {
+      return res.status(404).json({ message: 'Không tìm thấy bàn' });
+    }
+    
+    table.status = status;
+    await table.save();
+    
+    res.json({
+      message: 'Cập nhật trạng thái bàn thành công',
+      table: {
+        id: table._id.toString(),
+        name: table.name,
+        status: table.status
+      }
+    });
+  } catch (error) {
+    console.error('[Admin API] Error updating table:', error);
+    res.status(500).json({ message: 'Không thể cập nhật trạng thái bàn', error: error.message });
+  }
+});
+
+// Get all reservations
+router.get('/api/reservations', async (req, res) => {
+  try {
+    console.log('[Admin API] GET /admin/api/reservations - Request received');
+    const { Reservation } = require('../models/Reservation');
+    const { ReservationTable } = require('../models/ReservationTable');
+    const { Table } = require('../models/Table');
+    
+    const reservations = await Reservation.find({})
+      .populate('customer', 'name phone')
+      .sort({ reservedAt: -1, createdAt: -1 })
+      .lean();
+    
+    console.log(`[Admin API] Found ${reservations.length} reservations in database`);
+    
+    // Get tables for each reservation
+    const reservationsWithTables = await Promise.all(
+      reservations.map(async (reservation) => {
+        const reservationTables = await ReservationTable.find({ 
+          reservation: reservation._id 
+        }).populate('table', 'name seats location status').lean();
+        
+        const statusMap = {
+          'DANG_CHO': 'Chờ xác nhận',
+          'XAC_NHAN': 'Đã xác nhận',
+          'DA_HUY': 'Đã hủy'
+        };
+        
+        return {
+          _id: reservation._id.toString(),
+          id: reservation._id.toString(),
+          customerName: reservation.customer 
+            ? (reservation.customer.name || reservation.customer.phone || 'Khách vãng lai')
+            : reservation.guestName || 'Khách vãng lai',
+          customerPhone: reservation.customer?.phone || reservation.guestPhone || '',
+          guestName: reservation.guestName,
+          guestPhone: reservation.guestPhone,
+          guestCount: reservation.guestCount,
+          reservedAt: reservation.reservedAt ? new Date(reservation.reservedAt).toLocaleString('vi-VN') : '',
+          reservedAtDate: reservation.reservedAt,
+          status: reservation.status || 'DANG_CHO',
+          statusText: statusMap[reservation.status] || reservation.status,
+          createdAt: reservation.createdAt ? new Date(reservation.createdAt).toLocaleString('vi-VN') : '',
+          tables: reservationTables.map(rt => rt.table ? {
+            id: rt.table._id.toString(),
+            name: rt.table.name,
+            seats: rt.table.seats,
+            location: rt.table.location || '',
+            status: rt.table.status
+          } : null).filter(Boolean),
+          note: reservation.note || ''
+        };
+      })
+    );
+    
+    console.log(`[Admin API] Returning ${reservationsWithTables.length} reservations`);
+    res.json(reservationsWithTables);
+  } catch (error) {
+    console.error('[Admin API] Lỗi khi lấy danh sách đặt bàn:', error);
+    res.status(500).json({ message: 'Không thể tải danh sách đặt bàn', error: error.message });
+  }
+});
+
+// Update reservation status
+router.put('/api/reservations/:id', async (req, res) => {
+  try {
+    const { Reservation } = require('../models/Reservation');
+    const { ReservationTable } = require('../models/ReservationTable');
+    const { Table } = require('../models/Table');
+    
+    const { id } = req.params;
+    const { status, cancelReason } = req.body;
+    
+    if (!status || !['DANG_CHO', 'XAC_NHAN', 'DA_HUY'].includes(status)) {
+      return res.status(400).json({ message: 'Trạng thái không hợp lệ' });
+    }
+    
+    const reservation = await Reservation.findById(id);
+    if (!reservation) {
+      return res.status(404).json({ message: 'Không tìm thấy yêu cầu đặt bàn' });
+    }
+    
+    const oldStatus = reservation.status;
+    reservation.status = status;
+    if (cancelReason) {
+      reservation.cancelReason = cancelReason;
+    }
+    await reservation.save();
+    
+    // Get tables linked to this reservation
+    const reservationTables = await ReservationTable.find({ reservation: id })
+      .populate('table')
+      .lean();
+    
+    // Update table status based on reservation status
+    if (status === 'XAC_NHAN') {
+      // Confirm: set tables to DANG_DUNG
+      for (const rt of reservationTables) {
+        if (rt.table) {
+          const table = await Table.findById(rt.table._id);
+          if (table && table.status === 'TRONG') {
+            table.status = 'DANG_DUNG';
+            await table.save();
+          }
+        }
+      }
+    } else if (status === 'DA_HUY' && oldStatus === 'XAC_NHAN') {
+      // Cancel after confirmed: set tables back to TRONG
+      for (const rt of reservationTables) {
+        if (rt.table) {
+          const table = await Table.findById(rt.table._id);
+          if (table && table.status === 'DANG_DUNG') {
+            table.status = 'TRONG';
+            await table.save();
+          }
+        }
+      }
+    }
+    
+    res.json({ 
+      message: 'Cập nhật trạng thái đặt bàn thành công',
+      reservation: {
+        id: reservation._id.toString(),
+        status: reservation.status
+      }
+    });
+  } catch (error) {
+    console.error('[Admin API] Lỗi khi cập nhật đặt bàn:', error);
+    res.status(500).json({ message: 'Không thể cập nhật đặt bàn', error: error.message });
+  }
+});
 
 module.exports = router;
 

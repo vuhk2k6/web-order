@@ -29,6 +29,14 @@ const reservationSchema = new mongoose.Schema(
       type: String,
       enum: ['DANG_CHO', 'XAC_NHAN', 'DA_HUY'],
       default: 'DANG_CHO'
+    },
+    note: {
+      type: String,
+      default: ''
+    },
+    cancelReason: {
+      type: String,
+      default: ''
     }
   },
   {

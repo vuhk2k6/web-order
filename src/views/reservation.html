@@ -25,6 +25,41 @@
       </div>
     </section>
 
+    <!-- Table Map Section -->
+    <section class="table-map-section">
+      <div class="container">
+        <div class="table-map-wrapper">
+          <h2 class="table-map-title">Chọn bàn</h2>
+          <p class="table-map-subtitle">
+            Chọn bàn trống (màu xanh) để đặt chỗ
+          </p>
+          
+          <div class="table-legend">
+            <div class="legend-item">
+              <div class="legend-color legend-available"></div>
+              <span>Bàn trống</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color legend-occupied"></div>
+              <span>Bàn đã đặt</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color legend-selected"></div>
+              <span>Bàn đã chọn</span>
+            </div>
+          </div>
+          
+          <div id="table-map-container" class="table-map-container">
+            <!-- Tables will be rendered here -->
+          </div>
+          
+          <div id="selected-tables-info" class="selected-tables-info" style="display: none;">
+            <p>Bàn đã chọn: <span id="selected-tables-list"></span></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Reservation Form Section -->
     <section class="reservation-form-section">
       <div class="container">
@@ -36,6 +71,7 @@
             </p>
             
             <form id="reservation-form" class="reservation-form" aria-label="Form đặt bàn">
+              <input type="hidden" id="reservation-table-ids" name="tableIds" />
               <div class="form-group">
                 <label for="reservation-name" class="form-label">HỌ VÀ TÊN</label>
                 <input 

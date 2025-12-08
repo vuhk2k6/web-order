@@ -30,6 +30,10 @@ const orderSchema = new mongoose.Schema(
     status: {
       type: String,
       default: 'CHO_XAC_NHAN'
+    },
+    cancelReason: {
+      type: String,
+      default: null
     }
   },
   {

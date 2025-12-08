@@ -329,6 +329,12 @@
   gap: 48px;
 }
 
+/* Allow direct grid inside menu-category-sections */
+.menu-category-sections > .menu-category-grid {
+  width: 100%;
+  gap: 24px;
+}
+
 /* Category Section */
 .menu-category-section {
   display: flex;

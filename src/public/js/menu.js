@@ -62,17 +62,64 @@ const openMenuDetailModal = (item) => {
     note.textContent = item.note || 'Đang cập nhật';
   }
 
-  // Setup size options
-  let selectedSize = item.size || 'Vừa (M)';
-  if (sizeOptionsContainer) {
-    const options = Array.from(sizeOptionsContainer.querySelectorAll('.menu-size-option'));
-    options.forEach((btn) => btn.classList.toggle('active', btn.getAttribute('data-size') === selectedSize));
-    options.forEach((btn) => {
+  // Setup size options from item.sizeOptions or fallback
+  let selectedSize = item.size || 'Mặc định';
+  let selectedPrice = item.price || 0;
+  
+  // Get base price and size options
+  const basePrice = item.price || 0;
+  const sizeOptions = item.sizeOptions || [];
+  
+  // If no size options, use default
+  if (sizeOptions.length === 0) {
+    selectedSize = 'Mặc định';
+    selectedPrice = basePrice;
+  } else {
+    // Set first size as default if none selected
+    if (!item.size || sizeOptions.find(opt => opt.name === item.size) === undefined) {
+      selectedSize = sizeOptions[0]?.name || 'Mặc định';
+      selectedPrice = basePrice + (sizeOptions[0]?.additionalPrice || 0);
+    } else {
+      const selectedOpt = sizeOptions.find(opt => opt.name === item.size);
+      if (selectedOpt) {
+        selectedSize = selectedOpt.name;
+        selectedPrice = basePrice + (selectedOpt.additionalPrice || 0);
+      }
+    }
+    
+    // Update price display when size changes
+    if (price) {
+      price.textContent = getFormatCurrencyVnd()(selectedPrice);
+    }
+  }
+  
+  if (sizeOptionsContainer && sizeOptions.length > 0) {
+    sizeOptionsContainer.innerHTML = '';
+    sizeOptions.forEach((opt) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'menu-size-option';
+      btn.textContent = opt.name;
+      btn.setAttribute('data-size', opt.name);
+      btn.setAttribute('data-additional-price', opt.additionalPrice || 0);
+      if (opt.name === selectedSize) {
+        btn.classList.add('active');
+      }
       btn.onclick = () => {
-        selectedSize = btn.getAttribute('data-size');
-        options.forEach((b) => b.classList.toggle('active', b === btn));
+        selectedSize = opt.name;
+        selectedPrice = basePrice + (opt.additionalPrice || 0);
+        sizeOptionsContainer.querySelectorAll('.menu-size-option').forEach((b) => {
+          b.classList.remove('active');
+        });
+        btn.classList.add('active');
+        if (price) {
+          price.textContent = getFormatCurrencyVnd()(selectedPrice);
+        }
       };
+      sizeOptionsContainer.appendChild(btn);
     });
+  } else if (sizeOptionsContainer) {
+    sizeOptionsContainer.innerHTML = '';
   }
 
   // Setup add button
@@ -111,7 +158,8 @@ const openMenuDetailModal = (item) => {
         const success = window.appCart.addItem({
           id: item._id || item.id,
           name: item.name,
-          price: item.price,
+          price: selectedPrice, // Use selected price with size addition
+          basePrice: basePrice, // Store base price for reference
           image: item.image,
           quantity: 1,
           size: selectedSize
@@ -213,7 +261,7 @@ const getFormatCurrencyVnd = () => {
 const createFullMenuCard = (item) => {
   const card = document.createElement('article');
   card.className = 'menu-card';
-  card.setAttribute('data-category', item.category || 'all');
+  // Don't set data-category here, it will be set in renderFullMenu
 
   const imageWrapper = document.createElement('div');
   imageWrapper.className = 'menu-card-image-wrapper';
@@ -255,26 +303,53 @@ const createFullMenuCard = (item) => {
   description.className = 'menu-card-description';
   description.textContent = item.description || 'Món ăn đặc biệt của nhà hàng.';
 
-  // Size selector (inline)
+  // Size selector (inline) - use sizeOptions from backend
   const sizeRow = document.createElement('div');
   sizeRow.className = 'menu-card-size-inline';
-  const sizes = item.sizes || ['Nhỏ (S)', 'Vừa (M)', 'Lớn (L)'];
-  let selectedSize = item.size || sizes[1] || 'Vừa (M)';
-  sizes.forEach((label) => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'menu-size-chip';
-    btn.textContent = label;
-    btn.setAttribute('data-size', label);
-    if (label === selectedSize) btn.classList.add('active');
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      selectedSize = label;
-      sizeRow.querySelectorAll('.menu-size-chip').forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
+  const basePrice = item.price || 0;
+  const sizeOptions = item.sizeOptions || [];
+  let selectedSize = 'Mặc định';
+  let selectedPrice = basePrice;
+  
+  // If no size options, hide size selector
+  if (sizeOptions.length === 0) {
+    sizeRow.style.display = 'none';
+  } else {
+    selectedSize = sizeOptions[0]?.name || 'Mặc định';
+    selectedPrice = basePrice + (sizeOptions[0]?.additionalPrice || 0);
+    
+    sizeOptions.forEach((opt) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'menu-size-chip';
+      btn.textContent = opt.name;
+      btn.setAttribute('data-size', opt.name);
+      btn.setAttribute('data-additional-price', opt.additionalPrice || 0);
+      if (opt.name === selectedSize) btn.classList.add('active');
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        selectedSize = opt.name;
+        selectedPrice = basePrice + (opt.additionalPrice || 0);
+        sizeRow.querySelectorAll('.menu-size-chip').forEach((b) => {
+          b.classList.remove('active');
+        });
+        btn.classList.add('active');
+        
+        // Update price display in card
+        const priceEl = card.querySelector('.menu-card-price');
+        if (priceEl) {
+          priceEl.textContent = getFormatCurrencyVnd()(selectedPrice);
+        }
+      });
+      sizeRow.appendChild(btn);
     });
-    sizeRow.appendChild(btn);
-  });
+    
+    // Update initial price display
+    const priceEl = priceContainer.querySelector('.menu-card-price');
+    if (priceEl && selectedPrice !== basePrice) {
+      priceEl.textContent = getFormatCurrencyVnd()(selectedPrice);
+    }
+  }
 
   // Actions container for buttons
   const actionsContainer = document.createElement('div');
@@ -324,7 +399,8 @@ const createFullMenuCard = (item) => {
         const success = window.appCart.addItem({
         id: item._id || item.id,
         name: item.name,
-        price: item.price,
+        price: selectedPrice, // Use selected price with size addition
+        basePrice: basePrice, // Store base price for reference
         image: item.image,
           size: selectedSize,
           quantity: 1
@@ -360,9 +436,9 @@ const createFullMenuCard = (item) => {
   viewButton.addEventListener('click', (e) => {
     e.stopPropagation();
     e.preventDefault();
-    // Open detail modal
+    // Open detail modal with current selected size and price
     if (window.openMenuDetailModal) {
-      window.openMenuDetailModal({ ...item, size: selectedSize });
+      window.openMenuDetailModal({ ...item, size: selectedSize, price: selectedPrice });
     } else {
       console.warn('openMenuDetailModal không khả dụng');
     }
@@ -382,14 +458,45 @@ const createFullMenuCard = (item) => {
   return card;
 };
 
+// Helper function to normalize category key from category object
+const getCategoryKey = (category) => {
+  if (!category) return 'other';
+  
+  if (typeof category === 'object' && category.name) {
+    // Map category name to key for backward compatibility with tabs
+    const nameMap = {
+      'combo': 'combo',
+      'Combo': 'combo',
+      'khai vị': 'main',
+      'Khai vị': 'main',
+      'món chính': 'appetizer',
+      'Món chính': 'appetizer',
+      'thức uống': 'drink',
+      'Thức uống': 'drink',
+      'tráng miệng': 'dessert',
+      'Tráng miệng': 'dessert',
+      'món chay': 'vegetarian',
+      'Món chay': 'vegetarian'
+    };
+    const normalizedName = category.name.trim();
+    return nameMap[normalizedName] || normalizedName.toLowerCase().replace(/\s+/g, '-');
+  }
+  
+  if (typeof category === 'string') {
+    return category;
+  }
+  
+  return 'other';
+};
+
 // Category mapping for display names (phải khớp với tab text trong HTML)
 const categoryNames = {
   combo: 'COMBO',
   main: 'KHAI VỊ',           // Tab: "Khai vị"
   appetizer: 'MÓN CHÍNH',    // Tab: "Món chính"
-  drink: 'MÓN CHAY',         // Tab: "Món chay"
-  dessert: 'THỨC UỐNG',      // Tab: "Thức uống"
-  vegetarian: 'TRÁNG MIỆNG'  // Tab: "Tráng miệng"
+  drink: 'THỨC UỐNG',        // Tab: "Thức uống"
+  dessert: 'TRÁNG MIỆNG',    // Tab: "Tráng miệng"
+  vegetarian: 'MÓN CHAY'     // Tab: "Món chay"
 };
 
 // Category order for display
@@ -401,97 +508,85 @@ const renderFullMenu = (items) => {
 
   console.log('[menu.js] renderFullMenu được gọi với', items ? items.length : 0, 'món ăn');
 
-  if (!listElement || !emptyElement) {
-    console.error('[menu.js] Không tìm thấy DOM elements:', {
-      listElement: !!listElement,
-      emptyElement: !!emptyElement
-    });
+  if (!listElement) {
+    console.error('[menu.js] Không tìm thấy element #full-menu-list');
     return;
   }
 
+  if (!emptyElement) {
+    console.error('[menu.js] Không tìm thấy element #full-menu-empty');
+  }
+
+  // Clear previous content
   listElement.innerHTML = '';
 
   if (!items || items.length === 0) {
     console.log('[menu.js] Không có món ăn để hiển thị');
-    emptyElement.style.display = 'block';
+    if (emptyElement) {
+      emptyElement.style.display = 'block';
+    }
     return;
   }
 
-  emptyElement.style.display = 'none';
+  if (emptyElement) {
+    emptyElement.style.display = 'none';
+  }
+  
   console.log('[menu.js] Đang render', items.length, 'món ăn...');
 
-  // Group items by category
-  const itemsByCategory = {};
-  items.forEach((item) => {
-    const category = item.category || 'other';
-    if (!itemsByCategory[category]) {
-      itemsByCategory[category] = [];
-    }
-    itemsByCategory[category].push(item);
-  });
+  // Create a single grid container for all items (no category sections)
+  const menuGrid = document.createElement('div');
+  menuGrid.className = 'menu-category-grid';
 
-  // Render each category section
-  categoryOrder.forEach((categoryKey) => {
-    const categoryItems = itemsByCategory[categoryKey];
-    if (!categoryItems || categoryItems.length === 0) {
-      return;
-    }
-
-    // Create category section
-    const categorySection = document.createElement('div');
-    categorySection.className = 'menu-category-section';
-    categorySection.setAttribute('data-category', categoryKey);
-
-    // Create category title
-    const categoryTitle = document.createElement('h2');
-    categoryTitle.className = 'menu-category-title';
-    categoryTitle.textContent = categoryNames[categoryKey] || categoryKey.toUpperCase();
-    categorySection.appendChild(categoryTitle);
-
-    // Create category grid
-    const categoryGrid = document.createElement('div');
-    categoryGrid.className = 'menu-category-grid';
-
-    // Add cards to grid
-    categoryItems.forEach((item) => {
+  let renderedCount = 0;
+  let errorCount = 0;
+  
+  // Add all items to the grid without grouping by category
+  items.forEach((item, index) => {
     try {
-      const card = createFullMenuCard(item);
-        categoryGrid.appendChild(card);
-      } catch (error) {
-        console.error(`[menu.js] Lỗi khi render món:`, error, item);
+      if (!item || !item.name) {
+        console.warn(`[menu.js] Item tại index ${index} không hợp lệ:`, item);
+        errorCount++;
+        return;
       }
-    });
-
-    categorySection.appendChild(categoryGrid);
-    listElement.appendChild(categorySection);
-  });
-
-  // Handle 'other' category if exists
-  const otherItems = itemsByCategory['other'] || itemsByCategory[''] || [];
-  if (otherItems.length > 0) {
-    const categorySection = document.createElement('div');
-    categorySection.className = 'menu-category-section';
-    categorySection.setAttribute('data-category', 'other');
-
-    const categoryTitle = document.createElement('h2');
-    categoryTitle.className = 'menu-category-title';
-    categoryTitle.textContent = 'MÓN KHÁC';
-    categorySection.appendChild(categoryTitle);
-
-    const categoryGrid = document.createElement('div');
-    categoryGrid.className = 'menu-category-grid';
-
-    otherItems.forEach((item) => {
-      try {
-        const card = createFullMenuCard(item);
-        categoryGrid.appendChild(card);
+      
+      const card = createFullMenuCard(item);
+      if (!card) {
+        console.warn(`[menu.js] Không thể tạo card cho item:`, item.name);
+        errorCount++;
+        return;
+      }
+      
+      // Set data-category attribute for filtering
+      const categoryKey = getCategoryKey(item.category);
+      card.setAttribute('data-category', categoryKey);
+      menuGrid.appendChild(card);
+      renderedCount++;
     } catch (error) {
-        console.error(`[menu.js] Lỗi khi render món:`, error, item);
+      console.error(`[menu.js] Lỗi khi render món tại index ${index}:`, error, item);
+      errorCount++;
     }
   });
 
-    categorySection.appendChild(categoryGrid);
-    listElement.appendChild(categorySection);
+  console.log(`[menu.js] Render kết quả: ${renderedCount} thành công, ${errorCount} lỗi`);
+
+  if (renderedCount > 0) {
+    listElement.appendChild(menuGrid);
+    console.log(`[menu.js] Đã append grid với ${renderedCount} món ăn vào #full-menu-list`);
+    
+    // Verify grid was appended
+    const verifyGrid = listElement.querySelector('.menu-category-grid');
+    if (verifyGrid) {
+      console.log('[menu.js] Grid đã được append thành công, số lượng cards:', verifyGrid.children.length);
+    } else {
+      console.error('[menu.js] Grid không được tìm thấy sau khi append!');
+    }
+  } else {
+    console.error('[menu.js] Không có món nào được render thành công');
+    if (emptyElement) {
+      emptyElement.textContent = 'Không thể hiển thị món ăn. Vui lòng thử lại sau.';
+      emptyElement.style.display = 'block';
+    }
   }
   
   console.log('[menu.js] Hoàn tất render menu');
@@ -592,23 +687,32 @@ const initializeMenuPage = async () => {
 
   const items = await fetchFullMenu();
   let filteredItems = items;
+  let activeCategory = 'all';
 
-  const applyFilter = () => {
+  const applyFilters = () => {
+    let results = items;
+
+    // Apply search filter
     const keyword = searchInput ? searchInput.value.trim().toLowerCase() : '';
-
-    if (!keyword) {
-      filteredItems = items;
-    } else {
-      filteredItems = items.filter((item) =>
+    if (keyword) {
+      results = results.filter((item) =>
         (item.name || '').toLowerCase().includes(keyword)
       );
     }
 
+    filteredItems = results;
     renderFullMenu(filteredItems);
+    
+    // Apply category filter after rendering
+    if (activeCategory) {
+      filterMenuItemsByCategory(activeCategory);
+    }
   };
 
   if (searchInput) {
-    searchInput.addEventListener('input', applyFilter);
+    searchInput.addEventListener('input', () => {
+      applyFilters();
+    });
   }
 
   // Setup category filter
@@ -628,30 +732,68 @@ const initializeMenuPage = async () => {
         tab.classList.add('active');
         tab.setAttribute('aria-selected', 'true');
 
-        const category = tab.getAttribute('data-category');
-        const categorySections = menuList.querySelectorAll('.menu-category-section');
+        // Update active category
+        activeCategory = tab.getAttribute('data-category') || 'all';
         
-        if (category === 'all') {
-          // Show all sections
-          categorySections.forEach((section) => {
-            section.style.display = '';
-          });
-        } else {
-          // Show only matching category section
-          categorySections.forEach((section) => {
-            const sectionCategory = section.getAttribute('data-category');
-            if (sectionCategory === category) {
-              section.style.display = '';
-            } else {
-              section.style.display = 'none';
-            }
-          });
+        // Scroll to top of menu list
+        if (menuList) {
+          menuList.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
+        
+        // Filter items by showing/hiding cards based on category
+        filterMenuItemsByCategory(activeCategory);
       });
     });
   }
-
+  
+  // Render initial menu (all items visible by default)
   renderFullMenu(filteredItems);
+  
+  // No initial filter needed since 'all' is selected by default
+};
+
+// Filter menu items by showing/hiding cards based on category
+const filterMenuItemsByCategory = (category) => {
+  const menuGrid = document.querySelector('#full-menu-list .menu-category-grid');
+  if (!menuGrid) return;
+
+  const cards = menuGrid.querySelectorAll('.menu-card');
+  
+  // category from tab is already in correct format (combo, main, appetizer, etc.)
+  // because it comes from data-category attribute
+  
+  cards.forEach((card) => {
+    const cardCategory = card.getAttribute('data-category') || 'other';
+    
+    if (category === 'all') {
+      card.style.display = '';
+    } else {
+      // Compare directly since both use the same category key format
+      if (cardCategory === category) {
+        card.style.display = '';
+      } else {
+        card.style.display = 'none';
+      }
+    }
+  });
+  
+  // Show empty message if no items are visible
+  const visibleCards = Array.from(cards).filter(card => {
+    const display = window.getComputedStyle(card).display;
+    return display !== 'none';
+  });
+  
+  const emptyElement = getMenuElement('full-menu-empty');
+  if (emptyElement) {
+    if (visibleCards.length === 0 && category !== 'all') {
+      const activeTab = document.querySelector('.menu-nav-tab.active');
+      const categoryName = activeTab ? activeTab.textContent.trim() : 'danh mục này';
+      emptyElement.textContent = `Không có món nào trong ${categoryName}.`;
+      emptyElement.style.display = 'block';
+    } else {
+      emptyElement.style.display = 'none';
+    }
+  }
 };
 
 // Prevent multiple initializations

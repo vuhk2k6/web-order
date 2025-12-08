@@ -102,7 +102,9 @@ const renderCheckoutCart = () => {
           `}
           <div class="checkout-cart-item-content">
             <p class="checkout-cart-item-name">${item.name || 'Món ăn'}</p>
+            ${item.size ? `<p class="checkout-cart-item-size">${item.size}</p>` : ''}
             <p class="checkout-cart-item-price">${(item.price || 0).toLocaleString('vi-VN')} đ × ${item.quantity || 1}</p>
+            ${item.note ? `<p class="checkout-cart-item-note">Ghi chú: ${item.note}</p>` : ''}
           </div>
           <div class="checkout-cart-item-total">${itemTotal.toLocaleString('vi-VN')} đ</div>
         </div>
@@ -352,26 +354,54 @@ const handlePromoCode = async () => {
 // Handle payment method
 const handlePaymentMethod = () => {
   const paymentMethods = document.querySelectorAll('input[name="payment-method"]');
-  const onlineMethods = document.getElementById('checkout-online-methods');
 
   paymentMethods.forEach((radio) => {
     radio.addEventListener('change', (e) => {
       checkoutState.paymentMethod = e.target.value;
-      if (e.target.value === 'ONLINE') {
-        if (onlineMethods) onlineMethods.style.display = 'block';
+      // MOMO is now a direct payment method, no need for sub-options
+      if (e.target.value === 'MOMO') {
+        checkoutState.onlineMethod = 'MOMO';
       } else {
-        if (onlineMethods) onlineMethods.style.display = 'none';
         checkoutState.onlineMethod = null;
       }
     });
   });
+};
 
-  const onlineOptions = document.querySelectorAll('input[name="online-method"]');
-  onlineOptions.forEach((radio) => {
-    radio.addEventListener('change', (e) => {
-      checkoutState.onlineMethod = e.target.value;
+// Create MoMo payment request
+const createMoMoPayment = async (orderId, pointsUsed) => {
+  try {
+    const response = await fetch('/api/payments/momo/create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'same-origin',
+      body: JSON.stringify({ orderId, pointsUsed: pointsUsed || 0 })
     });
-  });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      // Handle error response - data might not have success field
+      const errorMsg = data.message || data.error || 'Không thể tạo yêu cầu thanh toán MoMo';
+      throw new Error(errorMsg);
+    }
+
+    if (!data.success) {
+      throw new Error(data.message || data.error || 'Không thể tạo yêu cầu thanh toán MoMo');
+    }
+
+    // Redirect to MoMo payment page
+    if (data.payUrl) {
+      window.location.href = data.payUrl;
+    } else {
+      throw new Error('Không nhận được link thanh toán từ MoMo');
+    }
+  } catch (error) {
+    console.error('Lỗi khi tạo thanh toán MoMo:', error);
+    throw error;
+  }
 };
 
 // Submit order
@@ -418,7 +448,21 @@ const submitOrder = async () => {
       return;
     }
 
-    // Clear cart
+    // Check if payment is required (MoMo)
+    if (checkoutState.paymentMethod === 'MOMO') {
+      // Clear cart before redirecting to payment
+      localStorage.removeItem('cartItems');
+      if (window.appCart) {
+        window.appCart.updateBadge();
+      }
+      
+      // Create MoMo payment and redirect
+      submitBtn.textContent = 'Đang chuyển đến trang thanh toán...';
+      await createMoMoPayment(data.orderId, totals.pointsDiscount);
+      return;
+    }
+
+    // Clear cart for other payment methods
     localStorage.removeItem('cartItems');
     if (window.appCart) {
       window.appCart.updateBadge();
@@ -428,7 +472,7 @@ const submitOrder = async () => {
     window.location.href = `/orders/${data.orderId}`;
   } catch (error) {
     console.error('Lỗi khi tạo đơn hàng:', error);
-    alert('Không thể tạo đơn hàng. Vui lòng thử lại.');
+    alert(error.message || 'Không thể tạo đơn hàng. Vui lòng thử lại.');
     submitBtn.disabled = false;
     submitBtn.textContent = 'Hoàn tất đơn hàng';
   }
@@ -491,8 +535,8 @@ const setupNavigation = () => {
       }
 
       if (checkoutState.currentStep === 4) {
-        if (checkoutState.paymentMethod === 'ONLINE' && !checkoutState.onlineMethod) {
-          alert('Vui lòng chọn cổng thanh toán');
+        if (!checkoutState.paymentMethod) {
+          alert('Vui lòng chọn phương thức thanh toán');
           return;
         }
       }

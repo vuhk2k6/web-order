@@ -2,6 +2,101 @@
 
 const getReservationElement = (id) => document.getElementById(id);
 
+let selectedTableIds = [];
+let tablesData = [];
+
+const fetchTables = async () => {
+  try {
+    const response = await fetch('/api/tables');
+    if (!response.ok) {
+      throw new Error('Không thể lấy danh sách bàn');
+    }
+    const tables = await response.json();
+    tablesData = tables;
+    return tables;
+  } catch (error) {
+    console.error('Lỗi khi lấy danh sách bàn:', error);
+    return [];
+  }
+};
+
+const renderTableMap = (tables) => {
+  const container = getReservationElement('table-map-container');
+  if (!container) return;
+
+  if (!tables || tables.length === 0) {
+    container.innerHTML = '<p style="text-align: center; color: #64748b; grid-column: 1/-1;">Chưa có bàn nào trong hệ thống.</p>';
+    return;
+  }
+
+  container.innerHTML = tables.map(table => {
+    const isAvailable = table.status === 'TRONG';
+    const isSelected = selectedTableIds.includes(table.id);
+    let className = 'table-item';
+    
+    if (isSelected) {
+      className += ' selected';
+    } else if (isAvailable) {
+      className += ' available';
+    } else {
+      className += ' occupied';
+    }
+
+    return `
+      <div 
+        class="${className}" 
+        data-table-id="${table.id}"
+        data-table-status="${table.status}"
+        ${isAvailable ? 'onclick="handleTableClick(\'' + table.id + '\')"' : ''}
+      >
+        <div class="table-item-name">${table.name}</div>
+        <div class="table-item-seats">${table.seats} chỗ</div>
+        ${table.location ? `<div class="table-item-location">${table.location}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+};
+
+const handleTableClick = (tableId) => {
+  const table = tablesData.find(t => t.id === tableId);
+  if (!table || table.status !== 'TRONG') return;
+
+  const index = selectedTableIds.indexOf(tableId);
+  if (index > -1) {
+    selectedTableIds.splice(index, 1);
+  } else {
+    selectedTableIds.push(tableId);
+  }
+
+  updateSelectedTablesInfo();
+  renderTableMap(tablesData);
+};
+
+const updateSelectedTablesInfo = () => {
+  const infoElement = getReservationElement('selected-tables-info');
+  const listElement = getReservationElement('selected-tables-list');
+  const tableIdsInput = getReservationElement('reservation-table-ids');
+
+  if (selectedTableIds.length > 0) {
+    if (infoElement) infoElement.style.display = 'block';
+    if (listElement) {
+      const selectedTableNames = selectedTableIds.map(id => {
+        const table = tablesData.find(t => t.id === id);
+        return table ? table.name : id;
+      });
+      listElement.textContent = selectedTableNames.join(', ');
+    }
+    if (tableIdsInput) {
+      tableIdsInput.value = JSON.stringify(selectedTableIds);
+    }
+  } else {
+    if (infoElement) infoElement.style.display = 'none';
+    if (tableIdsInput) tableIdsInput.value = '';
+  }
+};
+
+window.handleTableClick = handleTableClick;
+
 const handleSubmitReservation = async (event) => {
   event.preventDefault();
 
@@ -13,6 +108,7 @@ const handleSubmitReservation = async (event) => {
   const noteInput = getReservationElement('reservation-note');
   const messageElement = getReservationElement('reservation-message');
   const submitButton = event.target.querySelector('button[type="submit"]');
+  const tableIdsInput = getReservationElement('reservation-table-ids');
   
   if (
     !nameInput ||
@@ -50,13 +146,24 @@ const handleSubmitReservation = async (event) => {
     // Combine date and time
     const reservedAt = new Date(`${date}T${time}`);
     
+    // Get selected table IDs
+    let tableIds = [];
+    if (tableIdsInput && tableIdsInput.value) {
+      try {
+        tableIds = JSON.parse(tableIdsInput.value);
+      } catch (e) {
+        console.warn('Không thể parse tableIds:', e);
+      }
+    }
+    
     // Prepare reservation data
     const reservationData = {
       guestName: name,
       guestPhone: phone,
       guestCount: parseInt(guests, 10),
       reservedAt: reservedAt.toISOString(),
-      note: note || undefined
+      note: note || undefined,
+      tableIds: tableIds
     };
 
     // Send reservation request
@@ -79,13 +186,16 @@ const handleSubmitReservation = async (event) => {
     messageElement.className = 'reservation-message success';
     messageElement.style.display = 'block';
 
-    // Reset form
+    // Reset form and selected tables
     window.setTimeout(() => {
       const form = getReservationElement('reservation-form');
       if (form) {
         form.reset();
         messageElement.style.display = 'none';
       }
+      selectedTableIds = [];
+      updateSelectedTablesInfo();
+      fetchTables().then(tables => renderTableMap(tables));
     }, 3000);
 
   } catch (error) {
@@ -149,6 +259,10 @@ const initializeReservationPage = async () => {
     const day = String(today.getDate()).padStart(2, '0');
     dateInput.min = `${year}-${month}-${day}`;
   }
+
+  // Load and render tables
+  const tables = await fetchTables();
+  renderTableMap(tables);
 
   // Initialize form
   const form = getReservationElement('reservation-form');

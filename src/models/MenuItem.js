@@ -1,5 +1,24 @@
 const mongoose = require('mongoose');
 
+const sizeOptionSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    additionalPrice: {
+      type: Number,
+      required: true,
+      default: 0,
+      min: 0
+    }
+  },
+  {
+    _id: false
+  }
+);
+
 const menuItemSchema = new mongoose.Schema(
   {
     name: {
@@ -19,6 +38,15 @@ const menuItemSchema = new mongoose.Schema(
     image: {
       type: String,
       default: ''
+    },
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Category',
+      required: false
+    },
+    sizeOptions: {
+      type: [sizeOptionSchema],
+      default: []
     }
   },
   {

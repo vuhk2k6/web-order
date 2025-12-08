@@ -65,7 +65,6 @@ const renderSharedHeader = (options = {}) => {
             <strong id="cart-total">0 đ</strong>
           </div>
           <div class="cart-footer-actions">
-            <a href="/cart" class="btn-outline cart-view-button">Xem chi tiết</a>
             <button type="button" id="cart-checkout-button" class="btn-primary cart-checkout-button" disabled>
               Thanh toán
             </button>
@@ -85,9 +84,13 @@ const renderSharedHeader = (options = {}) => {
   // Check if header already exists to avoid re-rendering
   const existingHeader = container?.querySelector('.navbar');
   if (existingHeader && container.children.length > 0) {
-    // Header already exists, just update cart badge
+    // Header already exists, just update cart badge and sync
     if (typeof window.appCart !== 'undefined' && window.appCart) {
-      window.appCart.updateBadge();
+      if (typeof window.appCart.reload === 'function') {
+        window.appCart.reload();
+      } else {
+        window.appCart.updateBadge();
+      }
     }
     return;
   }
@@ -136,8 +139,13 @@ const initializeSharedHeader = () => {
     // Wait for main.js to initialize cart
     window.setTimeout(() => {
       if (typeof window.appCart !== 'undefined' && window.appCart) {
-        window.appCart.updateBadge();
-        window.appCart.renderDropdown();
+        // Reload cart to ensure sync
+        if (typeof window.appCart.reload === 'function') {
+          window.appCart.reload();
+        } else {
+          window.appCart.updateBadge();
+          window.appCart.renderDropdown();
+        }
         window.appCart.setupListeners();
       } else {
         // If still not available, try again
@@ -148,8 +156,13 @@ const initializeSharedHeader = () => {
   }
   
   // Cart is available, initialize it
-  window.appCart.updateBadge();
-  window.appCart.renderDropdown();
+  // Reload cart to ensure sync with latest localStorage
+  if (typeof window.appCart.reload === 'function') {
+    window.appCart.reload();
+  } else {
+    window.appCart.updateBadge();
+    window.appCart.renderDropdown();
+  }
   window.appCart.setupListeners();
   
   // Setup auth modal if available (use initializeAuthModal if available, otherwise setup manually)

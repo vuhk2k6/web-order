@@ -837,6 +837,12 @@ img.logo-mark {
   font-weight: 800;
 }
 
+.cart-footer-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
 .cart-checkout-button {
   width: 100%;
   border-radius: 10px;
@@ -847,29 +853,6 @@ img.logo-mark {
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   border: 1px solid #2563eb;
   box-shadow: 0 10px 24px rgba(37, 99, 235, 0.18);
-}
-
-.cart-footer-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.cart-view-button {
-  flex: 1;
-  text-align: center;
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-weight: 700;
-  font-size: 14px;
-  border: 1px solid #dbeafe;
-  color: #1d4ed8;
-  background: linear-gradient(180deg, #f8fbff 0%, #eef2ff 100%);
-  transition: all 0.2s ease;
-}
-
-.cart-view-button:hover {
-  background: #e0e7ff;
-  border-color: #bfdbfe;
 }
 
 .cart-checkout-button:hover {

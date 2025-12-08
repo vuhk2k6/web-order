@@ -47,6 +47,31 @@
       </header>
 
       <main id="menu-main" class="admin-content">
+        <!-- Categories Management Section -->
+        <section class="panel" style="margin-bottom: 2rem;">
+          <div class="panel-block-header">
+            <div>
+              <h2 class="panel-title">Quản lý danh mục</h2>
+              <p class="panel-text">Thêm, sửa, xóa danh mục món ăn.</p>
+            </div>
+            <button type="button" id="category-add-button" class="btn-secondary" aria-label="Thêm danh mục mới">+ Thêm danh mục</button>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tên danh mục</th>
+                  <th>Mô tả</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="admin-categories-body"></tbody>
+            </table>
+            <p id="admin-categories-empty" class="table-empty" style="display: none;">Chưa có danh mục nào. Nhấn "Thêm danh mục" để tạo mới.</p>
+          </div>
+        </section>
+
+        <!-- Menu Items Section -->
         <section class="panel">
           <div class="panel-block-header">
             <div>
@@ -98,14 +123,10 @@
           <textarea id="menu-description" name="description" rows="3" class="form-input" placeholder="Mô tả ngắn về món ăn..."></textarea>
         </div>
         <div>
-          <label for="menu-category" class="form-label">Loại món</label>
-          <select id="menu-category" name="category" class="form-input" required>
-            <option value="combo">Combo</option>
-            <option value="main">Khai vị</option>
-            <option value="appetizer">Món chính</option>
-            <option value="vegetarian">Món chay</option>
-            <option value="drink">Đồ uống</option>
-            <option value="dessert">Tráng miệng</option>
+          <label for="menu-category" class="form-label">Danh mục</label>
+          <select id="menu-category" name="category" class="form-input">
+            <option value="">-- Chọn danh mục --</option>
+            <!-- Categories will be loaded dynamically -->
           </select>
         </div>
         <div>
@@ -118,11 +139,48 @@
           <p class="panel-text">Khi chọn ảnh từ máy, hệ thống sẽ tự động tải lên AWS S3 và điền đường dẫn vào ô này.</p>
           <img id="menu-image-preview" src="" alt="Xem trước ảnh món ăn" style="display: none; margin-top: 8px; max-width: 160px; border-radius: 8px; border: 1px solid #1f2937;" />
         </div>
+        <div>
+          <label class="form-label">Tùy chọn size món (tùy chọn)</label>
+          <div id="size-options-container" style="border: 1px solid #374151; border-radius: 8px; padding: 12px; background: #1f2937;">
+            <p class="panel-text" style="margin-bottom: 12px; font-size: 13px; color: #9ca3af;">Thêm các size khác nhau cho món ăn. Giá gốc sẽ là giá mặc định, giá cộng thêm sẽ được cộng vào giá gốc khi khách chọn size đó.</p>
+            <div id="size-options-list"></div>
+            <button type="button" id="add-size-option-btn" class="btn-secondary" style="margin-top: 8px; width: 100%;">
+              + Thêm size mới
+            </button>
+          </div>
+        </div>
         <div class="admin-form-footer">
           <button id="reset-form-button" type="button" class="btn-text">Làm mới form</button>
           <button id="menu-submit-button" type="submit" class="btn-save">Lưu món ăn</button>
         </div>
         <p id="menu-message" class="admin-message" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Category Modal -->
+  <div id="category-modal-overlay" class="modal-overlay" aria-hidden="true" style="display: none;">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="category-modal-title">
+      <div class="modal-header">
+        <h2 id="category-modal-title" class="panel-title">Thêm / Cập nhật danh mục</h2>
+        <button type="button" id="category-modal-close" class="btn-text">Đóng</button>
+      </div>
+      <p class="panel-text">Điền thông tin danh mục, sau đó nhấn Lưu.</p>
+      <form id="category-form" class="admin-form" aria-label="Form thêm và chỉnh sửa danh mục">
+        <input id="category-id" name="id" type="hidden" />
+        <div>
+          <label for="category-name" class="form-label">Tên danh mục <span style="color: #ef4444;">*</span></label>
+          <input id="category-name" name="name" type="text" required class="form-input" placeholder="VD: Combo, Khai vị, Món chính..." />
+        </div>
+        <div>
+          <label for="category-description" class="form-label">Mô tả</label>
+          <textarea id="category-description" name="description" rows="3" class="form-input" placeholder="Mô tả về danh mục này..."></textarea>
+        </div>
+        <div class="admin-form-footer">
+          <button id="category-reset-button" type="button" class="btn-text">Làm mới form</button>
+          <button id="category-submit-button" type="submit" class="btn-save">Lưu danh mục</button>
+        </div>
+        <p id="category-message" class="admin-message" aria-live="polite"></p>
       </form>
     </div>
   </div>
