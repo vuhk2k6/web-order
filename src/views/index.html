@@ -20,7 +20,7 @@
       <nav class="navbar-center" aria-label="Thanh điều hướng chính">
         <a href="#hero" class="navbar-link" tabindex="0">Trang chủ</a>
         <a href="/menu" class="navbar-link" tabindex="0">Thực đơn</a>
-        <a href="#reservation" class="navbar-link" tabindex="0">Đặt bàn</a>
+        <a href="/reservation" class="navbar-link" tabindex="0">Đặt bàn</a>
         <a href="#promotions" class="navbar-link" tabindex="0">Tin tức &amp; khuyến mãi</a>
       </nav>
       <div class="navbar-right">
@@ -85,11 +85,13 @@
             tabindex="0" aria-label="Gọi món online ngay">
             Gọi món ngay
           </a>
-          <button id="cta-reservation"
+          <a href="/reservation"
             class="btn-outline"
-            type="button" tabindex="0" aria-label="Cuộn tới form đặt bàn">
+            style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;"
+            tabindex="0"
+            aria-label="Đi đến trang đặt bàn">
             Đặt bàn trước
-          </button>
+          </a>
         </div>
         <dl class="hero-stats">
           <div>
@@ -183,15 +185,15 @@
 
     <section id="promotions" class="section container">
       <div class="section-header">
-        <div>
-          <h2 class="section-title">Ưu đãi hiện tại</h2>
-          <p class="section-subtitle">
+      <div>
+        <h2 class="section-title">Ưu đãi hiện tại</h2>
+        <p class="section-subtitle">
             Tận hưởng các chương trình khuyến mãi hấp dẫn khi đặt món online.
-          </p>
-          <p class="section-subtitle">
+        </p>
+        <p class="section-subtitle">
             Chúng tôi thường xuyên cập nhật những gói ưu đãi đặc biệt cho thực phẩm organic và tự nhiên 
             để bạn có thêm lý do lựa chọn lối sống lành mạnh.
-          </p>
+        </p>
         </div>
       </div>
       <div class="promotions-grid">
@@ -221,62 +223,20 @@
       </div>
     </section>
 
-    <section id="reservation" class="reservation container">
-      <h2 class="reservation-title">Đặt bàn</h2>
-      <p class="reservation-text">
-        Đặt bàn trước để đảm bảo chỗ ngồi cho bạn và người thân. Chúng tôi sẽ xác nhận đặt bàn và chuẩn bị không gian phù hợp nhất cho trải nghiệm ẩm thực của bạn.
-      </p>
-      <form id="reservation-form" class="form" aria-label="Form đặt bàn">
+    <section id="reservation" class="section container">
+      <div class="section-header">
         <div>
-          <label for="name" class="form-label">HỌ VÀ TÊN</label>
-          <input id="name" name="name" type="text" required
-            class="form-input"
-            placeholder="Nhập họ và tên của bạn" />
-        </div>
-        <div class="form-row">
-          <div>
-            <label for="phone" class="form-label">SỐ ĐIỆN THOẠI</label>
-            <input id="phone" name="phone" type="tel" required
-              class="form-input"
-              placeholder="VD: 09xx xxx xxx" />
-          </div>
-          <div>
-            <label for="guests" class="form-label">SỐ LƯỢNG KHÁCH</label>
-            <input id="guests" name="guests" type="number" min="1" max="50" required
-              class="form-input"
-              placeholder="VD: 4" />
+          <h2 class="section-title">Đặt bàn trực tuyến</h2>
+          <p class="section-subtitle">
+            Đặt bàn trước để đảm bảo chỗ ngồi cho bạn và người thân. Chúng tôi sẽ xác nhận đặt bàn và chuẩn bị không gian phù hợp nhất cho trải nghiệm ẩm thực của bạn.
+          </p>
           </div>
         </div>
-        <div class="form-row">
-          <div class="form-input-wrapper">
-            <label for="date" class="form-label">NGÀY</label>
-            <input id="date" name="date" type="date" required
-              class="form-input form-input-date" placeholder="dd/mm/yyyy" />
-            <svg class="form-input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M8 2V6M16 2V6M3 10H21M5 4H19C20.1046 4 21 4.89543 21 6V20C21 21.1046 20.1046 22 19 22H5C3.89543 22 3 21.1046 3 20V6C3 4.89543 3.89543 4 5 4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <div class="form-input-wrapper">
-            <label for="time" class="form-label">GIỜ</label>
-            <input id="time" name="time" type="time" required
-              class="form-input form-input-time" placeholder="--:--" />
-            <svg class="form-input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-              <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </div>
+      <div style="margin-top: 32px; text-align: center;">
+        <a href="/reservation" class="btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">
+          Đặt bàn ngay
+        </a>
         </div>
-        <div>
-          <label for="note" class="form-label">GHI CHÚ</label>
-          <textarea id="note" name="note" rows="3"
-            class="form-textarea"
-            placeholder="Yêu cầu đặc biệt về chỗ ngồi, dịp kỷ niệm, hoặc yêu cầu về món ăn (nếu có)"></textarea>
-        </div>
-        <button type="submit" class="btn-reserve">
-          GỬI YÊU CẦU ĐẶT BÀN
-        </button>
-        <p id="reservation-message" class="reservation-message" aria-live="polite"></p>
-      </form>
     </section>
 
     <section id="membership" class="section container">
@@ -346,7 +306,7 @@
             <p class="review-text">
               "Tích điểm thành viên rất có lợi, mình thường dùng điểm để được giảm giá khi mua hàng. 
               Chương trình ưu đãi rất hấp dẫn và phù hợp với nhu cầu ăn uống lành mạnh."
-            </p>
+          </p>
           </div>
         </article>
       </div>
@@ -359,41 +319,41 @@
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-      </button>
+        </button>
       <div class="auth-modal-content">
         <div class="auth-modal-illustration">
           <img src="/img/loginout.jpg" alt="Illustration" class="auth-illustration-img" />
-        </div>
+      </div>
         <div class="auth-modal-form-wrapper">
-          <div class="auth-tabs" role="tablist">
-            <button type="button" id="auth-tab-login" class="auth-tab active" role="tab" aria-selected="true">
-              Đăng nhập
-            </button>
-            <button type="button" id="auth-tab-register" class="auth-tab" role="tab" aria-selected="false">
+      <div class="auth-tabs" role="tablist">
+        <button type="button" id="auth-tab-login" class="auth-tab active" role="tab" aria-selected="true">
+          Đăng nhập
+        </button>
+        <button type="button" id="auth-tab-register" class="auth-tab" role="tab" aria-selected="false">
               Tạo tài khoản
-            </button>
-          </div>
-            <div class="auth-body">
-              <form id="auth-form-login" class="form" aria-label="Form đăng nhập khách hàng">
-                <div>
-                  <label for="auth-login-phone" class="form-label">Số điện thoại</label>
+        </button>
+      </div>
+      <div class="auth-body">
+        <form id="auth-form-login" class="form" aria-label="Form đăng nhập khách hàng">
+          <div>
+            <label for="auth-login-phone" class="form-label">Số điện thoại</label>
                   <input id="auth-login-phone" name="phone" type="tel" class="form-input" placeholder="Nhập số điện thoại của bạn"
-                    required />
-                </div>
-                <div>
-                  <label for="auth-login-password" class="form-label">Mật khẩu</label>
-                  <input id="auth-login-password" name="password" type="password" class="form-input"
+              required />
+          </div>
+          <div>
+            <label for="auth-login-password" class="form-label">Mật khẩu</label>
+            <input id="auth-login-password" name="password" type="password" class="form-input"
                     placeholder="Nhập mật khẩu của bạn" required />
                   <a href="#" id="auth-forgot-password-link" class="auth-forgot-password" aria-label="Quên mật khẩu">Quên mật khẩu?</a>
-                </div>
-                <button id="auth-login-submit" type="submit" class="btn-primary auth-submit">
-                  Đăng nhập
-                </button>
-              </form>
+          </div>
+          <button id="auth-login-submit" type="submit" class="btn-primary auth-submit">
+            Đăng nhập
+          </button>
+        </form>
 
-              <form id="auth-form-register" class="form" aria-label="Form đăng ký tài khoản khách hàng"
-                style="display: none;">
-                <div>
+        <form id="auth-form-register" class="form" aria-label="Form đăng ký tài khoản khách hàng"
+          style="display: none;">
+          <div>
                   <label for="auth-register-phone" class="form-label">Số điện thoại</label>
                   <input id="auth-register-phone" name="phone" type="tel" class="form-input"
                     placeholder="Nhập số điện thoại của bạn" required />
@@ -402,34 +362,34 @@
                   <label for="auth-register-lastname" class="form-label">Họ</label>
                   <input id="auth-register-lastname" name="lastname" type="text" class="form-input"
                     placeholder="Nhập họ của bạn" required />
-                </div>
-                <div>
+          </div>
+          <div>
                   <label for="auth-register-firstname" class="form-label">Tên</label>
                   <input id="auth-register-firstname" name="firstname" type="text" class="form-input"
                     placeholder="Nhập tên của bạn" required />
-                </div>
-                <div>
-                  <label for="auth-register-email" class="form-label">Email</label>
-                  <input id="auth-register-email" name="email" type="email" class="form-input"
+          </div>
+          <div>
+            <label for="auth-register-email" class="form-label">Email</label>
+            <input id="auth-register-email" name="email" type="email" class="form-input"
                     placeholder="Nhập email của bạn" />
-                  </div>
-                <div>
-                  <label for="auth-register-password" class="form-label">Mật khẩu</label>
-                  <input id="auth-register-password" name="password" type="password" class="form-input"
+          </div>
+          <div>
+            <label for="auth-register-password" class="form-label">Mật khẩu</label>
+            <input id="auth-register-password" name="password" type="password" class="form-input"
                     placeholder="Nhập mật khẩu của bạn" required />
                 </div>
                 <div>
                   <label for="auth-register-confirm-password" class="form-label">Xác nhận mật khẩu</label>
                   <input id="auth-register-confirm-password" name="confirmPassword" type="password" class="form-input"
                     placeholder="Xác nhận mật khẩu của bạn" required />
-                </div>
-                <button id="auth-register-submit" type="submit" class="btn-primary auth-submit">
+          </div>
+          <button id="auth-register-submit" type="submit" class="btn-primary auth-submit">
                   Tạo tài khoản
-                </button>
-              </form>
+          </button>
+        </form>
 
-              <p id="auth-message" class="auth-error" aria-live="polite" style="display: none;"></p>
-            </div>
+        <p id="auth-message" class="auth-error" aria-live="polite" style="display: none;"></p>
+      </div>
           </div>
         </div>
       </div>
@@ -458,7 +418,7 @@
           <ul class="footer-links">
             <li><a href="/">Trang chủ</a></li>
             <li><a href="/menu">Thực đơn</a></li>
-            <li><a href="#reservation">Đặt bàn</a></li>
+            <li><a href="/reservation">Đặt bàn</a></li>
             <li><a href="#reviews">Đánh giá</a></li>
           </ul>
         </div>
@@ -467,7 +427,7 @@
         <div class="footer-column">
           <h3 class="footer-column-title">HỖ TRỢ</h3>
           <ul class="footer-links">
-            <li><a href="#reservation">Đặt bàn trực tuyến</a></li>
+            <li><a href="/reservation">Đặt bàn trực tuyến</a></li>
             <li><a href="/menu">Đặt món online</a></li>
             <li><a href="#membership">Chương trình thành viên</a></li>
             <li><a href="tel:0900000000">Liên hệ hỗ trợ</a></li>
@@ -479,7 +439,7 @@
           <h3 class="footer-column-title">TIỆN ÍCH</h3>
           <ul class="footer-links">
             <li><a href="/menu">Xem thực đơn</a></li>
-            <li><a href="#reservation">Đặt bàn nhanh</a></li>
+            <li><a href="/reservation">Đặt bàn nhanh</a></li>
             <li><a href="#membership">Tích điểm thành viên</a></li>
             <li><a href="/profile">Tài khoản của tôi</a></li>
           </ul>
@@ -610,6 +570,20 @@
             <span id="menu-detail-price" class="menu-detail-price"></span>
             <span id="menu-detail-price-old" class="menu-detail-price-old" style="display: none;"></span>
           </div>
+          <div class="menu-detail-specs">
+            <div class="menu-detail-spec-item">
+              <span class="menu-detail-spec-label">Size:</span>
+              <span id="menu-detail-size" class="menu-detail-spec-value"></span>
+            </div>
+          </div>
+          <div class="menu-detail-size">
+            <p class="menu-detail-size-label">Chọn size</p>
+            <div id="menu-detail-size-options" class="menu-size-options" role="group" aria-label="Chọn size món">
+              <button type="button" class="menu-size-option" data-size="Nhỏ (S)">Nhỏ (S)</button>
+              <button type="button" class="menu-size-option active" data-size="Vừa (M)">Vừa (M)</button>
+              <button type="button" class="menu-size-option" data-size="Lớn (L)">Lớn (L)</button>
+            </div>
+          </div>
           <div class="menu-detail-description-wrapper">
             <p id="menu-detail-description" class="menu-detail-description"></p>
           </div>
@@ -621,6 +595,10 @@
             <div class="menu-detail-spec-item">
               <span class="menu-detail-spec-label">Calo:</span>
               <span id="menu-detail-calories" class="menu-detail-spec-value"></span>
+            </div>
+            <div class="menu-detail-spec-item">
+              <span class="menu-detail-spec-label">Ghi chú:</span>
+              <span id="menu-detail-note" class="menu-detail-spec-value"></span>
             </div>
           </div>
           <div class="menu-detail-actions">

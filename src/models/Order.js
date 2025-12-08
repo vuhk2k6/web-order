@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+require('./Promotion'); // đảm bảo model Promotion được đăng ký trước khi populate
 
 const orderSchema = new mongoose.Schema(
   {

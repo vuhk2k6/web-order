@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Giỏ hàng - Nhà hàng CAFRROTSFUD</title>
+  <link rel="stylesheet" href="/@style/main.css" />
+  <link rel="stylesheet" href="/@style/cart.css" />
+</head>
+
+<body class="page cart-page">
+  <div id="shared-header"></div>
+
+  <main class="main-content cart-main">
+    <div class="container cart-layout">
+      <section class="cart-panel">
+        <div class="cart-panel-header">
+          <div>
+            <p class="cart-breadcrumb">Trang chủ / Giỏ hàng</p>
+            <h1 class="cart-title">Giỏ hàng của bạn</h1>
+            <p class="cart-subtitle">Kiểm tra các món đã chọn và điều chỉnh số lượng trước khi thanh toán.</p>
+          </div>
+          <a href="/menu" class="btn-text cart-continue-link" aria-label="Tiếp tục mua sắm">Tiếp tục mua</a>
+        </div>
+
+        <div id="cart-empty-state" class="cart-empty-state" style="display: none;">
+          <div class="cart-empty-illustration" aria-hidden="true">🛒</div>
+          <h2>Giỏ hàng trống</h2>
+          <p>Thêm món từ thực đơn để bắt đầu đơn hàng của bạn.</p>
+          <a href="/menu" class="btn-primary">Xem thực đơn</a>
+        </div>
+
+        <div id="cart-list" class="cart-items-list" aria-live="polite" aria-label="Danh sách sản phẩm trong giỏ"></div>
+      </section>
+
+      <aside class="cart-summary" aria-label="Tóm tắt đơn hàng">
+        <div class="cart-summary-header">
+          <h2>Tóm tắt</h2>
+          <p>Kiểm tra phí tạm tính trước khi thanh toán.</p>
+        </div>
+        <div class="cart-summary-body">
+          <div class="summary-row">
+            <span>Tạm tính</span>
+            <strong id="cart-subtotal">0 đ</strong>
+          </div>
+          <div class="summary-row">
+            <span>Giảm giá</span>
+            <strong>0 đ</strong>
+          </div>
+          <div class="summary-row summary-total">
+            <span>Tổng cộng</span>
+            <strong id="cart-total">0 đ</strong>
+          </div>
+        </div>
+        <div class="cart-summary-actions">
+          <button type="button" id="cart-checkout" class="btn-primary cart-summary-button" disabled>Thanh toán</button>
+          <button type="button" id="cart-continue" class="btn-outline cart-secondary-button">Tiếp tục mua</button>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script src="/js/header.js" defer></script>
+  <script src="/js/cart.js" defer></script>
+</body>
+
+</html>
+

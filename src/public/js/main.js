@@ -6,7 +6,13 @@ const cartState = {
 const loadCartItems = () => {
   try {
     const stored = localStorage.getItem('cartItems');
-    return stored ? JSON.parse(stored) : [];
+    const parsed = stored ? JSON.parse(stored) : [];
+    return Array.isArray(parsed)
+      ? parsed.map((item) => ({
+          ...item,
+          size: item.size || 'Vừa (M)'
+        }))
+      : [];
   } catch (error) {
     console.error('Lỗi khi tải giỏ hàng từ localStorage:', error);
     return [];
@@ -46,6 +52,7 @@ const renderCartDropdown = () => {
   const emptyMessage = document.getElementById('cart-empty');
   const totalElement = document.getElementById('cart-total');
   const checkoutButton = document.getElementById('cart-checkout-button');
+  const viewCartLink = document.querySelector('.cart-view-button');
 
   if (!itemsContainer || !emptyMessage || !totalElement || !checkoutButton) {
     return;
@@ -70,6 +77,7 @@ const renderCartDropdown = () => {
         const itemPrice = item.price || 0;
         const itemQuantity = item.quantity || 1;
         const itemImage = item.image || '';
+        const itemSize = item.size || 'Vừa (M)';
         const itemTotal = itemPrice * itemQuantity;
         
         return `
@@ -87,6 +95,7 @@ const renderCartDropdown = () => {
           `}
           <div class="cart-item-content">
             <p class="cart-item-name">${itemName}</p>
+            <p class="cart-item-size">${itemSize}</p>
             <p class="cart-item-price-unit">${itemPrice.toLocaleString('vi-VN')} đ</p>
             <div class="cart-item-quantity">
               <button type="button" class="cart-quantity-btn cart-quantity-decrease" data-item-id="${itemId}" aria-label="Giảm số lượng">
@@ -199,6 +208,7 @@ const addItemToCart = (payload) => {
   const itemName = payload.name || 'Món ăn';
   const itemPrice = Number(payload.price) || 0;
   const itemImage = payload.image || '';
+  const itemSize = payload.size || 'Vừa (M)';
   const quantityToAdd = payload.quantity && payload.quantity > 0 ? Number(payload.quantity) : 1;
 
   if (!itemId || itemPrice <= 0) {
@@ -221,6 +231,7 @@ const addItemToCart = (payload) => {
       name: itemName,
       price: itemPrice,
       image: itemImage,
+      size: itemSize,
       quantity: quantityToAdd
     });
   }
@@ -262,6 +273,100 @@ const showAddToCartFeedback = (itemName) => {
   window.setTimeout(() => {
     feedbackEl.classList.remove('show');
   }, 2000);
+};
+
+// Fallback modal detail cho trang không nạp menu.js (ví dụ trang chủ)
+const openHomeMenuDetailModal = (item) => {
+  const overlay = document.getElementById('menu-detail-modal-overlay');
+  if (!overlay) {
+    console.warn('Không tìm thấy modal chi tiết món trên trang này');
+    return;
+  }
+
+  const image = document.getElementById('menu-detail-image');
+  const title = document.getElementById('menu-detail-title');
+  const price = document.getElementById('menu-detail-price');
+  const priceOld = document.getElementById('menu-detail-price-old');
+  const description = document.getElementById('menu-detail-description');
+  const sizeLabel = document.getElementById('menu-detail-size');
+  const ingredients = document.getElementById('menu-detail-ingredients');
+  const calories = document.getElementById('menu-detail-calories');
+  const note = document.getElementById('menu-detail-note');
+  const sizeOptionsContainer = document.getElementById('menu-detail-size-options');
+  const addButton = document.getElementById('menu-detail-add-button');
+
+  if (image) {
+    image.src = item.image || '';
+    image.alt = item.name || 'Ảnh món ăn';
+  }
+  if (title) {
+    title.textContent = item.name || 'Món ăn';
+  }
+  if (price) {
+    price.textContent = formatCurrencyVnd(item.price);
+  }
+  if (priceOld) {
+    if (item.originalPrice && item.originalPrice > item.price) {
+      priceOld.textContent = formatCurrencyVnd(item.originalPrice);
+      priceOld.style.display = 'inline';
+    } else {
+      priceOld.style.display = 'none';
+    }
+  }
+  if (description) {
+    description.textContent = item.description || 'Món ăn đặc biệt của nhà hàng.';
+  }
+  let selectedSize = item.size || 'Vừa (M)';
+  if (sizeLabel) {
+    sizeLabel.textContent = selectedSize;
+  }
+  if (ingredients) {
+    ingredients.textContent = item.ingredients || item.ingredientsList || 'Đang cập nhật';
+  }
+  if (calories) {
+    calories.textContent = item.calories ? `${item.calories} kcal` : 'Đang cập nhật';
+  }
+  if (note) {
+    note.textContent = item.note || 'Đang cập nhật';
+  }
+
+  if (sizeOptionsContainer) {
+    const options = Array.from(sizeOptionsContainer.querySelectorAll('.menu-size-option'));
+    options.forEach((btn) => btn.classList.toggle('active', btn.getAttribute('data-size') === selectedSize));
+    options.forEach((btn) => {
+      btn.onclick = () => {
+        selectedSize = btn.getAttribute('data-size');
+        if (sizeLabel) sizeLabel.textContent = selectedSize;
+        options.forEach((b) => b.classList.toggle('active', b === btn));
+      };
+    });
+  }
+
+  if (addButton) {
+    const newBtn = addButton.cloneNode(true);
+    addButton.parentNode.replaceChild(newBtn, addButton);
+    newBtn.addEventListener('click', () => {
+      addItemToCart({
+        id: item._id || item.id,
+        name: item.name,
+        price: item.price,
+        image: item.image,
+        size: selectedSize,
+        quantity: 1
+      });
+      closeHomeMenuDetailModal();
+    });
+  }
+
+  overlay.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+};
+
+const closeHomeMenuDetailModal = () => {
+  const overlay = document.getElementById('menu-detail-modal-overlay');
+  if (!overlay) return;
+  overlay.style.display = 'none';
+  document.body.style.overflow = '';
 };
 
 const updateCartItemQuantity = (itemId, newQuantity) => {
@@ -349,20 +454,48 @@ const handleCheckout = () => {
   // Close dropdown before redirecting
   closeCartDropdown();
   
-  // Redirect to checkout page
-  window.location.href = '/checkout';
+  // Redirect to cart detail page
+  window.location.href = '/cart';
 };
 
 const setupCartListeners = () => {
   const cartButton = document.querySelector('.btn-cart');
   const cartCloseButton = document.getElementById('cart-close-button');
   const checkoutButton = document.getElementById('cart-checkout-button');
+  const cartDropdown = document.getElementById('cart-dropdown');
+  const viewCartLink = document.querySelector('.cart-view-button');
 
   if (cartButton) {
+    const isDesktop = () => window.innerWidth > 640;
+    const clearHoverTimer = () => {
+      if (window.cartHoverTimeout) {
+        window.clearTimeout(window.cartHoverTimeout);
+        window.cartHoverTimeout = null;
+      }
+    };
+    const openOnHover = () => {
+      if (!isDesktop()) return;
+      clearHoverTimer();
+      openCartDropdown();
+    };
+    const closeAfterDelay = () => {
+      if (!isDesktop()) return;
+      clearHoverTimer();
+      window.cartHoverTimeout = window.setTimeout(() => {
+        closeCartDropdown();
+      }, 220);
+    };
     const handleCartClick = (e) => {
       e.preventDefault();
       e.stopPropagation();
+      if (isDesktop()) {
+        // Desktop: click mở trang chi tiết
+        closeCartDropdown();
+        window.location.href = '/cart';
+      } else {
+        // Mobile: toggle dropdown
       toggleCartDropdown();
+      }
     };
     
     // Remove old listeners by cloning
@@ -371,6 +504,13 @@ const setupCartListeners = () => {
     
     // Attach new listener
     newCartButton.addEventListener('click', handleCartClick);
+    newCartButton.addEventListener('mouseenter', openOnHover);
+    newCartButton.addEventListener('mouseleave', closeAfterDelay);
+    
+    if (cartDropdown) {
+      cartDropdown.addEventListener('mouseenter', openOnHover);
+      cartDropdown.addEventListener('mouseleave', closeAfterDelay);
+    }
   }
 
   if (cartCloseButton) {
@@ -391,6 +531,13 @@ const setupCartListeners = () => {
     };
     checkoutButton.removeEventListener('click', handleCheckoutClick);
     checkoutButton.addEventListener('click', handleCheckoutClick);
+  }
+
+  if (viewCartLink) {
+    viewCartLink.addEventListener('click', () => {
+      closeCartDropdown();
+      window.location.href = '/cart';
+    });
   }
   
   // Close dropdown when clicking outside
@@ -520,6 +667,27 @@ const createMenuCard = (item) => {
   description.className = 'menu-card-description';
   description.textContent = item.description || 'Món ăn đặc biệt của nhà hàng.';
 
+  // Size selector (inline)
+  const sizeRow = document.createElement('div');
+  sizeRow.className = 'menu-card-size-inline';
+  const sizes = item.sizes || ['Nhỏ (S)', 'Vừa (M)', 'Lớn (L)'];
+  let selectedSize = item.size || sizes[1] || 'Vừa (M)';
+  sizes.forEach((label) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'menu-size-chip';
+    btn.textContent = label;
+    btn.setAttribute('data-size', label);
+    if (label === selectedSize) btn.classList.add('active');
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      selectedSize = label;
+      sizeRow.querySelectorAll('.menu-size-chip').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+    sizeRow.appendChild(btn);
+  });
+
   const actions = document.createElement('div');
   actions.className = 'menu-card-actions';
 
@@ -534,9 +702,9 @@ const createMenuCard = (item) => {
     e.preventDefault();
     // Open detail modal
     if (window.openMenuDetailModal) {
-      window.openMenuDetailModal(item);
+      window.openMenuDetailModal({ ...item, size: selectedSize });
     } else {
-      console.warn('openMenuDetailModal không khả dụng');
+      openHomeMenuDetailModal({ ...item, size: selectedSize });
     }
   });
 
@@ -559,7 +727,7 @@ const createMenuCard = (item) => {
     const maxAttempts = 20;
 
     while (!cartReady && attempts < maxAttempts) {
-      if (window.appCart && typeof window.appCart.addItem === 'function') {
+    if (window.appCart && typeof window.appCart.addItem === 'function') {
         cartReady = true;
       } else {
         await new Promise((resolve) => window.setTimeout(resolve, 50));
@@ -578,12 +746,13 @@ const createMenuCard = (item) => {
 
     try {
       const success = window.appCart.addItem({
-        id: item._id || item.id,
-        name: item.name,
-        price: item.price,
-        image: item.image,
-        quantity: 1
-      });
+      id: item._id || item.id,
+      name: item.name,
+      price: item.price,
+      image: item.image,
+        size: selectedSize,
+      quantity: 1
+    });
 
       if (success) {
         addButton.textContent = 'Đã thêm ✓';
@@ -610,6 +779,7 @@ const createMenuCard = (item) => {
 
   cardContent.appendChild(titleRow);
   cardContent.appendChild(description);
+  cardContent.appendChild(sizeRow);
   cardContent.appendChild(actions);
 
   card.appendChild(imageWrapper);
@@ -660,62 +830,10 @@ const renderMenu = (items) => {
 };
 
 // Utility functions for homepage
-const handleScrollToReservation = () => {
-  const reservationSection = document.getElementById('reservation');
+// Reservation form moved to /reservation page
+// No need for scroll handler anymore
 
-  if (!reservationSection) {
-    return;
-  }
-
-    reservationSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-};
-
-const handleSubmitReservation = (event) => {
-  event.preventDefault();
-
-  const nameInput = document.getElementById('name');
-  const phoneInput = document.getElementById('phone');
-  const guestsInput = document.getElementById('guests');
-  const dateInput = document.getElementById('date');
-  const timeInput = document.getElementById('time');
-  const messageElement = document.getElementById('reservation-message');
-  
-  if (
-    !nameInput ||
-    !phoneInput ||
-    !guestsInput ||
-    !dateInput ||
-    !timeInput ||
-    !messageElement
-  ) {
-    return;
-  }
-
-  const name = nameInput.value.trim();
-  const phone = phoneInput.value.trim();
-  const guests = guestsInput.value.trim();
-  const date = dateInput.value;
-  const time = timeInput.value;
-
-  if (!name || !phone || !guests || !date || !time) {
-    messageElement.textContent = 'Vui lòng điền đầy đủ thông tin đặt bàn.';
-    messageElement.className = 'reservation-message error';
-    messageElement.style.display = 'block';
-    return;
-  }
-
-  messageElement.textContent =
-    'Cảm ơn bạn! Chúng tôi đã ghi nhận yêu cầu và sẽ liên hệ xác nhận trong thời gian sớm nhất.';
-    messageElement.className = 'reservation-message success';
-    messageElement.style.display = 'block';
-
-  window.setTimeout(() => {
-    const form = document.getElementById('reservation-form');
-    if (form) {
-      form.reset();
-  }
-  }, 500);
-};
+// Reservation form handling moved to /reservation page (reservation.js)
 
 const initializeFooterYear = () => {
   const yearElement = document.getElementById('footer-year');
@@ -892,18 +1010,16 @@ const initializeHomePageMenuDetailModal = () => {
 
   if (closeButton) {
     closeButton.addEventListener('click', () => {
-      if (window.closeMenuDetailModal) {
-        window.closeMenuDetailModal();
-      }
+      if (window.closeMenuDetailModal) window.closeMenuDetailModal();
+      else closeHomeMenuDetailModal();
     });
   }
 
   if (overlay) {
     overlay.addEventListener('click', (event) => {
       if (event.target === overlay) {
-        if (window.closeMenuDetailModal) {
-          window.closeMenuDetailModal();
-        }
+        if (window.closeMenuDetailModal) window.closeMenuDetailModal();
+        else closeHomeMenuDetailModal();
       }
     });
   }
@@ -911,17 +1027,16 @@ const initializeHomePageMenuDetailModal = () => {
   // Close on Escape key
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && overlay && overlay.style.display === 'flex') {
-      if (window.closeMenuDetailModal) {
-        window.closeMenuDetailModal();
-      }
-    }
+      if (window.closeMenuDetailModal) window.closeMenuDetailModal();
+      else closeHomeMenuDetailModal();
+  }
   });
 };
 
 const initializeHomePage = () => {
   const heroVideo = document.getElementById('hero-video');
-  const ctaReservationButton = document.getElementById('cta-reservation');
-  const reservationForm = document.getElementById('reservation-form');
+  // Reservation button is now a link to /reservation page
+  // Reservation form is on separate page
   const authOpenButton = document.getElementById('auth-open-button');
   const authCloseButton = document.getElementById('auth-close-button');
   const authOverlay = document.getElementById('auth-modal-overlay');
@@ -979,8 +1094,8 @@ const initializeHomePage = () => {
     if (heroCardImage) {
       heroCardImage.addEventListener('click', handleVideoClick);
       console.log('[Gallery] Added click handler to hero-card-image');
-    }
-    
+  }
+
     // Make video clickable
     heroVideo.style.cursor = 'pointer';
     heroVideo.setAttribute('role', 'button');
@@ -1022,19 +1137,8 @@ const initializeHomePage = () => {
   });
 
   // Reservation handlers
-  if (ctaReservationButton) {
-    ctaReservationButton.addEventListener('click', handleScrollToReservation);
-    ctaReservationButton.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        handleScrollToReservation();
-      }
-    });
-  }
-
-  if (reservationForm) {
-    reservationForm.addEventListener('submit', handleSubmitReservation);
-  }
+  // Reservation button is now a link, no JavaScript handler needed
+  // Reservation form is handled in reservation.js on /reservation page
 
   // Auth handlers will be set up by initializeAuthModal
   // Don't set up here to avoid conflicts
@@ -1084,8 +1188,8 @@ const initializeHomePage = () => {
       e.preventDefault();
       if (typeof window.switchAuthTab === 'function' && typeof window.openAuthModal === 'function') {
         window.switchAuthTab('register');
-        window.openAuthModal();
-      }
+            window.openAuthModal();
+          }
     };
 
     membershipRegisterCard.addEventListener('click', handleMembershipCardClick);
@@ -1178,10 +1282,18 @@ const shouldInitializeHomePage = () => {
 if (shouldInitializeHomePage()) {
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
+    if (typeof window !== 'undefined') {
+      if (!window.openMenuDetailModal) window.openMenuDetailModal = openHomeMenuDetailModal;
+      if (!window.closeMenuDetailModal) window.closeMenuDetailModal = closeHomeMenuDetailModal;
+    }
       initializeHomePageMenuDetailModal();
       initializeHomePage();
     });
   } else {
+  if (typeof window !== 'undefined') {
+    if (!window.openMenuDetailModal) window.openMenuDetailModal = openHomeMenuDetailModal;
+    if (!window.closeMenuDetailModal) window.closeMenuDetailModal = closeHomeMenuDetailModal;
+  }
     initializeHomePageMenuDetailModal();
     initializeHomePage();
   }

@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const { MenuItem } = require('../models/MenuItem');
 
 const router = express.Router();
@@ -12,6 +13,33 @@ router.get('/', (req, res) => {
 router.get('/menu', (req, res) => {
   const menuPath = path.join(__dirname, '..', 'views', 'menu.html');
   res.sendFile(menuPath);
+});
+
+router.get('/cart', (req, res) => {
+  const cartPath = path.join(__dirname, '..', 'views', 'cart.html');
+  res.sendFile(cartPath);
+});
+
+router.get('/reservation', (req, res) => {
+  try {
+    console.log('[Route /reservation] Route matched!');
+    const reservationPath = path.join(__dirname, '..', 'views', 'reservation.html');
+    console.log('[Route /reservation] Full path:', reservationPath);
+    
+    // Check if file exists
+    if (!fs.existsSync(reservationPath)) {
+      console.error('[Route /reservation] File not found at:', reservationPath);
+      return res.status(404).send('Reservation page file not found');
+    }
+    
+    console.log('[Route /reservation] File exists, sending...');
+    res.sendFile(reservationPath);
+  } catch (error) {
+    console.error('[Route /reservation] Unexpected error:', error);
+    if (!res.headersSent) {
+      res.status(500).send('Error loading reservation page');
+    }
+  }
 });
 
 router.get('/profile', (req, res) => {

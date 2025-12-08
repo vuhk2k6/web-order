@@ -2,8 +2,11 @@ const express = require('express');
 const path = require('path');
 const multer = require('multer');
 const { MenuItem } = require('../models/MenuItem');
+const { Promotion } = require('../models/Promotion'); // đảm bảo đăng ký model trước khi populate
 const { Order } = require('../models/Order');
 const { Customer } = require('../models/Customer');
+const { Member } = require('../models/Member');
+const { PointTransaction } = require('../models/PointTransaction');
 const { uploadImageToS3 } = require('../config/s3');
 
 const router = express.Router();
@@ -17,6 +20,130 @@ const upload = multer({
 router.get('/', (req, res) => {
   const adminPath = path.join(__dirname, '..', 'views', 'admin.html');
   res.sendFile(adminPath);
+});
+
+router.get('/orders', (req, res) => {
+  const ordersPath = path.join(__dirname, '..', 'views', 'admin-orders.html');
+  res.sendFile(ordersPath);
+});
+
+router.get('/orders/', (req, res) => {
+  const ordersPath = path.join(__dirname, '..', 'views', 'admin-orders.html');
+  res.sendFile(ordersPath);
+});
+
+router.get('/reservations', (req, res) => {
+  const reservationsPath = path.join(__dirname, '..', 'views', 'admin-reservations.html');
+  res.sendFile(reservationsPath);
+});
+
+router.get('/reservations/', (req, res) => {
+  const reservationsPath = path.join(__dirname, '..', 'views', 'admin-reservations.html');
+  res.sendFile(reservationsPath);
+});
+
+router.get('/menu', (req, res) => {
+  const menuPath = path.join(__dirname, '..', 'views', 'admin-menu.html');
+  res.sendFile(menuPath);
+});
+
+router.get('/menu/', (req, res) => {
+  const menuPath = path.join(__dirname, '..', 'views', 'admin-menu.html');
+  res.sendFile(menuPath);
+});
+
+router.get('/customers', (req, res) => {
+  const customersPath = path.join(__dirname, '..', 'views', 'admin-customers.html');
+  res.sendFile(customersPath);
+});
+
+router.get('/customers/', (req, res) => {
+  const customersPath = path.join(__dirname, '..', 'views', 'admin-customers.html');
+  res.sendFile(customersPath);
+});
+
+router.get('/api/customers/:id/detail', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const customer = await Customer.findById(id).select('-passwordHash').lean();
+    if (!customer) {
+      return res.status(404).json({ message: 'Không tìm thấy khách hàng' });
+    }
+
+    const member = await Member.findOne({ customer: id }).lean();
+
+    const orders = await Order.find({ customer: id })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .lean();
+
+    const orderTypeMap = {
+      TAI_CHO: 'Tại chỗ',
+      ONLINE: 'Giao hàng',
+      MANG_VE: 'Mang về'
+    };
+
+    const statusMap = {
+      CHO_XAC_NHAN: 'Chờ xác nhận',
+      DA_XAC_NHAN: 'Đã xác nhận',
+      DANG_CHUAN_BI: 'Đang chuẩn bị',
+      DANG_GIAO: 'Đang giao',
+      HOAN_THANH: 'Hoàn thành',
+      DA_HUY: 'Đã hủy'
+    };
+
+    const mappedOrders = orders.map((order) => ({
+      id: order._id.toString(),
+      totalAmount: order.totalAmount,
+      orderTypeText: orderTypeMap[order.orderType] || order.orderType,
+      statusText: statusMap[order.status] || order.status,
+      createdAt: order.createdAt ? new Date(order.createdAt).toLocaleString('vi-VN') : ''
+    }));
+
+    const pointBalance = member?.points ?? 0;
+
+    const recentTransactions = await PointTransaction.find({ member: member?._id })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .lean();
+
+    const mappedTransactions = (recentTransactions || []).map((tx) => ({
+      id: tx._id.toString(),
+      type: tx.type,
+      points: tx.points,
+      note: tx.note || '',
+      createdAt: tx.createdAt ? new Date(tx.createdAt).toLocaleString('vi-VN') : ''
+    }));
+
+    res.json({
+      customer: {
+        ...customer,
+        _id: customer._id.toString(),
+        id: customer._id.toString(),
+        createdAt: customer.createdAt ? new Date(customer.createdAt).toLocaleString('vi-VN') : ''
+      },
+      member: member
+        ? {
+            ...member,
+            _id: member._id.toString(),
+            id: member._id.toString(),
+            points: member.points ?? 0,
+            totalSpent: member.totalSpent ?? 0,
+            tier: member.tier || '',
+            createdAt: member.createdAt ? new Date(member.createdAt).toLocaleString('vi-VN') : ''
+          }
+        : null,
+      orders: mappedOrders,
+      points: {
+        balance: pointBalance,
+        transactions: mappedTransactions
+      }
+    });
+  } catch (error) {
+    console.error('[Admin API] Lỗi khi lấy chi tiết khách hàng:', error);
+    res.status(500).json({ message: 'Không thể tải chi tiết khách hàng', error: error.message });
+  }
 });
 
 router.get('/login', (req, res) => {
@@ -204,6 +331,37 @@ router.get('/api/orders', async (req, res) => {
   } catch (error) {
     console.error('[Admin API] Lỗi khi lấy danh sách đơn hàng:', error);
     res.status(500).json({ message: 'Không thể tải danh sách đơn hàng', error: error.message });
+  }
+});
+
+router.get('/api/customers', async (req, res) => {
+  try {
+    const customers = await Customer.find()
+      .select('-passwordHash')
+      .sort({ createdAt: -1 })
+      .lean();
+    
+    console.log(`[Admin API] Tìm thấy ${customers.length} khách hàng trong database`);
+    
+    const mappedCustomers = customers.map(customer => {
+      const accountTypeMap = {
+        'THANH_VIEN': 'Thành viên',
+        'KHACH': 'Khách'
+      };
+      
+      return {
+        ...customer,
+        _id: customer._id.toString(),
+        id: customer._id.toString(),
+        accountTypeText: accountTypeMap[customer.accountType] || customer.accountType,
+        createdAt: customer.createdAt ? new Date(customer.createdAt).toLocaleString('vi-VN') : ''
+      };
+    });
+    
+    res.json(mappedCustomers);
+  } catch (error) {
+    console.error('[Admin API] Lỗi khi lấy danh sách khách hàng:', error);
+    res.status(500).json({ message: 'Không thể tải danh sách khách hàng', error: error.message });
   }
 });
 

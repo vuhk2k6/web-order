@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Đơn hàng - CAFRROTSFUD Admin</title>
+  <link rel="stylesheet" href="/@style/admin.css" />
+</head>
+<body class="admin-page">
+  <div class="admin-shell">
+    <aside class="admin-sidebar" aria-label="Thanh điều hướng chính">
+      <a href="/admin" class="admin-logo-link" aria-label="Về trang Tổng quan">
+        <div class="admin-logo">
+          <div class="admin-logo-mark" tabindex="0" aria-label="Logo nhà hàng">
+            <img src="/img/logoadmin.png" alt="Logo CAFRROTSFUD" class="admin-logo-img" />
+          </div>
+        </div>
+      </a>
+      <div class="sidebar-section">
+        <nav class="sidebar-nav">
+          <a href="/admin" class="nav-link" aria-label="Đi tới tổng quan">Tổng quan</a>
+          <a href="/admin/orders" class="nav-link active" aria-label="Đi tới đơn hàng">Đơn hàng</a>
+          <a href="/admin/reservations" class="nav-link" aria-label="Đi tới đặt bàn">Đặt bàn</a>
+          <a href="/admin/menu" class="nav-link" aria-label="Đi tới thực đơn">Thực đơn</a>
+          <a href="/admin/customers" class="nav-link" aria-label="Đi tới khách hàng">Khách hàng</a>
+          <a href="/admin/promotions" class="nav-link" aria-label="Đi tới khuyến mãi">Khuyến mãi</a>
+        </nav>
+      </div>
+      <div class="sidebar-footer">
+        <p class="sidebar-help">Cần hỗ trợ? Liên hệ quản trị viên.</p>
+      </div>
+    </aside>
+
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <h1 class="topbar-title">Đơn hàng</h1>
+          <p class="topbar-subtitle">Quản lý trạng thái, thanh toán và loại đơn</p>
+        </div>
+        <div class="topbar-actions">
+          <div class="topbar-search">
+            <input type="search" placeholder="Tìm đơn theo mã, khách hàng..." aria-label="Tìm kiếm đơn hàng" />
+          </div>
+          <button type="button" class="btn-secondary">Xuất báo cáo</button>
+          <button type="button" class="btn-logout">Đăng xuất</button>
+          <div class="user-avatar" aria-label="Tài khoản quản trị" tabindex="0">
+            <img src="/img/logoadmin.png" alt="Ảnh đại diện" />
+          </div>
+        </div>
+      </header>
+
+      <main id="orders-main" class="admin-content">
+        <section class="panel">
+          <div class="panel-block-header">
+            <div>
+              <h2 class="panel-title">Danh sách đơn hàng</h2>
+              <p class="panel-text">Theo dõi và cập nhật trạng thái đơn tại chỗ, giao hàng, mang về.</p>
+            </div>
+            <button type="button" class="btn-secondary" aria-label="Xuất danh sách đơn">Xuất báo cáo</button>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Mã đơn</th>
+                  <th>Khách hàng</th>
+                  <th>Loại</th>
+                  <th>Tổng tiền</th>
+                  <th>Trạng thái</th>
+                  <th>Ngày tạo</th>
+                </tr>
+              </thead>
+              <tbody id="admin-orders-body"></tbody>
+            </table>
+            <p id="admin-orders-empty" class="table-empty" style="display: none;">Chưa có đơn hàng nào trong hệ thống.</p>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div id="order-detail-modal" class="modal-overlay" aria-hidden="true">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="order-detail-title">
+      <div class="modal-header">
+        <h2 id="order-detail-title" class="panel-title">Chi tiết đơn hàng</h2>
+        <button type="button" id="order-detail-close" class="btn-text" aria-label="Đóng">Đóng</button>
+      </div>
+      <div class="admin-form" aria-label="Thông tin chi tiết đơn hàng">
+        <div>
+          <p class="panel-text"><strong>Mã đơn:</strong> <span id="od-id">—</span></p>
+          <p class="panel-text"><strong>Khách hàng:</strong> <span id="od-customer">—</span></p>
+          <p class="panel-text"><strong>Loại đơn:</strong> <span id="od-type">—</span></p>
+          <p class="panel-text"><strong>Trạng thái:</strong> <span id="od-status">—</span></p>
+          <p class="panel-text"><strong>Tổng tiền:</strong> <span id="od-total">—</span></p>
+          <p class="panel-text"><strong>Khuyến mãi:</strong> <span id="od-promo">—</span></p>
+          <p class="panel-text"><strong>Ngày tạo:</strong> <span id="od-created">—</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/admin.js" defer></script>
+</body>
+</html>
+
