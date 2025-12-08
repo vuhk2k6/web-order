@@ -4,237 +4,340 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Quản trị - Nhà hàng Gourmet</title>
+  <title>Quản trị - CAFRROTSFUD</title>
   <link rel="stylesheet" href="/@style/admin.css" />
 </head>
 
 <body class="admin-page">
-  <main class="admin-layout">
-    <header class="admin-header">
-      <div class="admin-logo">
-        <div class="admin-logo-mark" tabindex="0" aria-label="Logo nhà hàng">
-          G
+  <div class="admin-shell">
+    <aside class="admin-sidebar" aria-label="Thanh điều hướng chính">
+      <a href="#dashboard" class="admin-logo-link" aria-label="Về trang Tổng quan">
+        <div class="admin-logo">
+          <div class="admin-logo-mark" tabindex="0" aria-label="Logo nhà hàng">
+            <img src="/img/logoadmin.png" alt="Logo CAFRROTSFUD" class="admin-logo-img" />
+          </div>
         </div>
-        <div class="flex flex-col">
-          <span class="admin-logo-main">Gourmet House</span>
-          <span class="admin-logo-sub">Bảng điều khiển quản trị</span>
-        </div>
+      </a>
+      <div class="sidebar-section">
+        <nav class="sidebar-nav">
+          <a href="#dashboard" class="nav-link active" aria-label="Đi tới tổng quan">Tổng quan</a>
+          <a href="/admin/orders" class="nav-link" aria-label="Đi tới trang Đơn hàng">Đơn hàng</a>
+          <a href="/admin/reservations" class="nav-link" aria-label="Đi tới trang Đặt bàn">Đặt bàn</a>
+          <a href="/admin/menu" class="nav-link" aria-label="Đi tới trang Thực đơn">Thực đơn</a>
+          <a href="/admin/customers" class="nav-link" aria-label="Đi tới khách hàng">Khách hàng</a>
+          <a href="#promotions" class="nav-link" aria-label="Đi tới khuyến mãi">Khuyến mãi</a>
+        </nav>
       </div>
-    </header>
+      <div class="sidebar-footer">
+        <p class="sidebar-help">Cần hỗ trợ? Liên hệ quản trị viên.</p>
+      </div>
+    </aside>
 
-    <section id="admin-section" class="admin-content">
-      <div class="panel">
-        <h2 class="panel-title">Bảng điều khiển tổng quan</h2>
-        <p class="panel-text">
-          Tổng quan nhanh về tình hình hoạt động của nhà hàng trong ngày hôm nay.
-        </p>
-        <div class="admin-form" aria-label="Các chỉ số chính">
-          <div class="admin-form-row">
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <h1 class="topbar-title">Bảng điều khiển</h1>
+          <p class="topbar-subtitle">Tổng hợp nhanh hiệu suất vận hành trong ngày</p>
+        </div>
+        <div class="topbar-actions">
+          <div class="topbar-search">
+            <input type="search" placeholder="Tìm kiếm nhanh..." aria-label="Tìm kiếm trong bảng điều khiển" />
+          </div>
+          <button type="button" class="btn-secondary">+ Tạo mới</button>
+          <button type="button" class="btn-logout">Đăng xuất</button>
+          <div class="user-avatar" aria-label="Tài khoản quản trị" tabindex="0">
+            <img src="/img/logoadmin.png" alt="Ảnh đại diện" />
+          </div>
+        </div>
+      </header>
+
+      <main id="admin-section" class="admin-content">
+        <section id="dashboard" class="panel panel-hero">
+          <div class="hero-header">
             <div>
-              <p class="panel-text">Doanh thu hôm nay</p>
-              <p class="login-title">0 đ</p>
+              <p class="panel-badge">Analytics Dashboard</p>
+              <h2 class="panel-title">Hiệu suất hôm nay</h2>
+              <p class="panel-text">
+                Cập nhật nhanh doanh thu, đơn hàng, đặt bàn và lượt khách.
+              </p>
             </div>
+            <button type="button" class="btn-save" aria-label="Xem báo cáo chi tiết">Xem báo cáo</button>
+          </div>
+          <div class="summary-grid" aria-label="Các chỉ số chính">
+            <div class="summary-card">
+              <div class="summary-icon income"></div>
+              <div>
+                <p class="summary-label">Doanh thu hôm nay</p>
+                <p class="summary-value">1,7M đ</p>
+                <p class="summary-change negative">-5.1% vs hôm qua</p>
+              </div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-icon orders"></div>
+              <div>
+                <p class="summary-label">Đơn hàng</p>
+                <p class="summary-value">96 đơn</p>
+                <p class="summary-change positive">+14.1% tăng trưởng</p>
+              </div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-icon profit"></div>
+              <div>
+                <p class="summary-label">Lợi nhuận</p>
+                <p class="summary-value">563k đ</p>
+                <p class="summary-change positive">+7.3% cải thiện</p>
+              </div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-icon guests"></div>
+              <div>
+                <p class="summary-label">Khách phục vụ</p>
+                <p class="summary-value">128 khách</p>
+                <p class="summary-change neutral">Đang ổn định</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel panel-split">
+          <div class="panel-block">
+            <div class="panel-block-header">
+              <h3 class="panel-title">Hiệu suất danh mục</h3>
+              <button type="button" class="btn-text">Xem đầy đủ</button>
+            </div>
+            <div class="performance-grid">
+              <div class="performance-card">
+                <p class="performance-label">Món chính</p>
+                <p class="performance-value">54 đơn</p>
+                <p class="performance-change positive">+9% so với hôm qua</p>
+              </div>
+              <div class="performance-card">
+                <p class="performance-label">Đồ uống</p>
+                <p class="performance-value">26 đơn</p>
+                <p class="performance-change negative">-3% so với hôm qua</p>
+              </div>
+              <div class="performance-card">
+                <p class="performance-label">Tráng miệng</p>
+                <p class="performance-value">16 đơn</p>
+                <p class="performance-change positive">+4% so với hôm qua</p>
+              </div>
+            </div>
+          </div>
+          <div class="panel-block">
+            <div class="panel-block-header">
+              <h3 class="panel-title">Trạng thái bàn & đặt bàn</h3>
+              <button type="button" class="btn-text">Xem lịch</button>
+            </div>
+            <div class="status-grid">
+              <div class="status-card">
+                <p class="status-label">Bàn trống</p>
+                <p class="status-value">12/24</p>
+                <p class="status-note positive">Sẵn sàng nhận khách</p>
+              </div>
+              <div class="status-card">
+                <p class="status-label">Đặt bàn chờ</p>
+                <p class="status-value">8 lượt</p>
+                <p class="status-note neutral">Cần xác nhận</p>
+              </div>
+              <div class="status-card">
+                <p class="status-label">Khách đang dùng</p>
+                <p class="status-value">42 khách</p>
+                <p class="status-note neutral">Theo dõi phục vụ</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="orders" class="panel detail-section">
+          <div class="panel-block-header">
             <div>
-              <p class="panel-text">Đơn hàng mới</p>
-              <p class="login-title">0</p>
+              <h2 class="panel-title">Đơn hàng</h2>
+              <p class="panel-text">Theo dõi và cập nhật trạng thái đơn tại chỗ, mang về và online.</p>
             </div>
+            <button type="button" class="btn-secondary">Xuất báo cáo</button>
           </div>
-          <div class="admin-form-row">
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Mã đơn</th>
+                  <th>Khách hàng</th>
+                  <th>Loại</th>
+                  <th>Tổng tiền</th>
+                  <th>Trạng thái</th>
+                  <th>Ngày tạo</th>
+                </tr>
+              </thead>
+              <tbody id="admin-orders-body"></tbody>
+            </table>
+            <p id="admin-orders-empty" class="table-empty" style="display: none;">
+              Chưa có đơn hàng nào trong hệ thống.
+            </p>
+          </div>
+        </section>
+
+        <section id="reservations" class="panel detail-section">
+          <div class="panel-block-header">
             <div>
-              <p class="panel-text">Đặt bàn đang chờ xác nhận</p>
-              <p class="login-title">0</p>
+              <h2 class="panel-title">Đặt bàn</h2>
+              <p class="panel-text">Danh sách yêu cầu đặt bàn và trạng thái xử lý hiện tại.</p>
             </div>
+            <button type="button" class="btn-secondary">Xem lịch</button>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Mã đặt bàn</th>
+                  <th>Khách hàng</th>
+                  <th>Số khách</th>
+                  <th>Ngày giờ</th>
+                  <th>Trạng thái</th>
+                  <th>Bàn</th>
+                </tr>
+              </thead>
+              <tbody id="admin-reservations-body"></tbody>
+            </table>
+            <p class="table-empty">
+              Chưa có yêu cầu đặt bàn nào. Khi tích hợp form đặt bàn từ trang chủ, dữ liệu sẽ hiển thị tại đây.
+            </p>
+          </div>
+        </section>
+
+        <section id="menu" class="panel detail-section">
+          <div class="panel-block-header">
             <div>
-              <p class="panel-text">Bàn đang trống</p>
-              <p class="login-title">0</p>
+              <h2 class="panel-title">Thực đơn</h2>
+              <p class="panel-text">Thêm, sửa hoặc xóa các món ăn trong thực đơn.</p>
             </div>
-          </div>
-          <p class="panel-text">
-            Biểu đồ doanh thu và top món bán chạy sẽ được hiển thị tại đây sau khi chức năng báo cáo được hoàn thiện.
-          </p>
-        </div>
-      </div>
-
-      <div class="panel">
-        <h2 class="panel-title">Quản lý đơn hàng</h2>
-        <p class="panel-text">
-          Theo dõi và cập nhật trạng thái các đơn hàng tại chỗ, mang về và online.
-        </p>
-        <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Mã đơn</th>
-                <th>Khách hàng</th>
-                <th>Loại</th>
-                <th>Tổng tiền</th>
-                <th>Trạng thái</th>
-                <th>Ngày tạo</th>
-              </tr>
-            </thead>
-            <tbody id="admin-orders-body"></tbody>
-          </table>
-          <p id="admin-orders-empty" class="table-empty" style="display: none;">
-            Chưa có đơn hàng nào trong hệ thống.
-          </p>
-        </div>
-      </div>
-
-      <div class="panel">
-        <h2 class="panel-title">Quản lý đặt bàn</h2>
-        <p class="panel-text">
-          Danh sách các yêu cầu đặt bàn và trạng thái xử lý hiện tại.
-        </p>
-        <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Mã đặt bàn</th>
-                <th>Khách hàng</th>
-                <th>Số khách</th>
-                <th>Ngày giờ</th>
-                <th>Trạng thái</th>
-                <th>Bàn</th>
-              </tr>
-            </thead>
-            <tbody id="admin-reservations-body"></tbody>
-          </table>
-          <p class="table-empty">
-            Chưa có yêu cầu đặt bàn nào. Khi tích hợp form đặt bàn từ trang chủ, dữ liệu sẽ hiển thị tại đây.
-          </p>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div>
-          <div>
-            <h2 class="panel-title">Danh sách món ăn</h2>
-            <p class="panel-text">
-              Thêm, sửa hoặc xóa các món ăn trong thực đơn.
-            </p>
-          </div>
-          <button id="menu-add-button" type="button" class="btn-secondary" aria-label="Thêm món ăn mới">
-            + Thêm món mới
-          </button>
-        </div>
-        <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Ảnh</th>
-                <th>Tên món</th>
-                <th>Giá</th>
-                <th>Mô tả</th>
-                <th>Thao tác</th>
-              </tr>
-            </thead>
-            <tbody id="admin-menu-body"></tbody>
-          </table>
-          <p id="admin-menu-empty" class="table-empty">
-            Chưa có món ăn nào trong thực đơn.
-          </p>
-        </div>
-      </div>
-
-      <div class="panel">
-        <h2 class="panel-title">Quản lý khách hàng &amp; thành viên</h2>
-        <p class="panel-text">
-          Xem và quản lý thông tin khách hàng, lịch sử đơn hàng, đặt bàn và điểm tích lũy.
-        </p>
-        <div class="admin-form-row">
-          <div>
-            <p class="panel-text">Danh sách khách hàng</p>
-            <p class="table-empty">
-              Khi hoàn thiện chức năng đăng ký/đăng nhập, danh sách khách hàng sẽ xuất hiện tại đây.
-            </p>
-          </div>
-          <div>
-            <p class="panel-text">Thành viên &amp; điểm thưởng</p>
-            <p class="table-empty">
-              Thông tin cấp bậc, điểm tích lũy và lịch sử giao dịch điểm sẽ được tích hợp tại khu vực này.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <h2 class="panel-title">Quản lý khuyến mãi &amp; thanh toán</h2>
-        <p class="panel-text">
-          Cài đặt mã khuyến mãi, theo dõi lịch sử thanh toán và cấu hình phương thức thanh toán online.
-        </p>
-        <div class="admin-form-row">
-          <div>
-            <p class="panel-text">Mã khuyến mãi</p>
-            <p class="table-empty">
-              Sau khi thêm chức năng tạo và chỉnh sửa mã khuyến mãi, danh sách MA_KHUYEN_MAI sẽ hiển thị tại đây.
-            </p>
-          </div>
-          <div>
-            <p class="panel-text">Phương thức thanh toán online</p>
-            <p class="table-empty">
-              Các phương thức thanh toán từ PHUONG_THUC_TT_ONLINE (Momo, ZaloPay, thẻ tín dụng, ...) sẽ được quản lý
-              tại đây.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <div id="menu-modal-overlay" class="modal-overlay" aria-hidden="true">
-      <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="menu-modal-title">
-        <div class="modal-header">
-          <h2 id="menu-modal-title" class="panel-title">Thêm / Cập nhật món ăn</h2>
-          <button type="button" id="menu-modal-close" class="btn-text">
-            Đóng
-          </button>
-        </div>
-        <p class="panel-text">
-          Điền thông tin món ăn, sau đó nhấn Lưu để cập nhật thực đơn.
-        </p>
-        <form id="menu-form" class="admin-form" aria-label="Form thêm và chỉnh sửa món ăn">
-          <input id="menu-id" name="id" type="hidden" />
-          <div>
-            <label for="menu-name" class="form-label">Tên món</label>
-            <input id="menu-name" name="name" type="text" required class="form-input"
-              placeholder="VD: Bò bít tết, Mì Ý hải sản..." />
-          </div>
-          <div>
-            <label for="menu-price" class="form-label">Giá (VNĐ)</label>
-            <input id="menu-price" name="price" type="number" min="0" required class="form-input"
-              placeholder="VD: 250000" />
-          </div>
-          <div>
-            <label for="menu-description" class="form-label">Mô tả</label>
-            <textarea id="menu-description" name="description" rows="3" class="form-input"
-              placeholder="Mô tả ngắn về món ăn..."></textarea>
-          </div>
-          <div>
-            <label for="menu-image-file" class="form-label">Ảnh món ăn (tải lên)</label>
-            <input id="menu-image-file" name="imageFile" type="file" accept="image/*" class="form-input" />
-          </div>
-          <div>
-            <label for="menu-image" class="form-label">Ảnh (URL từ AWS S3)</label>
-            <input id="menu-image" name="image" type="text" class="form-input"
-              placeholder="https://example.com/image.jpg (tùy chọn)" />
-            <p class="panel-text">
-              Khi chọn ảnh từ máy, hệ thống sẽ tự động tải lên AWS S3 và điền đường dẫn vào ô này.
-            </p>
-            <img id="menu-image-preview" src="" alt="Xem trước ảnh món ăn"
-              style="display: none; margin-top: 8px; max-width: 160px; border-radius: 8px; border: 1px solid #1f2937;" />
-          </div>
-          <div class="admin-form-footer">
-            <button id="reset-form-button" type="button" class="btn-text">
-              Làm mới form
-            </button>
-            <button id="menu-submit-button" type="submit" class="btn-save">
-              Lưu món ăn
+            <button id="menu-add-button" type="button" class="btn-save" aria-label="Thêm món ăn mới">
+              + Thêm món mới
             </button>
           </div>
-          <p id="menu-message" class="admin-message" aria-live="polite"></p>
-        </form>
-      </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Ảnh</th>
+                  <th>Tên món</th>
+                  <th>Giá</th>
+                  <th>Mô tả</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="admin-menu-body"></tbody>
+            </table>
+            <p id="admin-menu-empty" class="table-empty">
+              Chưa có món ăn nào trong thực đơn.
+            </p>
+          </div>
+        </section>
+
+        <section id="customers" class="panel detail-section">
+          <div class="panel-block-header">
+            <div>
+              <h2 class="panel-title">Khách hàng &amp; thành viên</h2>
+              <p class="panel-text">Quản lý thông tin khách, lịch sử đơn và điểm tích lũy.</p>
+            </div>
+            <button type="button" class="btn-secondary">Nhập dữ liệu</button>
+          </div>
+          <div class="admin-form-row">
+            <div class="subpanel">
+              <p class="panel-text">Danh sách khách hàng</p>
+              <p class="table-empty">
+                Khi hoàn thiện chức năng đăng ký/đăng nhập, danh sách khách hàng sẽ xuất hiện tại đây.
+              </p>
+            </div>
+            <div class="subpanel">
+              <p class="panel-text">Thành viên &amp; điểm thưởng</p>
+              <p class="table-empty">
+                Thông tin cấp bậc, điểm tích lũy và lịch sử giao dịch điểm sẽ được tích hợp tại khu vực này.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section id="promotions" class="panel detail-section">
+          <div class="panel-block-header">
+            <div>
+              <h2 class="panel-title">Khuyến mãi &amp; thanh toán</h2>
+              <p class="panel-text">Cài đặt mã giảm, theo dõi thanh toán và cấu hình phương thức online.</p>
+            </div>
+            <button type="button" class="btn-secondary">Thêm khuyến mãi</button>
+          </div>
+          <div class="admin-form-row">
+            <div class="subpanel">
+              <p class="panel-text">Mã khuyến mãi</p>
+              <p class="table-empty">
+                Sau khi thêm chức năng tạo và chỉnh sửa mã khuyến mãi, danh sách MA_KHUYEN_MAI sẽ hiển thị tại đây.
+              </p>
+            </div>
+            <div class="subpanel">
+              <p class="panel-text">Phương thức thanh toán online</p>
+              <p class="table-empty">
+                Các phương thức thanh toán (Momo, ZaloPay, thẻ tín dụng, ...) sẽ được quản lý tại đây.
+              </p>
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
-  </main>
+  </div>
+
+  <div id="menu-modal-overlay" class="modal-overlay" aria-hidden="true">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="menu-modal-title">
+      <div class="modal-header">
+        <h2 id="menu-modal-title" class="panel-title">Thêm / Cập nhật món ăn</h2>
+        <button type="button" id="menu-modal-close" class="btn-text">
+          Đóng
+        </button>
+      </div>
+      <p class="panel-text">
+        Điền thông tin món ăn, sau đó nhấn Lưu để cập nhật thực đơn.
+      </p>
+      <form id="menu-form" class="admin-form" aria-label="Form thêm và chỉnh sửa món ăn">
+        <input id="menu-id" name="id" type="hidden" />
+        <div>
+          <label for="menu-name" class="form-label">Tên món</label>
+          <input id="menu-name" name="name" type="text" required class="form-input"
+            placeholder="VD: Bò bít tết, Mì Ý hải sản..." />
+        </div>
+        <div>
+          <label for="menu-price" class="form-label">Giá (VNĐ)</label>
+          <input id="menu-price" name="price" type="number" min="0" required class="form-input"
+            placeholder="VD: 250000" />
+        </div>
+        <div>
+          <label for="menu-description" class="form-label">Mô tả</label>
+          <textarea id="menu-description" name="description" rows="3" class="form-input"
+            placeholder="Mô tả ngắn về món ăn..."></textarea>
+        </div>
+        <div>
+          <label for="menu-image-file" class="form-label">Ảnh món ăn (tải lên)</label>
+          <input id="menu-image-file" name="imageFile" type="file" accept="image/*" class="form-input" />
+        </div>
+        <div>
+          <label for="menu-image" class="form-label">Ảnh (URL từ AWS S3)</label>
+          <input id="menu-image" name="image" type="text" class="form-input"
+            placeholder="https://example.com/image.jpg (tùy chọn)" />
+          <p class="panel-text">
+            Khi chọn ảnh từ máy, hệ thống sẽ tự động tải lên AWS S3 và điền đường dẫn vào ô này.
+          </p>
+          <img id="menu-image-preview" src="" alt="Xem trước ảnh món ăn"
+            style="display: none; margin-top: 8px; max-width: 160px; border-radius: 8px; border: 1px solid #1f2937;" />
+        </div>
+        <div class="admin-form-footer">
+          <button id="reset-form-button" type="button" class="btn-text">
+            Làm mới form
+          </button>
+          <button id="menu-submit-button" type="submit" class="btn-save">
+            Lưu món ăn
+          </button>
+        </div>
+        <p id="menu-message" class="admin-message" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
 
   <script src="/js/admin.js" defer></script>
 </body>

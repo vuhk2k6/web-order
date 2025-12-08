@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thực đơn - CAFRROTSFUD Admin</title>
+  <link rel="stylesheet" href="/@style/admin.css" />
+</head>
+<body class="admin-page">
+  <div class="admin-shell">
+    <aside class="admin-sidebar" aria-label="Thanh điều hướng chính">
+      <a href="/admin" class="admin-logo-link" aria-label="Về trang Tổng quan">
+        <div class="admin-logo">
+          <div class="admin-logo-mark" tabindex="0" aria-label="Logo nhà hàng">
+            <img src="/img/logoadmin.png" alt="Logo CAFRROTSFUD" class="admin-logo-img" />
+          </div>
+        </div>
+      </a>
+      <div class="sidebar-section">
+        <nav class="sidebar-nav">
+          <a href="/admin" class="nav-link" aria-label="Đi tới tổng quan">Tổng quan</a>
+          <a href="/admin/orders" class="nav-link" aria-label="Đi tới đơn hàng">Đơn hàng</a>
+          <a href="/admin/reservations" class="nav-link" aria-label="Đi tới đặt bàn">Đặt bàn</a>
+          <a href="/admin/menu" class="nav-link active" aria-label="Đi tới thực đơn">Thực đơn</a>
+          <a href="/admin/customers" class="nav-link" aria-label="Đi tới khách hàng">Khách hàng</a>
+          <a href="/admin/promotions" class="nav-link" aria-label="Đi tới khuyến mãi">Khuyến mãi</a>
+        </nav>
+      </div>
+      <div class="sidebar-footer">
+        <p class="sidebar-help">Cần hỗ trợ? Liên hệ quản trị viên.</p>
+      </div>
+    </aside>
+
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <h1 class="topbar-title">Thực đơn</h1>
+          <p class="topbar-subtitle">Thêm, sửa, xóa món ăn và quản lý giá</p>
+        </div>
+        <div class="topbar-actions">
+          <button type="button" id="menu-add-button" class="btn-save" aria-label="Thêm món mới">+ Thêm món mới</button>
+          <button type="button" class="btn-logout">Đăng xuất</button>
+          <div class="user-avatar" aria-label="Tài khoản quản trị" tabindex="0">
+            <img src="/img/logoadmin.png" alt="Ảnh đại diện" />
+          </div>
+        </div>
+      </header>
+
+      <main id="menu-main" class="admin-content">
+        <section class="panel">
+          <div class="panel-block-header">
+            <div>
+              <h2 class="panel-title">Danh sách món ăn</h2>
+              <p class="panel-text">Quản lý món, giá, mô tả và hình ảnh.</p>
+            </div>
+            <button type="button" class="btn-secondary" aria-label="Làm mới danh sách" onclick="window.location.reload()">Làm mới</button>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Ảnh</th>
+                  <th>Tên món</th>
+                  <th>Loại</th>
+                  <th>Giá</th>
+                  <th>Mô tả</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="admin-menu-body"></tbody>
+            </table>
+            <p id="admin-menu-empty" class="table-empty" style="display: none;">Chưa có món ăn nào trong thực đơn.</p>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div id="menu-modal-overlay" class="modal-overlay" aria-hidden="true">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="menu-modal-title">
+      <div class="modal-header">
+        <h2 id="menu-modal-title" class="panel-title">Thêm / Cập nhật món ăn</h2>
+        <button type="button" id="menu-modal-close" class="btn-text">Đóng</button>
+      </div>
+      <p class="panel-text">Điền thông tin món ăn, sau đó nhấn Lưu để cập nhật thực đơn.</p>
+      <form id="menu-form" class="admin-form" aria-label="Form thêm và chỉnh sửa món ăn">
+        <input id="menu-id" name="id" type="hidden" />
+        <div>
+          <label for="menu-name" class="form-label">Tên món</label>
+          <input id="menu-name" name="name" type="text" required class="form-input" placeholder="VD: Bò bít tết, Mì Ý hải sản..." />
+        </div>
+        <div>
+          <label for="menu-price" class="form-label">Giá (VNĐ)</label>
+          <input id="menu-price" name="price" type="number" min="0" required class="form-input" placeholder="VD: 250000" />
+        </div>
+        <div>
+          <label for="menu-description" class="form-label">Mô tả</label>
+          <textarea id="menu-description" name="description" rows="3" class="form-input" placeholder="Mô tả ngắn về món ăn..."></textarea>
+        </div>
+        <div>
+          <label for="menu-category" class="form-label">Loại món</label>
+          <select id="menu-category" name="category" class="form-input" required>
+            <option value="combo">Combo</option>
+            <option value="main">Khai vị</option>
+            <option value="appetizer">Món chính</option>
+            <option value="vegetarian">Món chay</option>
+            <option value="drink">Đồ uống</option>
+            <option value="dessert">Tráng miệng</option>
+          </select>
+        </div>
+        <div>
+          <label for="menu-image-file" class="form-label">Ảnh món ăn (tải lên)</label>
+          <input id="menu-image-file" name="imageFile" type="file" accept="image/*" class="form-input" />
+        </div>
+        <div>
+          <label for="menu-image" class="form-label">Ảnh (URL từ AWS S3)</label>
+          <input id="menu-image" name="image" type="text" class="form-input" placeholder="https://example.com/image.jpg (tùy chọn)" />
+          <p class="panel-text">Khi chọn ảnh từ máy, hệ thống sẽ tự động tải lên AWS S3 và điền đường dẫn vào ô này.</p>
+          <img id="menu-image-preview" src="" alt="Xem trước ảnh món ăn" style="display: none; margin-top: 8px; max-width: 160px; border-radius: 8px; border: 1px solid #1f2937;" />
+        </div>
+        <div class="admin-form-footer">
+          <button id="reset-form-button" type="button" class="btn-text">Làm mới form</button>
+          <button id="menu-submit-button" type="submit" class="btn-save">Lưu món ăn</button>
+        </div>
+        <p id="menu-message" class="admin-message" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/admin.js" defer></script>
+</body>
+</html>
+

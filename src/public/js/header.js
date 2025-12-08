@@ -20,7 +20,7 @@ const renderSharedHeader = (options = {}) => {
         <nav class="navbar-center" aria-label="Thanh điều hướng chính">
           <a href="/" class="navbar-link ${activeNavLink === 'home' ? 'active' : ''}" tabindex="0">Trang chủ</a>
           <a href="/menu" class="navbar-link ${activeNavLink === 'menu' ? 'active' : ''}" tabindex="0">Thực đơn</a>
-          <a href="/#reservation" class="navbar-link ${activeNavLink === 'reservation' ? 'active' : ''}" tabindex="0">Đặt bàn</a>
+          <a href="/reservation" class="navbar-link ${activeNavLink === 'reservation' ? 'active' : ''}" tabindex="0">Đặt bàn</a>
           <a href="/#promotions" class="navbar-link ${activeNavLink === 'promotions' ? 'active' : ''}" tabindex="0">Tin tức &amp; khuyến mãi</a>
         </nav>
         <div class="navbar-right">
@@ -64,9 +64,12 @@ const renderSharedHeader = (options = {}) => {
             <span>Tổng cộng</span>
             <strong id="cart-total">0 đ</strong>
           </div>
-          <button type="button" id="cart-checkout-button" class="btn-primary cart-checkout-button" disabled>
-            Thanh toán
-          </button>
+          <div class="cart-footer-actions">
+            <a href="/cart" class="btn-outline cart-view-button">Xem chi tiết</a>
+            <button type="button" id="cart-checkout-button" class="btn-primary cart-checkout-button" disabled>
+              Thanh toán
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -258,6 +261,14 @@ if (typeof window !== 'undefined') {
         options = {
           logoSubtext: 'Thực đơn nhà hàng',
           activeNavLink: 'menu',
+          showAuthButton: true,
+          authButtonText: 'Đăng nhập',
+          authButtonId: 'auth-open-button'
+        };
+      } else if (path === '/reservation') {
+        options = {
+          logoSubtext: 'Đặt bàn trực tuyến',
+          activeNavLink: 'reservation',
           showAuthButton: true,
           authButtonText: 'Đăng nhập',
           authButtonId: 'auth-open-button'

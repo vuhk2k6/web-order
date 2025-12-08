@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Khách hàng - CAFRROTSFUD Admin</title>
+  <link rel="stylesheet" href="/@style/admin.css" />
+</head>
+<body class="admin-page">
+  <div class="admin-shell">
+    <aside class="admin-sidebar" aria-label="Thanh điều hướng chính">
+      <a href="/admin" class="admin-logo-link" aria-label="Về trang Tổng quan">
+        <div class="admin-logo">
+          <div class="admin-logo-mark" tabindex="0" aria-label="Logo nhà hàng">
+            <img src="/img/logoadmin.png" alt="Logo CAFRROTSFUD" class="admin-logo-img" />
+          </div>
+        </div>
+      </a>
+      <div class="sidebar-section">
+        <nav class="sidebar-nav">
+          <a href="/admin" class="nav-link" aria-label="Đi tới tổng quan">Tổng quan</a>
+          <a href="/admin/orders" class="nav-link" aria-label="Đi tới đơn hàng">Đơn hàng</a>
+          <a href="/admin/reservations" class="nav-link" aria-label="Đi tới đặt bàn">Đặt bàn</a>
+          <a href="/admin/menu" class="nav-link" aria-label="Đi tới thực đơn">Thực đơn</a>
+          <a href="/admin/customers" class="nav-link active" aria-label="Đi tới khách hàng">Khách hàng</a>
+          <a href="/admin/promotions" class="nav-link" aria-label="Đi tới khuyến mãi">Khuyến mãi</a>
+        </nav>
+      </div>
+      <div class="sidebar-footer">
+        <p class="sidebar-help">Cần hỗ trợ? Liên hệ quản trị viên.</p>
+      </div>
+    </aside>
+
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <h1 class="topbar-title">Khách hàng</h1>
+          <p class="topbar-subtitle">Quản lý thông tin khách hàng và thành viên</p>
+        </div>
+        <div class="topbar-actions">
+          <div class="topbar-search">
+            <input type="search" placeholder="Tìm theo tên, email, số điện thoại..." aria-label="Tìm kiếm khách hàng" />
+          </div>
+          <button type="button" class="btn-secondary">Xuất báo cáo</button>
+          <button type="button" class="btn-logout">Đăng xuất</button>
+          <div class="user-avatar" aria-label="Tài khoản quản trị" tabindex="0">
+            <img src="/img/logoadmin.png" alt="Ảnh đại diện" />
+          </div>
+        </div>
+      </header>
+
+      <main id="customers-main" class="admin-content">
+        <section class="panel">
+          <div class="panel-block-header">
+            <div>
+              <h2 class="panel-title">Danh sách khách hàng</h2>
+              <p class="panel-text">Xem và quản lý thông tin khách hàng, lịch sử đơn hàng và đặt bàn.</p>
+            </div>
+            <button type="button" class="btn-secondary" aria-label="Làm mới danh sách" onclick="window.location.reload()">Làm mới</button>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tên khách hàng</th>
+                  <th>Email</th>
+                  <th>Số điện thoại</th>
+                  <th>Loại tài khoản</th>
+                  <th>Ngày đăng ký</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="admin-customers-body"></tbody>
+            </table>
+            <p id="admin-customers-empty" class="table-empty" style="display: none;">Chưa có khách hàng nào trong hệ thống.</p>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div id="customer-detail-modal-overlay" class="modal-overlay" aria-hidden="true">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="customer-detail-modal-title">
+      <div class="modal-header">
+        <h2 id="customer-detail-modal-title" class="panel-title">Chi tiết khách hàng</h2>
+        <button type="button" id="customer-detail-modal-close" class="btn-text">Đóng</button>
+      </div>
+      <div id="customer-detail-content" class="admin-form">
+        <div>
+          <label class="form-label">Tên khách hàng</label>
+          <p id="customer-detail-name" class="panel-text"></p>
+        </div>
+        <div>
+          <label class="form-label">Email</label>
+          <p id="customer-detail-email" class="panel-text"></p>
+        </div>
+        <div>
+          <label class="form-label">Số điện thoại</label>
+          <p id="customer-detail-phone" class="panel-text"></p>
+        </div>
+        <div>
+          <label class="form-label">Loại tài khoản</label>
+          <p id="customer-detail-account-type" class="panel-text"></p>
+        </div>
+        <div>
+          <label class="form-label">Ngày đăng ký</label>
+          <p id="customer-detail-created-at" class="panel-text"></p>
+        </div>
+        <div>
+          <label class="form-label">Điểm tích lũy</label>
+          <p id="customer-detail-points" class="panel-text"></p>
+        </div>
+        <div>
+          <label class="form-label">Tổng chi tiêu</label>
+          <p id="customer-detail-total-spent" class="panel-text"></p>
+        </div>
+        <div>
+          <label class="form-label">Hạng thành viên</label>
+          <p id="customer-detail-tier" class="panel-text"></p>
+        </div>
+        <div class="customer-history-grid">
+          <div class="customer-history-item">
+            <label class="form-label">Lịch sử mua hàng (5 gần nhất)</label>
+            <div id="customer-detail-orders" class="table-wrapper" style="max-height: 200px;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Mã đơn</th>
+                    <th>Tổng</th>
+                    <th>Loại</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày tạo</th>
+                  </tr>
+                </thead>
+                <tbody id="customer-detail-orders-body"></tbody>
+              </table>
+              <p id="customer-detail-orders-empty" class="table-empty" style="display: none;">Chưa có lịch sử đơn.</p>
+            </div>
+          </div>
+          <div class="customer-history-item">
+            <label class="form-label">Lịch sử tích điểm (5 gần nhất)</label>
+            <div id="customer-detail-points-wrapper" class="table-wrapper" style="max-height: 200px;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Loại</th>
+                    <th>Điểm</th>
+                    <th>Ghi chú</th>
+                    <th>Thời gian</th>
+                  </tr>
+                </thead>
+                <tbody id="customer-detail-points-body"></tbody>
+              </table>
+              <p id="customer-detail-points-empty" class="table-empty" style="display: none;">Chưa có giao dịch điểm.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/admin.js" defer></script>
+</body>
+</html>
+
