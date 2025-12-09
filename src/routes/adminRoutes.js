@@ -10,8 +10,19 @@ const { Customer } = require('../models/Customer');
 const { Member } = require('../models/Member');
 const { PointTransaction } = require('../models/PointTransaction');
 const { uploadImageToS3 } = require('../config/s3');
+const { authMiddleware } = require('../middleware/authMiddleware');
 
 const router = express.Router();
+
+// Apply auth middleware to all routes except login
+router.use((req, res, next) => {
+  // Skip auth for login routes
+  if (req.path === '/login' || req.path.startsWith('/login')) {
+    return next();
+  }
+  // Apply auth middleware for all other routes
+  return authMiddleware(req, res, next);
+});
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
@@ -152,19 +163,38 @@ router.get('/api/customers/:id/detail', async (req, res) => {
 });
 
 router.get('/login', (req, res) => {
-  const loginPath = path.join(__dirname, '..', 'views', 'admin.html');
+  // If already logged in, redirect to dashboard
+  if (req.session && req.session.isAdmin) {
+    return res.redirect('/admin');
+  }
+  const loginPath = path.join(__dirname, '..', 'views', 'admin-login.html');
   res.sendFile(loginPath);
 });
 
 router.post('/login', (req, res) => {
   const { username, password } = req.body;
 
-  if (username === 'admin' && password === '123456') {
-    req.session.isAdmin = true;
-    return res.redirect('/admin');
+  // Validate input
+  if (!username || !password) {
+    return res.status(400).json({ 
+      success: false,
+      message: 'Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu' 
+    });
   }
 
-  return res.status(401).send('Tên đăng nhập hoặc mật khẩu không đúng');
+  // Check credentials
+  if (username === 'admin' && password === '123456') {
+    req.session.isAdmin = true;
+    return res.json({ 
+      success: true,
+      message: 'Đăng nhập thành công' 
+    });
+  }
+
+  return res.status(401).json({ 
+    success: false,
+    message: 'Tên đăng nhập hoặc mật khẩu không đúng' 
+  });
 });
 
 router.post('/logout', (req, res) => {
@@ -1125,7 +1155,7 @@ router.put('/api/reservations/:id', async (req, res) => {
     const { id } = req.params;
     const { status, cancelReason } = req.body;
     
-    if (!status || !['DANG_CHO', 'XAC_NHAN', 'DA_HUY'].includes(status)) {
+    if (!status || !['DANG_CHO', 'XAC_NHAN', 'DA_HUY', 'HOAN_THANH'].includes(status)) {
       return res.status(400).json({ message: 'Trạng thái không hợp lệ' });
     }
     
@@ -1160,6 +1190,17 @@ router.put('/api/reservations/:id', async (req, res) => {
       }
     } else if (status === 'DA_HUY' && oldStatus === 'XAC_NHAN') {
       // Cancel after confirmed: set tables back to TRONG
+      for (const rt of reservationTables) {
+        if (rt.table) {
+          const table = await Table.findById(rt.table._id);
+          if (table && table.status === 'DANG_DUNG') {
+            table.status = 'TRONG';
+            await table.save();
+          }
+        }
+      }
+    } else if (status === 'HOAN_THANH') {
+      // Complete: set tables back to TRONG
       for (const rt of reservationTables) {
         if (rt.table) {
           const table = await Table.findById(rt.table._id);

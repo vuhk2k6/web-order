@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Đăng nhập Admin - CAFRROTSFUD</title>
+  <link rel="stylesheet" href="/@style/admin.css" />
+</head>
+
+<body class="admin-page admin-login-page">
+  <div class="admin-login-container">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="admin-logo-mark">
+          <img src="/img/logoadmin.png" alt="Logo CAFRROTSFUD" class="admin-logo-img" />
+        </div>
+        <h1 class="login-title">Đăng nhập Admin</h1>
+        <p class="login-text">Vui lòng nhập thông tin đăng nhập để truy cập bảng điều khiển</p>
+      </div>
+
+      <form id="admin-login-form" class="form" aria-label="Form đăng nhập quản trị viên">
+        <div>
+          <label for="admin-username" class="form-label">Tên đăng nhập</label>
+          <input 
+            id="admin-username" 
+            name="username" 
+            type="text" 
+            class="form-input" 
+            placeholder="Nhập tên đăng nhập" 
+            required 
+            autocomplete="username"
+            autofocus
+          />
+        </div>
+
+        <div>
+          <label for="admin-password" class="form-label">Mật khẩu</label>
+          <input 
+            id="admin-password" 
+            name="password" 
+            type="password" 
+            class="form-input" 
+            placeholder="Nhập mật khẩu" 
+            required 
+            autocomplete="current-password"
+          />
+        </div>
+
+        <button id="admin-login-submit" type="submit" class="btn-primary">
+          Đăng nhập
+        </button>
+
+        <p id="admin-login-message" class="login-message" aria-live="polite" style="display: none;"></p>
+      </form>
+
+      <div class="login-footer">
+        <p class="login-hint">
+          <span>⚠️</span> Chỉ dành cho quản trị viên được ủy quyền
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const adminLoginForm = document.getElementById('admin-login-form');
+    const usernameInput = document.getElementById('admin-username');
+    const passwordInput = document.getElementById('admin-password');
+    const messageElement = document.getElementById('admin-login-message');
+    const submitButton = document.getElementById('admin-login-submit');
+
+    const setLoadingState = (isLoading) => {
+      if (isLoading) {
+        submitButton.disabled = true;
+        submitButton.textContent = 'Đang xử lý...';
+        submitButton.style.opacity = '0.7';
+        submitButton.style.cursor = 'not-allowed';
+      } else {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Đăng nhập';
+        submitButton.style.opacity = '1';
+        submitButton.style.cursor = 'pointer';
+      }
+    };
+
+    const showMessage = (message, isError = true) => {
+      messageElement.textContent = message;
+      messageElement.className = isError ? 'login-message error' : 'login-message success';
+      messageElement.style.display = 'block';
+      
+      // Scroll to message
+      messageElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    };
+
+    const clearMessage = () => {
+      messageElement.style.display = 'none';
+      messageElement.textContent = '';
+      usernameInput.classList.remove('form-input-error');
+      passwordInput.classList.remove('form-input-error');
+    };
+
+    adminLoginForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      clearMessage();
+
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value.trim();
+
+      // Validation
+      if (!username || !password) {
+        showMessage('Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu');
+        if (!username) {
+          usernameInput.classList.add('form-input-error');
+          usernameInput.focus();
+        } else {
+          passwordInput.classList.add('form-input-error');
+          passwordInput.focus();
+        }
+        return;
+      }
+
+      setLoadingState(true);
+
+      try {
+        const response = await fetch('/admin/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'same-origin',
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+          // Redirect to admin dashboard
+          showMessage('Đăng nhập thành công! Đang chuyển hướng...', false);
+          window.setTimeout(() => {
+            window.location.href = '/admin';
+          }, 500);
+        } else {
+          showMessage(data.message || 'Tên đăng nhập hoặc mật khẩu không đúng');
+          usernameInput.classList.add('form-input-error');
+          passwordInput.classList.add('form-input-error');
+          passwordInput.value = '';
+          passwordInput.focus();
+        }
+      } catch (error) {
+        console.error('Lỗi khi đăng nhập:', error);
+        showMessage('Đăng nhập thất bại. Vui lòng kiểm tra kết nối và thử lại.');
+      } finally {
+        setLoadingState(false);
+      }
+    });
+
+    // Handle Enter key
+    usernameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        passwordInput.focus();
+      }
+    });
+
+    passwordInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !submitButton.disabled) {
+        adminLoginForm.dispatchEvent(new Event('submit'));
+      }
+    });
+
+    // Clear error on input
+    usernameInput.addEventListener('input', () => {
+      usernameInput.classList.remove('form-input-error');
+    });
+
+    passwordInput.addEventListener('input', () => {
+      passwordInput.classList.remove('form-input-error');
+    });
+  </script>
+</body>
+
+</html>
+

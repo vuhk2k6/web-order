@@ -83,12 +83,12 @@
           </div>
         </section>
 
-        <!-- Reservations List Section -->
+        <!-- Active Reservations List Section -->
         <section class="panel">
           <div class="panel-block-header">
             <div>
-              <h2 class="panel-title">Danh sách đặt bàn</h2>
-              <p class="panel-text">Xác nhận, gán bàn và cập nhật trạng thái.</p>
+              <h2 class="panel-title">Đơn chưa hoàn thành</h2>
+              <p class="panel-text">Xác nhận, gán bàn và cập nhật trạng thái cho các đơn đang chờ xử lý.</p>
             </div>
             <button type="button" class="btn-secondary" aria-label="Làm mới danh sách" onclick="fetchAdminReservations()">Làm mới</button>
           </div>
@@ -106,14 +106,152 @@
                   <th>Thao tác</th>
                 </tr>
               </thead>
-              <tbody id="admin-reservations-body"></tbody>
+              <tbody id="admin-reservations-active-body"></tbody>
             </table>
-            <p id="admin-reservations-empty" class="table-empty" style="display: none;">
-              Chưa có yêu cầu đặt bàn nào.
+            <p id="admin-reservations-active-empty" class="table-empty" style="display: none;">
+              Không có đơn nào đang chờ xử lý.
+            </p>
+          </div>
+        </section>
+
+        <!-- Completed/Cancelled Reservations List Section -->
+        <section class="panel">
+          <div class="panel-block-header">
+            <div>
+              <h2 class="panel-title">Đơn đã hoàn thành / Hủy</h2>
+              <p class="panel-text">Lịch sử các đơn đặt bàn đã hoàn thành hoặc đã hủy.</p>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Mã đặt bàn</th>
+                  <th>Khách hàng</th>
+                  <th>Số điện thoại</th>
+                  <th>Số khách</th>
+                  <th>Ngày giờ</th>
+                  <th>Bàn</th>
+                  <th>Trạng thái</th>
+                  <th>Lý do hủy</th>
+                </tr>
+              </thead>
+              <tbody id="admin-reservations-completed-body"></tbody>
+            </table>
+            <p id="admin-reservations-completed-empty" class="table-empty" style="display: none;">
+              Chưa có đơn nào đã hoàn thành hoặc hủy.
             </p>
           </div>
         </section>
       </main>
+    </div>
+  </div>
+
+  <!-- Cancel Reservation Modal -->
+  <div id="cancel-reservation-modal-overlay" class="modal-overlay" aria-hidden="true" style="display: none;">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="cancel-reservation-modal-title">
+      <div class="modal-header">
+        <h2 id="cancel-reservation-modal-title" class="panel-title">Hủy đặt bàn</h2>
+        <button type="button" id="cancel-reservation-modal-close" class="btn-text">Đóng</button>
+      </div>
+      <p class="panel-text">Bạn có chắc chắn muốn hủy đặt bàn này? Hành động này không thể hoàn tác.</p>
+      <form id="cancel-reservation-form" class="admin-form" aria-label="Form hủy đặt bàn">
+        <input id="cancel-reservation-id" type="hidden" />
+        <div>
+          <label for="cancel-reservation-reason" class="form-label">Lý do hủy (tùy chọn)</label>
+          <textarea 
+            id="cancel-reservation-reason" 
+            name="cancelReason" 
+            rows="4" 
+            class="form-input" 
+            placeholder="Nhập lý do hủy đặt bàn (nếu có)..."
+          ></textarea>
+        </div>
+        <div class="admin-form-footer">
+          <button id="cancel-reservation-cancel-btn" type="button" class="btn-text">Không hủy</button>
+          <button id="cancel-reservation-submit-btn" type="submit" class="btn-save" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+            Xác nhận hủy
+          </button>
+        </div>
+        <p id="cancel-reservation-message" class="admin-message" aria-live="polite" style="display: none;"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Complete Reservation Modal -->
+  <div id="complete-reservation-modal-overlay" class="modal-overlay" aria-hidden="true" style="display: none;">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="complete-reservation-modal-title">
+      <div class="modal-header">
+        <h2 id="complete-reservation-modal-title" class="panel-title">Hoàn thành đặt bàn</h2>
+        <button type="button" id="complete-reservation-modal-close" class="btn-text">Đóng</button>
+      </div>
+      <p class="panel-text">Xác nhận hoàn thành đặt bàn này? Bàn sẽ được đánh dấu là trống và sẵn sàng cho khách tiếp theo.</p>
+      <form id="complete-reservation-form" class="admin-form" aria-label="Form hoàn thành đặt bàn">
+        <input id="complete-reservation-id" type="hidden" />
+        <div class="admin-form-footer">
+          <button id="complete-reservation-cancel-btn" type="button" class="btn-text">Hủy</button>
+          <button id="complete-reservation-submit-btn" type="submit" class="btn-save">
+            Xác nhận hoàn thành
+          </button>
+        </div>
+        <p id="complete-reservation-message" class="admin-message" aria-live="polite" style="display: none;"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Update Table Status Modal -->
+  <div id="update-table-status-modal-overlay" class="modal-overlay" aria-hidden="true" style="display: none;">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="update-table-status-modal-title">
+      <div class="modal-header">
+        <h2 id="update-table-status-modal-title" class="panel-title">Cập nhật trạng thái bàn</h2>
+        <button type="button" id="update-table-status-modal-close" class="btn-text">Đóng</button>
+      </div>
+      <p class="panel-text">Chọn trạng thái mới cho bàn <strong id="update-table-status-name"></strong></p>
+      <form id="update-table-status-form" class="admin-form" aria-label="Form cập nhật trạng thái bàn">
+        <input id="update-table-status-id" type="hidden" />
+        <div>
+          <label class="form-label">Trạng thái</label>
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <label style="display: flex; align-items: center; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s ease;" class="table-status-option">
+              <input type="radio" name="table-status" value="TRONG" style="margin-right: 12px; width: 18px; height: 18px; cursor: pointer;" />
+              <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+                <span style="font-size: 24px;">🟢</span>
+                <div>
+                  <div style="font-weight: 600; color: #020617; margin-bottom: 2px;">Bàn trống</div>
+                  <div style="font-size: 13px; color: #64748b;">Bàn sẵn sàng nhận khách</div>
+                </div>
+              </div>
+            </label>
+            <label style="display: flex; align-items: center; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s ease;" class="table-status-option">
+              <input type="radio" name="table-status" value="RESERVED" style="margin-right: 12px; width: 18px; height: 18px; cursor: pointer;" />
+              <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+                <span style="font-size: 24px;">🔵</span>
+                <div>
+                  <div style="font-weight: 600; color: #020617; margin-bottom: 2px;">Có hẹn chưa đến giờ</div>
+                  <div style="font-size: 13px; color: #64748b;">Bàn đã được đặt nhưng chưa đến giờ</div>
+                </div>
+              </div>
+            </label>
+            <label style="display: flex; align-items: center; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s ease;" class="table-status-option">
+              <input type="radio" name="table-status" value="DANG_DUNG" style="margin-right: 12px; width: 18px; height: 18px; cursor: pointer;" />
+              <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+                <span style="font-size: 24px;">🟡</span>
+                <div>
+                  <div style="font-weight: 600; color: #020617; margin-bottom: 2px;">Đang có khách</div>
+                  <div style="font-size: 13px; color: #64748b;">Khách đang sử dụng bàn</div>
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+        <div class="admin-form-footer">
+          <button id="update-table-status-cancel-btn" type="button" class="btn-text">Hủy</button>
+          <button id="update-table-status-submit-btn" type="submit" class="btn-save">
+            Cập nhật trạng thái
+          </button>
+        </div>
+        <p id="update-table-status-message" class="admin-message" aria-live="polite" style="display: none;"></p>
+      </form>
     </div>
   </div>
 

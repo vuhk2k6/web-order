@@ -7,6 +7,40 @@ const state = {
   editingCategoryId: null
 };
 
+// Handle admin logout
+const handleAdminLogout = async () => {
+  try {
+    const response = await fetch('/admin/logout', {
+      method: 'POST',
+      credentials: 'same-origin'
+    });
+
+    if (response.ok) {
+      window.location.href = '/admin/login';
+    } else {
+      console.error('Lỗi khi đăng xuất');
+      // Still redirect to login page even if logout fails
+      window.location.href = '/admin/login';
+    }
+  } catch (error) {
+    console.error('Lỗi khi đăng xuất:', error);
+    // Still redirect to login page even if logout fails
+    window.location.href = '/admin/login';
+  }
+};
+
+// Initialize logout buttons on all admin pages
+const initializeLogoutButtons = () => {
+  const logoutButtons = document.querySelectorAll('.btn-logout');
+  logoutButtons.forEach((btn) => {
+    // Remove existing listeners by cloning
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode?.replaceChild(newBtn, btn);
+    
+    newBtn.addEventListener('click', handleAdminLogout);
+  });
+};
+
 const getElement = (id) => document.getElementById(id);
 
 const normalizeMenuItem = (item) => {
@@ -1598,46 +1632,69 @@ const renderAdminTableMap = () => {
   }).join('');
 };
 
-const handleAdminTableClick = (tableId) => {
+// Update Table Status Modal Functions
+const openUpdateTableStatusModal = (tableId) => {
   const table = adminTablesData.find(t => t.id === tableId);
   if (!table) return;
 
-  // Show status selection menu
-  const statusOptions = [
-    { value: 'TRONG', label: 'Bàn trống', enabled: true },
-    { value: 'DANG_DUNG', label: 'Đang dùng', enabled: true },
-    { value: 'DANG_DON', label: 'Đang dọn', enabled: true }
-  ];
-
-  const selectedOption = prompt(
-    `Chọn trạng thái cho bàn ${table.name}:\n\n` +
-    statusOptions.map((opt, idx) => `${idx + 1}. ${opt.label}`).join('\n') +
-    `\n\nNhập số (1-3) hoặc Enter để hủy:`
-  );
-
-  if (!selectedOption || selectedOption.trim() === '') {
-    return;
+  const overlay = getElement('update-table-status-modal-overlay');
+  const form = getElement('update-table-status-form');
+  const tableIdInput = getElement('update-table-status-id');
+  const tableNameEl = getElement('update-table-status-name');
+  const messageEl = getElement('update-table-status-message');
+  
+  if (overlay && form && tableIdInput && tableNameEl) {
+    tableIdInput.value = tableId;
+    tableNameEl.textContent = table.name;
+    
+    // Set current status as checked
+    // If displayStatus is RESERVED, check RESERVED radio
+    // Otherwise check the actual status
+    const statusRadios = form.querySelectorAll('input[name="table-status"]');
+    statusRadios.forEach(radio => {
+      if (table.displayStatus === 'RESERVED' && radio.value === 'RESERVED') {
+        radio.checked = true;
+      } else if (table.displayStatus !== 'RESERVED' && radio.value === table.status) {
+        radio.checked = true;
+      } else {
+        radio.checked = false;
+      }
+    });
+    
+    if (messageEl) {
+      messageEl.style.display = 'none';
+      messageEl.textContent = '';
+    }
+    
+    overlay.style.display = 'flex';
+    overlay.setAttribute('aria-hidden', 'false');
   }
+};
 
-  const optionIndex = parseInt(selectedOption.trim(), 10) - 1;
-  if (optionIndex < 0 || optionIndex >= statusOptions.length) {
-    alert('Lựa chọn không hợp lệ');
-    return;
+const closeUpdateTableStatusModal = () => {
+  const overlay = getElement('update-table-status-modal-overlay');
+  if (overlay) {
+    overlay.style.display = 'none';
+    overlay.setAttribute('aria-hidden', 'true');
   }
+};
 
-  const newStatus = statusOptions[optionIndex].value;
-  updateAdminTableStatus(tableId, newStatus);
+const handleAdminTableClick = (tableId) => {
+  openUpdateTableStatusModal(tableId);
 };
 
 const updateAdminTableStatus = async (tableId, newStatus) => {
   try {
+    // If RESERVED is selected, keep status as TRONG (RESERVED is only a display status)
+    const actualStatus = newStatus === 'RESERVED' ? 'TRONG' : newStatus;
+    
     const response = await fetch(`/admin/api/tables/${tableId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
       },
       credentials: 'same-origin',
-      body: JSON.stringify({ status: newStatus })
+      body: JSON.stringify({ status: actualStatus })
     });
 
     if (!response.ok) {
@@ -1648,25 +1705,36 @@ const updateAdminTableStatus = async (tableId, newStatus) => {
     // Update local data
     const table = adminTablesData.find(t => t.id === tableId);
     if (table) {
-      table.status = newStatus;
+      table.status = actualStatus;
       // Recalculate displayStatus
-      if (newStatus === 'TRONG') {
-        const hasReservedPending = table.reservations && table.reservations.some(r => {
-          const reservedTime = new Date(r.reservedAt);
-          const now = new Date();
-          return r.status === 'DANG_CHO' || reservedTime > now;
-        });
-        table.displayStatus = hasReservedPending ? 'RESERVED' : 'TRONG';
+      if (actualStatus === 'TRONG') {
+        // If RESERVED was selected, we want to show it as RESERVED
+        // Otherwise, check if there are pending reservations
+        if (newStatus === 'RESERVED') {
+          table.displayStatus = 'RESERVED';
+        } else {
+          const hasReservedPending = table.reservations && table.reservations.some(r => {
+            const reservedTime = new Date(r.reservedAt);
+            const now = new Date();
+            return r.status === 'DANG_CHO' || reservedTime > now;
+          });
+          table.displayStatus = hasReservedPending ? 'RESERVED' : 'TRONG';
+        }
       } else {
-        table.displayStatus = newStatus;
+        table.displayStatus = actualStatus;
       }
     }
 
     renderAdminTableMap();
-    alert('Cập nhật trạng thái bàn thành công!');
+    closeUpdateTableStatusModal();
   } catch (error) {
     console.error('Lỗi khi cập nhật trạng thái bàn:', error);
-    alert(error.message || 'Có lỗi xảy ra khi cập nhật trạng thái bàn');
+    const messageEl = getElement('update-table-status-message');
+    if (messageEl) {
+      messageEl.textContent = error.message || 'Có lỗi xảy ra khi cập nhật trạng thái bàn';
+      messageEl.className = 'admin-message';
+      messageEl.style.display = 'block';
+    }
   }
 };
 
@@ -1799,77 +1867,122 @@ const fetchAdminReservations = async () => {
 };
 
 const renderAdminReservations = () => {
-  const tableBody = getElement('admin-reservations-body');
-  const emptyMessage = getElement('admin-reservations-empty');
+  const activeTableBody = getElement('admin-reservations-active-body');
+  const activeEmptyMessage = getElement('admin-reservations-active-empty');
+  const completedTableBody = getElement('admin-reservations-completed-body');
+  const completedEmptyMessage = getElement('admin-reservations-completed-empty');
 
-  if (!tableBody || !emptyMessage) {
+  if (!activeTableBody || !activeEmptyMessage || !completedTableBody || !completedEmptyMessage) {
     return;
   }
 
-  tableBody.innerHTML = '';
+  activeTableBody.innerHTML = '';
+  completedTableBody.innerHTML = '';
 
   if (!state.reservations || state.reservations.length === 0) {
-    emptyMessage.style.display = 'block';
+    activeEmptyMessage.style.display = 'block';
+    completedEmptyMessage.style.display = 'block';
     return;
   }
 
-  emptyMessage.style.display = 'none';
+  // Separate active and completed/cancelled reservations
+  const activeReservations = state.reservations.filter(r => 
+    r.status === 'DANG_CHO' || r.status === 'XAC_NHAN'
+  );
+  const completedReservations = state.reservations.filter(r => 
+    r.status === 'HOAN_THANH' || r.status === 'DA_HUY'
+  );
 
-  state.reservations.forEach((reservation) => {
-    const row = document.createElement('tr');
-    row.className = 'hover:bg-slate-900/80';
+  // Render active reservations
+  if (activeReservations.length === 0) {
+    activeEmptyMessage.style.display = 'block';
+  } else {
+    activeEmptyMessage.style.display = 'none';
+    activeReservations.forEach((reservation) => {
+      renderReservationRow(reservation, activeTableBody, true);
+    });
+  }
 
-    // Reservation ID
-    const idCell = document.createElement('td');
-    idCell.className = 'px-3 py-2 text-xs font-semibold text-slate-100';
-    idCell.textContent = `#${reservation.id.substring(reservation.id.length - 6)}`;
+  // Render completed/cancelled reservations
+  if (completedReservations.length === 0) {
+    completedEmptyMessage.style.display = 'block';
+  } else {
+    completedEmptyMessage.style.display = 'none';
+    completedReservations.forEach((reservation) => {
+      renderReservationRow(reservation, completedTableBody, false);
+    });
+  }
+};
 
-    // Customer Name
-    const nameCell = document.createElement('td');
-    nameCell.className = 'px-3 py-2 text-xs text-slate-300';
-    nameCell.textContent = reservation.customerName || '—';
+const renderReservationRow = (reservation, tableBody, showActions = true) => {
+  const row = document.createElement('tr');
+  row.className = 'hover:bg-slate-900/80';
 
-    // Phone
-    const phoneCell = document.createElement('td');
-    phoneCell.className = 'px-3 py-2 text-xs text-slate-300';
-    phoneCell.textContent = reservation.customerPhone || reservation.guestPhone || '—';
+  // Reservation ID
+  const idCell = document.createElement('td');
+  idCell.className = 'px-3 py-2 text-xs font-semibold text-slate-100';
+  idCell.textContent = `#${reservation.id.substring(reservation.id.length - 6)}`;
 
-    // Guest Count
-    const guestsCell = document.createElement('td');
-    guestsCell.className = 'px-3 py-2 text-xs text-slate-300';
-    guestsCell.textContent = `${reservation.guestCount} người`;
+  // Customer Name
+  const nameCell = document.createElement('td');
+  nameCell.className = 'px-3 py-2 text-xs text-slate-300';
+  nameCell.textContent = reservation.customerName || '—';
 
-    // Date & Time
-    const dateCell = document.createElement('td');
-    dateCell.className = 'px-3 py-2 text-xs text-slate-300';
-    dateCell.textContent = reservation.reservedAt || '—';
+  // Phone
+  const phoneCell = document.createElement('td');
+  phoneCell.className = 'px-3 py-2 text-xs text-slate-300';
+  phoneCell.textContent = reservation.customerPhone || reservation.guestPhone || '—';
 
-    // Tables
-    const tablesCell = document.createElement('td');
-    tablesCell.className = 'px-3 py-2 text-xs text-slate-300';
-    if (reservation.tables && reservation.tables.length > 0) {
-      tablesCell.textContent = reservation.tables.map(t => t.name).join(', ');
-    } else {
-      tablesCell.textContent = 'Chưa gán bàn';
-    }
+  // Guest Count
+  const guestsCell = document.createElement('td');
+  guestsCell.className = 'px-3 py-2 text-xs text-slate-300';
+  guestsCell.textContent = `${reservation.guestCount} người`;
 
-    // Status
-    const statusCell = document.createElement('td');
-    statusCell.className = 'px-3 py-2 text-xs';
-    const statusBadge = document.createElement('span');
-    statusBadge.className = 'px-2 py-1 rounded text-xs font-semibold';
-    
-    if (reservation.status === 'XAC_NHAN') {
-      statusBadge.className += ' bg-green-500/20 text-green-400';
-    } else if (reservation.status === 'DA_HUY') {
-      statusBadge.className += ' bg-red-500/20 text-red-400';
-    } else {
-      statusBadge.className += ' bg-yellow-500/20 text-yellow-400';
-    }
-    statusBadge.textContent = reservation.statusText || reservation.status;
-    statusCell.appendChild(statusBadge);
+  // Date & Time
+  const dateCell = document.createElement('td');
+  dateCell.className = 'px-3 py-2 text-xs text-slate-300';
+  dateCell.textContent = reservation.reservedAt || '—';
 
-    // Actions
+  // Tables
+  const tablesCell = document.createElement('td');
+  tablesCell.className = 'px-3 py-2 text-xs text-slate-300';
+  if (reservation.tables && reservation.tables.length > 0) {
+    tablesCell.textContent = reservation.tables.map(t => t.name).join(', ');
+  } else {
+    tablesCell.textContent = 'Chưa gán bàn';
+  }
+
+  // Status
+  const statusCell = document.createElement('td');
+  statusCell.className = 'px-3 py-2 text-xs';
+  const statusBadge = document.createElement('span');
+  statusBadge.className = 'px-2 py-1 rounded text-xs font-semibold';
+  
+  if (reservation.status === 'XAC_NHAN') {
+    statusBadge.className += ' bg-green-500/20 text-green-400';
+    statusBadge.textContent = 'Đã xác nhận';
+  } else if (reservation.status === 'HOAN_THANH') {
+    statusBadge.className += ' bg-blue-500/20 text-blue-400';
+    statusBadge.textContent = 'Hoàn thành';
+  } else if (reservation.status === 'DA_HUY') {
+    statusBadge.className += ' bg-red-500/20 text-red-400';
+    statusBadge.textContent = 'Đã hủy';
+  } else {
+    statusBadge.className += ' bg-yellow-500/20 text-yellow-400';
+    statusBadge.textContent = 'Đang chờ';
+  }
+  statusCell.appendChild(statusBadge);
+
+  row.appendChild(idCell);
+  row.appendChild(nameCell);
+  row.appendChild(phoneCell);
+  row.appendChild(guestsCell);
+  row.appendChild(dateCell);
+  row.appendChild(tablesCell);
+  row.appendChild(statusCell);
+
+  if (showActions) {
+    // Actions for active reservations
     const actionsCell = document.createElement('td');
     actionsCell.className = 'table-action-cell';
     const actionsDiv = document.createElement('div');
@@ -1885,31 +1998,39 @@ const renderAdminReservations = () => {
       const cancelBtn = document.createElement('button');
       cancelBtn.className = 'btn-chip btn-chip--danger';
       cancelBtn.textContent = 'Hủy';
-      cancelBtn.onclick = () => handleCancelReservation(reservation.id);
+      cancelBtn.onclick = () => openCancelReservationModal(reservation.id);
       actionsDiv.appendChild(cancelBtn);
     } else if (reservation.status === 'XAC_NHAN') {
+      const completeBtn = document.createElement('button');
+      completeBtn.className = 'btn-chip btn-chip--success';
+      completeBtn.textContent = 'Hoàn thành';
+      completeBtn.onclick = () => openCompleteReservationModal(reservation.id);
+      actionsDiv.appendChild(completeBtn);
+
       const cancelBtn = document.createElement('button');
       cancelBtn.className = 'btn-chip btn-chip--danger';
       cancelBtn.textContent = 'Hủy đặt bàn';
-      cancelBtn.onclick = () => handleCancelReservation(reservation.id);
+      cancelBtn.onclick = () => openCancelReservationModal(reservation.id);
       actionsDiv.appendChild(cancelBtn);
     } else {
       actionsDiv.textContent = '—';
     }
 
     actionsCell.appendChild(actionsDiv);
-
-    row.appendChild(idCell);
-    row.appendChild(nameCell);
-    row.appendChild(phoneCell);
-    row.appendChild(guestsCell);
-    row.appendChild(dateCell);
-    row.appendChild(tablesCell);
-    row.appendChild(statusCell);
     row.appendChild(actionsCell);
+  } else {
+    // Cancel reason for completed/cancelled reservations
+    const cancelReasonCell = document.createElement('td');
+    cancelReasonCell.className = 'px-3 py-2 text-xs text-slate-300';
+    if (reservation.status === 'DA_HUY' && reservation.cancelReason) {
+      cancelReasonCell.textContent = reservation.cancelReason;
+    } else {
+      cancelReasonCell.textContent = '—';
+    }
+    row.appendChild(cancelReasonCell);
+  }
 
-    tableBody.appendChild(row);
-  });
+  tableBody.appendChild(row);
 };
 
 const handleConfirmReservation = async (reservationId) => {
@@ -1939,19 +2060,42 @@ const handleConfirmReservation = async (reservationId) => {
   }
 };
 
-const handleCancelReservation = async (reservationId) => {
-  const cancelReason = prompt('Vui lòng nhập lý do hủy đặt bàn (nếu có):');
+// Cancel Reservation Modal Functions
+const openCancelReservationModal = (reservationId) => {
+  const overlay = getElement('cancel-reservation-modal-overlay');
+  const form = getElement('cancel-reservation-form');
+  const reservationIdInput = getElement('cancel-reservation-id');
+  const messageEl = getElement('cancel-reservation-message');
   
-  if (cancelReason === null) {
-    return; // User cancelled
+  if (overlay && form && reservationIdInput) {
+    reservationIdInput.value = reservationId;
+    if (messageEl) {
+      messageEl.style.display = 'none';
+      messageEl.textContent = '';
+    }
+    const reasonInput = getElement('cancel-reservation-reason');
+    if (reasonInput) reasonInput.value = '';
+    overlay.style.display = 'flex';
+    overlay.setAttribute('aria-hidden', 'false');
   }
+};
 
+const closeCancelReservationModal = () => {
+  const overlay = getElement('cancel-reservation-modal-overlay');
+  if (overlay) {
+    overlay.style.display = 'none';
+    overlay.setAttribute('aria-hidden', 'true');
+  }
+};
+
+const handleCancelReservation = async (reservationId, cancelReason = null) => {
   try {
     const response = await fetch(`/admin/api/reservations/${reservationId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
       },
+      credentials: 'same-origin',
       body: JSON.stringify({ 
         status: 'DA_HUY',
         cancelReason: cancelReason || undefined
@@ -1963,11 +2107,89 @@ const handleCancelReservation = async (reservationId) => {
       throw new Error(errorData.message || 'Không thể hủy đặt bàn');
     }
 
-    alert('Hủy đặt bàn thành công!');
     await fetchAdminReservations();
+    await fetchAdminTables();
+    
+    closeCancelReservationModal();
+    
+    // Show success toast
+    if (typeof showToast === 'function') {
+      showToast('Hủy đặt bàn thành công!');
+    }
   } catch (error) {
     console.error('Lỗi khi hủy đặt bàn:', error);
-    alert(error.message || 'Có lỗi xảy ra khi hủy đặt bàn');
+    const messageEl = getElement('cancel-reservation-message');
+    if (messageEl) {
+      messageEl.textContent = error.message || 'Có lỗi xảy ra khi hủy đặt bàn';
+      messageEl.className = 'admin-message';
+      messageEl.style.display = 'block';
+    }
+  }
+};
+
+// Complete Reservation Modal Functions
+const openCompleteReservationModal = (reservationId) => {
+  const overlay = getElement('complete-reservation-modal-overlay');
+  const form = getElement('complete-reservation-form');
+  const reservationIdInput = getElement('complete-reservation-id');
+  const messageEl = getElement('complete-reservation-message');
+  
+  if (overlay && form && reservationIdInput) {
+    reservationIdInput.value = reservationId;
+    if (messageEl) {
+      messageEl.style.display = 'none';
+      messageEl.textContent = '';
+    }
+    overlay.style.display = 'flex';
+    overlay.setAttribute('aria-hidden', 'false');
+  }
+};
+
+const closeCompleteReservationModal = () => {
+  const overlay = getElement('complete-reservation-modal-overlay');
+  if (overlay) {
+    overlay.style.display = 'none';
+    overlay.setAttribute('aria-hidden', 'true');
+  }
+};
+
+const handleCompleteReservation = async (reservationId) => {
+  try {
+    // Note: You may need to add a HOAN_THANH status to your Reservation model
+    // For now, we'll update the table status to TRONG
+    const response = await fetch(`/admin/api/reservations/${reservationId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'same-origin',
+      body: JSON.stringify({ 
+        status: 'HOAN_THANH'
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Không thể hoàn thành đặt bàn');
+    }
+
+    await fetchAdminReservations();
+    await fetchAdminTables();
+    
+    closeCompleteReservationModal();
+    
+    // Show success toast
+    if (typeof showToast === 'function') {
+      showToast('Hoàn thành đặt bàn thành công!');
+    }
+  } catch (error) {
+    console.error('Lỗi khi hoàn thành đặt bàn:', error);
+    const messageEl = getElement('complete-reservation-message');
+    if (messageEl) {
+      messageEl.textContent = error.message || 'Có lỗi xảy ra khi hoàn thành đặt bàn';
+      messageEl.className = 'admin-message';
+      messageEl.style.display = 'block';
+    }
   }
 };
 
@@ -2329,6 +2551,108 @@ const initializeAdminPage = () => {
   // Fetch pending counts for sidebar badges
   fetchPendingCounts(false);
   setupBadgePolling();
+  
+  // Initialize logout buttons
+  initializeLogoutButtons();
+  
+  // Initialize reservation modals
+  const cancelReservationForm = getElement('cancel-reservation-form');
+  const cancelReservationModalClose = getElement('cancel-reservation-modal-close');
+  const cancelReservationCancelBtn = getElement('cancel-reservation-cancel-btn');
+  const cancelReservationOverlay = getElement('cancel-reservation-modal-overlay');
+  
+  if (cancelReservationForm) {
+    cancelReservationForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const reservationId = getElement('cancel-reservation-id')?.value;
+      const cancelReason = getElement('cancel-reservation-reason')?.value.trim() || null;
+      if (reservationId) {
+        await handleCancelReservation(reservationId, cancelReason);
+      }
+    });
+  }
+  
+  if (cancelReservationModalClose) {
+    cancelReservationModalClose.addEventListener('click', closeCancelReservationModal);
+  }
+  
+  if (cancelReservationCancelBtn) {
+    cancelReservationCancelBtn.addEventListener('click', closeCancelReservationModal);
+  }
+  
+  if (cancelReservationOverlay) {
+    cancelReservationOverlay.addEventListener('click', (event) => {
+      if (event.target === cancelReservationOverlay) {
+        closeCancelReservationModal();
+      }
+    });
+  }
+  
+  // Initialize complete reservation modal
+  const completeReservationForm = getElement('complete-reservation-form');
+  const completeReservationModalClose = getElement('complete-reservation-modal-close');
+  const completeReservationCancelBtn = getElement('complete-reservation-cancel-btn');
+  const completeReservationOverlay = getElement('complete-reservation-modal-overlay');
+  
+  if (completeReservationForm) {
+    completeReservationForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const reservationId = getElement('complete-reservation-id')?.value;
+      if (reservationId) {
+        await handleCompleteReservation(reservationId);
+      }
+    });
+  }
+  
+  if (completeReservationModalClose) {
+    completeReservationModalClose.addEventListener('click', closeCompleteReservationModal);
+  }
+  
+  if (completeReservationCancelBtn) {
+    completeReservationCancelBtn.addEventListener('click', closeCompleteReservationModal);
+  }
+  
+  if (completeReservationOverlay) {
+    completeReservationOverlay.addEventListener('click', (event) => {
+      if (event.target === completeReservationOverlay) {
+        closeCompleteReservationModal();
+      }
+    });
+  }
+  
+  // Initialize update table status modal
+  const updateTableStatusForm = getElement('update-table-status-form');
+  const updateTableStatusModalClose = getElement('update-table-status-modal-close');
+  const updateTableStatusCancelBtn = getElement('update-table-status-cancel-btn');
+  const updateTableStatusOverlay = getElement('update-table-status-modal-overlay');
+  
+  if (updateTableStatusForm) {
+    updateTableStatusForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const tableId = getElement('update-table-status-id')?.value;
+      const selectedStatus = updateTableStatusForm.querySelector('input[name="table-status"]:checked')?.value;
+      if (tableId && selectedStatus) {
+        await updateAdminTableStatus(tableId, selectedStatus);
+        closeUpdateTableStatusModal();
+      }
+    });
+  }
+  
+  if (updateTableStatusModalClose) {
+    updateTableStatusModalClose.addEventListener('click', closeUpdateTableStatusModal);
+  }
+  
+  if (updateTableStatusCancelBtn) {
+    updateTableStatusCancelBtn.addEventListener('click', closeUpdateTableStatusModal);
+  }
+  
+  if (updateTableStatusOverlay) {
+    updateTableStatusOverlay.addEventListener('click', (event) => {
+      if (event.target === updateTableStatusOverlay) {
+        closeUpdateTableStatusModal();
+      }
+    });
+  }
   
   // Check if we're on reservations page
   const currentPath = window.location.pathname;

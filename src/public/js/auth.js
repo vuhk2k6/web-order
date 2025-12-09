@@ -244,9 +244,26 @@ const handleAuthLoginSubmit = async (event) => {
     phoneInput.value = '';
     passwordInput.value = '';
 
-    window.setTimeout(() => {
+    // Check if we're on checkout page
+    const isCheckoutPage = window.location.pathname.includes('/checkout');
+    
+    window.setTimeout(async () => {
       closeAuthModal();
-      window.location.reload();
+      
+      if (isCheckoutPage && typeof window.updateCheckoutAfterLogin === 'function') {
+        // Update checkout state without reloading
+        try {
+          await window.updateCheckoutAfterLogin();
+          console.log('[Auth] Checkout state updated after login');
+        } catch (error) {
+          console.error('[Auth] Error updating checkout state:', error);
+          // Fallback to reload if update fails
+          window.location.reload();
+        }
+      } else {
+        // Reload page for other pages
+        window.location.reload();
+      }
     }, 800);
   } catch (error) {
     console.error('Lỗi khi đăng nhập', error);
@@ -395,14 +412,33 @@ const handleAuthRegisterSubmit = async (event) => {
     updateAuthUi(data.user);
 
     // Reset form
-    nameInput.value = '';
     phoneInput.value = '';
+    lastnameInput.value = '';
+    firstnameInput.value = '';
     emailInput.value = '';
     passwordInput.value = '';
+    confirmPasswordInput.value = '';
 
-    window.setTimeout(() => {
+    // Check if we're on checkout page
+    const isCheckoutPage = window.location.pathname.includes('/checkout');
+    
+    window.setTimeout(async () => {
       closeAuthModal();
-      window.location.reload();
+      
+      if (isCheckoutPage && typeof window.updateCheckoutAfterLogin === 'function') {
+        // Update checkout state without reloading
+        try {
+          await window.updateCheckoutAfterLogin();
+          console.log('[Auth] Checkout state updated after register');
+        } catch (error) {
+          console.error('[Auth] Error updating checkout state:', error);
+          // Fallback to reload if update fails
+          window.location.reload();
+        }
+      } else {
+        // Reload page for other pages
+        window.location.reload();
+      }
     }, 1000);
   } catch (error) {
     console.error('Lỗi khi đăng ký', error);

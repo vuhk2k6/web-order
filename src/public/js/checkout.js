@@ -36,7 +36,21 @@ const fetchCheckoutUser = async () => {
       return null;
     }
     const data = await response.json();
-    return data.user || null;
+    
+    // Handle different response formats
+    const userPayload =
+      data?.user ||
+      data?.customer ||
+      data?.member ||
+      data?.data ||
+      null;
+
+    if (!userPayload) {
+      return null;
+    }
+
+    // Return user with normalized format
+    return userPayload;
   } catch (error) {
     console.error('Lỗi khi lấy thông tin người dùng:', error);
     return null;
@@ -181,6 +195,11 @@ const updateOrderSummary = () => {
 
 // Show step
 const showStep = (stepNumber) => {
+  // Validate step number
+  if (stepNumber < 1 || stepNumber > 5) {
+    return;
+  }
+
   for (let i = 1; i <= 5; i++) {
     const step = document.getElementById(`step-${i}`);
     if (step) {
@@ -193,10 +212,16 @@ const showStep = (stepNumber) => {
   const prevBtn = document.getElementById('checkout-prev-btn');
   const nextBtn = document.getElementById('checkout-next-btn');
 
+  // Show/hide previous button
   if (prevBtn) {
-    prevBtn.style.display = stepNumber > 1 ? 'block' : 'none';
+    if (stepNumber > 1) {
+      prevBtn.style.display = 'block';
+    } else {
+      prevBtn.style.display = 'none';
+    }
   }
 
+  // Show/hide next button
   if (nextBtn) {
     if (stepNumber === 5) {
       nextBtn.style.display = 'none';
@@ -479,13 +504,24 @@ const submitOrder = async () => {
 };
 
 // Navigation handlers
+let navigationSetup = false;
 const setupNavigation = () => {
+  // Prevent duplicate event listeners
+  if (navigationSetup) {
+    return;
+  }
+  navigationSetup = true;
+
   const nextBtn = document.getElementById('checkout-next-btn');
   const prevBtn = document.getElementById('checkout-prev-btn');
   const submitBtn = document.getElementById('checkout-submit-btn');
 
   if (nextBtn) {
-    nextBtn.addEventListener('click', () => {
+    // Remove existing listener if any
+    const newNextBtn = nextBtn.cloneNode(true);
+    nextBtn.parentNode?.replaceChild(newNextBtn, nextBtn);
+    
+    newNextBtn.addEventListener('click', () => {
       // Validate current step
       if (checkoutState.currentStep === 1) {
         if (!checkoutState.orderType) {
@@ -495,11 +531,30 @@ const setupNavigation = () => {
       }
 
       if (checkoutState.currentStep === 2) {
+        // Check if user wants to use points but is not logged in
+        const pointsInput = document.getElementById('checkout-points-used');
+        const pointsUsed = pointsInput ? parseInt(pointsInput.value) || 0 : 0;
+        
+        if (pointsUsed > 0 && !checkoutState.user) {
+          alert('Vui lòng đăng nhập để sử dụng điểm tích lũy');
+          if (typeof window.openAuthModal === 'function') {
+            window.openAuthModal();
+          }
+          return;
+        }
+
         if (checkoutState.orderType === 'DELIVERY') {
           // Check if using saved address or new address
           const selectedAddress = document.querySelector('.checkout-saved-address.selected');
           if (selectedAddress) {
-            // Using saved address
+            // Using saved address - requires login
+            if (!checkoutState.user) {
+              alert('Vui lòng đăng nhập để sử dụng địa chỉ đã lưu');
+              if (typeof window.openAuthModal === 'function') {
+                window.openAuthModal();
+              }
+              return;
+            }
             const addressId = selectedAddress.getAttribute('data-address-id');
             checkoutState.deliveryAddress = { savedAddressId: addressId };
           } else {
@@ -546,13 +601,26 @@ const setupNavigation = () => {
   }
 
   if (prevBtn) {
-    prevBtn.addEventListener('click', () => {
-      showStep(checkoutState.currentStep - 1);
+    // Remove existing listener if any
+    const newPrevBtn = prevBtn.cloneNode(true);
+    prevBtn.parentNode?.replaceChild(newPrevBtn, prevBtn);
+    
+    newPrevBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const previousStep = checkoutState.currentStep - 1;
+      if (previousStep >= 1) {
+        showStep(previousStep);
+      }
     });
   }
 
   if (submitBtn) {
-    submitBtn.addEventListener('click', submitOrder);
+    // Remove existing listener if any
+    const newSubmitBtn = submitBtn.cloneNode(true);
+    submitBtn.parentNode?.replaceChild(newSubmitBtn, submitBtn);
+    
+    newSubmitBtn.addEventListener('click', submitOrder);
   }
 };
 
@@ -609,6 +677,66 @@ const handleAddAddressButton = () => {
   }
 };
 
+// Update checkout state after login
+const updateCheckoutAfterLogin = async () => {
+  try {
+    // Reload user info using the same method as auth.js
+    if (typeof window.fetchCurrentUser === 'function') {
+      checkoutState.user = await window.fetchCurrentUser();
+    } else {
+      checkoutState.user = await fetchCheckoutUser();
+    }
+
+    // Load member info if user is logged in
+    if (checkoutState.user) {
+      const userId = checkoutState.user._id || checkoutState.user.id;
+      
+      if (userId && checkoutState.user.accountType === 'THANH_VIEN') {
+        checkoutState.memberInfo = await fetchMemberInfo(userId);
+
+        // Show points section
+        const pointsSection = document.getElementById('checkout-points-section');
+        if (pointsSection && checkoutState.memberInfo) {
+          pointsSection.style.display = 'block';
+          const availablePointsEl = document.getElementById('checkout-available-points');
+          const maxPointsEl = document.getElementById('checkout-max-points');
+          if (availablePointsEl) {
+            availablePointsEl.textContent = checkoutState.memberInfo.points || 0;
+          }
+          if (maxPointsEl) {
+            const totals = calculateTotals();
+            maxPointsEl.textContent = Math.min(
+              checkoutState.memberInfo.points || 0,
+              totals.subtotal
+            );
+          }
+        }
+      } else {
+        // Hide points section if user is not a member
+        const pointsSection = document.getElementById('checkout-points-section');
+        if (pointsSection) {
+          pointsSection.style.display = 'none';
+        }
+      }
+    }
+
+    // Load saved addresses if delivery is selected
+    if (checkoutState.orderType === 'DELIVERY') {
+      await loadSavedAddresses();
+    }
+
+    // Update order summary
+    updateOrderSummary();
+    
+    console.log('[Checkout] State updated after login:', {
+      user: checkoutState.user ? 'Logged in' : 'Not logged in',
+      memberInfo: checkoutState.memberInfo ? 'Has member info' : 'No member info'
+    });
+  } catch (error) {
+    console.error('[Checkout] Error updating state after login:', error);
+  }
+};
+
 // Initialize checkout page
 const initializeCheckout = async () => {
   // Load cart items
@@ -624,24 +752,27 @@ const initializeCheckout = async () => {
   checkoutState.user = await fetchCheckoutUser();
 
   // Load member info if user is logged in
-  if (checkoutState.user && checkoutState.user.accountType === 'THANH_VIEN') {
-    checkoutState.memberInfo = await fetchMemberInfo(checkoutState.user.id);
+  if (checkoutState.user) {
+    const userId = checkoutState.user._id || checkoutState.user.id;
+    if (userId && checkoutState.user.accountType === 'THANH_VIEN') {
+      checkoutState.memberInfo = await fetchMemberInfo(userId);
 
-    // Show points section
-    const pointsSection = document.getElementById('checkout-points-section');
-    if (pointsSection && checkoutState.memberInfo) {
-      pointsSection.style.display = 'block';
-      const availablePointsEl = document.getElementById('checkout-available-points');
-      const maxPointsEl = document.getElementById('checkout-max-points');
-      if (availablePointsEl) {
-        availablePointsEl.textContent = checkoutState.memberInfo.points || 0;
-      }
-      if (maxPointsEl) {
-        const totals = calculateTotals();
-        maxPointsEl.textContent = Math.min(
-          checkoutState.memberInfo.points || 0,
-          totals.subtotal
-        );
+      // Show points section
+      const pointsSection = document.getElementById('checkout-points-section');
+      if (pointsSection && checkoutState.memberInfo) {
+        pointsSection.style.display = 'block';
+        const availablePointsEl = document.getElementById('checkout-available-points');
+        const maxPointsEl = document.getElementById('checkout-max-points');
+        if (availablePointsEl) {
+          availablePointsEl.textContent = checkoutState.memberInfo.points || 0;
+        }
+        if (maxPointsEl) {
+          const totals = calculateTotals();
+          maxPointsEl.textContent = Math.min(
+            checkoutState.memberInfo.points || 0,
+            totals.subtotal
+          );
+        }
       }
     }
   }
@@ -660,6 +791,11 @@ const initializeCheckout = async () => {
   // Show first step
   showStep(1);
 };
+
+// Export function for auth.js to use
+if (typeof window !== 'undefined') {
+  window.updateCheckoutAfterLogin = updateCheckoutAfterLogin;
+}
 
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {

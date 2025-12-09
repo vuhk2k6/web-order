@@ -27,7 +27,7 @@ const reservationSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['DANG_CHO', 'XAC_NHAN', 'DA_HUY'],
+      enum: ['DANG_CHO', 'XAC_NHAN', 'DA_HUY', 'HOAN_THANH'],
       default: 'DANG_CHO'
     },
     note: {

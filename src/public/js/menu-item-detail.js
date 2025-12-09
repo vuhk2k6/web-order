@@ -696,3 +696,4 @@ if (document.readyState === 'loading') {
   initializeMenuItemDetailPage();
 }
 
+
