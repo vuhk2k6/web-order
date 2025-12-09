@@ -111,6 +111,22 @@ const renderSharedHeader = (options = {}) => {
     body.insertBefore(headerContainer, body.firstChild);
   }
 
+  // Đồng bộ nút đăng nhập ngay sau khi render header
+  if (typeof window.fetchCurrentUser === 'function' && typeof window.updateAuthUi === 'function') {
+    window.fetchCurrentUser()
+      .then((user) => {
+        if (user) {
+          window.updateAuthUi(user);
+        } else {
+          window.updateAuthUi(null);
+        }
+      })
+      .catch((error) => {
+        // eslint-disable-next-line no-console
+        console.error('[Header] Lỗi khi kiểm tra đăng nhập:', error);
+      });
+  }
+
   if (onAuthClick && typeof onAuthClick === 'function') {
     const authBtn = document.getElementById(authButtonId);
     if (authBtn) {

@@ -426,7 +426,7 @@ const createFullMenuCard = (item) => {
     }
   });
 
-  // View details button
+  // View details button - navigate to detail page
   const viewButton = document.createElement('button');
   viewButton.type = 'button';
   viewButton.className = 'menu-view-button';
@@ -436,11 +436,12 @@ const createFullMenuCard = (item) => {
   viewButton.addEventListener('click', (e) => {
     e.stopPropagation();
     e.preventDefault();
-    // Open detail modal with current selected size and price
-    if (window.openMenuDetailModal) {
-      window.openMenuDetailModal({ ...item, size: selectedSize, price: selectedPrice });
+    // Navigate to menu item detail page
+    const itemId = item._id || item.id;
+    if (itemId) {
+      window.location.href = `/menu/${itemId}`;
     } else {
-      console.warn('openMenuDetailModal không khả dụng');
+      console.error('Không tìm thấy ID món ăn');
     }
   });
 
@@ -454,6 +455,19 @@ const createFullMenuCard = (item) => {
 
   card.appendChild(imageWrapper);
   card.appendChild(cardContent);
+
+  // Add click handler to card to navigate to detail page
+  card.style.cursor = 'pointer';
+  card.addEventListener('click', (e) => {
+    // Don't navigate if clicking on buttons or size selector
+    if (e.target.closest('button') || e.target.closest('.menu-card-size-inline')) {
+      return;
+    }
+    const itemId = item._id || item.id;
+    if (itemId) {
+      window.location.href = `/menu/${itemId}`;
+    }
+  });
 
   return card;
 };
@@ -661,6 +675,17 @@ const initializeMenuPage = async () => {
     
     // Wait for header to be initialized
     await new Promise((resolve) => window.setTimeout(resolve, 50));
+  }
+  
+  // Đồng bộ trạng thái đăng nhập cho nút header (dù header có sẵn hay vừa render)
+  if (typeof window.fetchCurrentUser === 'function' && typeof window.updateAuthUi === 'function') {
+    try {
+      const user = await window.fetchCurrentUser();
+      window.updateAuthUi(user);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('[menu.js] Lỗi khi đồng bộ trạng thái đăng nhập:', error);
+    }
   }
   
   // Wait a bit for cart to be initialized

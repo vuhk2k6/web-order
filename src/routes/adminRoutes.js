@@ -369,6 +369,188 @@ router.delete('/api/menu/:id', async (req, res) => {
   }
 });
 
+// Get dashboard statistics
+router.get('/api/stats', async (req, res) => {
+  console.log('[Admin API] GET /admin/api/stats - Request received');
+  try {
+    const { Order } = require('../models/Order');
+    const { OrderItem } = require('../models/OrderItem');
+    const { Reservation } = require('../models/Reservation');
+    const { Table } = require('../models/Table');
+    const { MenuItem } = require('../models/MenuItem');
+    const { Category } = require('../models/Category');
+    
+    // Get today's date range
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    // Get yesterday's date range
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    // Today's orders
+    const todayOrders = await Order.find({
+      createdAt: { $gte: today, $lt: tomorrow }
+    }).lean();
+    
+    // Yesterday's orders
+    const yesterdayOrders = await Order.find({
+      createdAt: { $gte: yesterday, $lt: today }
+    }).lean();
+    
+    // Calculate today's revenue (only completed/confirmed orders, exclude cancelled)
+    const completedTodayOrders = todayOrders.filter(
+      o => !['DA_HUY', 'THANH_TOAN_THAT_BAI'].includes(o.status)
+    );
+    const todayRevenue = completedTodayOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+    
+    // Calculate yesterday's revenue
+    const completedYesterdayOrders = yesterdayOrders.filter(
+      o => !['DA_HUY', 'THANH_TOAN_THAT_BAI'].includes(o.status)
+    );
+    const yesterdayRevenue = completedYesterdayOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+    
+    // Calculate revenue change
+    const revenueChange = yesterdayRevenue > 0
+      ? ((todayRevenue - yesterdayRevenue) / yesterdayRevenue * 100).toFixed(1)
+      : (todayRevenue > 0 ? 100 : 0);
+    
+    // Today's order count (all orders except cancelled)
+    const todayOrderCount = todayOrders.filter(
+      o => !['DA_HUY', 'THANH_TOAN_THAT_BAI'].includes(o.status)
+    ).length;
+    const yesterdayOrderCount = yesterdayOrders.filter(
+      o => !['DA_HUY', 'THANH_TOAN_THAT_BAI'].includes(o.status)
+    ).length;
+    const orderChange = yesterdayOrderCount > 0
+      ? ((todayOrderCount - yesterdayOrderCount) / yesterdayOrderCount * 100).toFixed(1)
+      : (todayOrderCount > 0 ? 100 : 0);
+    
+    // Guests served (from reservations today and dine-in orders)
+    const todayReservations = await Reservation.find({
+      reservedAt: { $gte: today, $lt: tomorrow },
+      status: { $in: ['XAC_NHAN', 'DANG_CHO'] }
+    }).lean();
+    
+    const dineInOrdersToday = completedTodayOrders.filter(o => o.orderType === 'TAI_CHO');
+    const guestCountFromReservations = todayReservations.reduce((sum, r) => sum + (r.guestCount || 0), 0);
+    // Estimate average 2.5 guests per dine-in order
+    const guestCountFromOrders = Math.round(dineInOrdersToday.length * 2.5);
+    const totalGuests = guestCountFromReservations + guestCountFromOrders;
+    
+    // Category performance (from today's order items)
+    const todayOrderIds = completedTodayOrders.map(o => o._id);
+    const todayOrderItems = await OrderItem.find({
+      order: { $in: todayOrderIds }
+    }).lean();
+    
+    // Get all menu items with categories in one query for efficiency
+    const dishIds = [...new Set(todayOrderItems.map(item => item.dish).filter(Boolean))];
+    const menuItems = await MenuItem.find({
+      _id: { $in: dishIds }
+    }).populate('category', 'name').lean();
+    
+    // Create map for quick lookup
+    const menuItemMap = {};
+    menuItems.forEach(item => {
+      menuItemMap[item._id.toString()] = item;
+    });
+    
+    // Get category counts
+    const categoryCounts = {};
+    for (const item of todayOrderItems) {
+      if (item.dish) {
+        const dishId = item.dish._id ? item.dish._id.toString() : item.dish.toString();
+        const menuItem = menuItemMap[dishId];
+        
+        if (menuItem && menuItem.category) {
+          const categoryName = typeof menuItem.category === 'object' && menuItem.category.name
+            ? menuItem.category.name
+            : 'Khác';
+          
+          if (categoryName) {
+            categoryCounts[categoryName] = (categoryCounts[categoryName] || 0) + (item.quantity || 1);
+          }
+        }
+      }
+    }
+    
+    // Table status
+    const allTables = await Table.find({}).lean();
+    const totalTables = allTables.length;
+    const availableTables = allTables.filter(t => t.status === 'TRONG').length;
+    
+    // Reservations waiting
+    const waitingReservations = await Reservation.find({
+      status: 'DANG_CHO'
+    }).lean();
+    
+    // Active reservations (confirmed, today or future)
+    const activeReservations = await Reservation.find({
+      status: 'XAC_NHAN',
+      reservedAt: { $gte: today }
+    }).lean();
+    const activeGuestsCount = activeReservations.reduce((sum, r) => sum + (r.guestCount || 0), 0);
+    
+    res.json({
+      revenue: {
+        today: todayRevenue,
+        yesterday: yesterdayRevenue,
+        change: parseFloat(revenueChange)
+      },
+      orders: {
+        today: todayOrderCount,
+        yesterday: yesterdayOrderCount,
+        change: parseFloat(orderChange)
+      },
+      guests: {
+        today: totalGuests
+      },
+      tables: {
+        total: totalTables,
+        available: availableTables,
+        reserved: totalTables - availableTables
+      },
+      reservations: {
+        waiting: waitingReservations.length,
+        active: activeReservations.length,
+        activeGuests: activeGuestsCount
+      }
+    });
+  } catch (error) {
+    console.error('[Admin API] Error fetching stats:', error);
+    res.status(500).json({ message: 'Không thể tải thống kê', error: error.message });
+  }
+});
+
+// Get pending counts for sidebar badges
+router.get('/api/pending-counts', async (req, res) => {
+  try {
+    const { Order } = require('../models/Order');
+    const { Reservation } = require('../models/Reservation');
+    
+    // Count pending orders (not completed, not cancelled)
+    const pendingOrdersCount = await Order.countDocuments({
+      status: { $nin: ['HOAN_THANH', 'DA_HUY', 'THANH_TOAN_THAT_BAI'] }
+    });
+    
+    // Count pending reservations (waiting or confirmed but not cancelled)
+    const pendingReservationsCount = await Reservation.countDocuments({
+      status: { $in: ['DANG_CHO', 'XAC_NHAN'] }
+    });
+    
+    res.json({
+      pendingOrders: pendingOrdersCount,
+      pendingReservations: pendingReservationsCount
+    });
+  } catch (error) {
+    console.error('[Admin API] Error fetching pending counts:', error);
+    res.status(500).json({ message: 'Không thể tải số lượng chờ xử lý', error: error.message });
+  }
+});
+
 router.get('/api/orders', async (req, res) => {
   try {
     const orders = await Order.find()

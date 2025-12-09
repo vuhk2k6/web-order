@@ -244,3 +244,4 @@ if (document.readyState === 'loading') {
   initializeOrderPage();
 }
 
+

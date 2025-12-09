@@ -215,6 +215,11 @@
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 }
 
+.legend-reserved {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
 .legend-occupied {
   background: linear-gradient(135deg, #94a3b8, #64748b);
 }
@@ -261,6 +266,15 @@
 .table-item.available:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+}
+
+.table-item.reserved {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #ffffff;
+  cursor: not-allowed;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+  border-color: rgba(255, 255, 255, 0.3);
+  opacity: 0.9;
 }
 
 .table-item.occupied {

@@ -26,6 +26,11 @@ router.get('/menu', (req, res) => {
   res.sendFile(menuPath);
 });
 
+router.get('/menu/:id', (req, res) => {
+  const menuItemDetailPath = path.join(__dirname, '..', 'views', 'menu-item-detail.html');
+  res.sendFile(menuItemDetailPath);
+});
+
 router.get('/cart', (req, res) => {
   const cartPath = path.join(__dirname, '..', 'views', 'cart.html');
   res.sendFile(cartPath);
@@ -86,7 +91,7 @@ router.get('/api/menu', async (req, res) => {
       .populate('category', 'name _id')
       .sort({ createdAt: -1 })
       .lean();
-    
+
     // Map _id to string for frontend compatibility and format category
     const mappedItems = items.map(item => ({
       ...item,
@@ -97,11 +102,199 @@ router.get('/api/menu', async (req, res) => {
         name: item.category.name
       } : null
     }));
-    
+
     res.json(mappedItems);
   } catch (error) {
     console.error('[API /api/menu] Lỗi:', error);
     res.status(500).json({ message: 'Không thể tải thực đơn', error: error.message });
+  }
+});
+
+// Get single menu item detail
+router.get('/api/menu/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const item = await MenuItem.findById(id)
+      .populate('category', 'name _id')
+      .lean();
+
+    if (!item) {
+      return res.status(404).json({ message: 'Không tìm thấy món ăn' });
+    }
+
+    // Map _id to string for frontend compatibility and format category
+    const mappedItem = {
+      ...item,
+      _id: item._id.toString(),
+      id: item._id.toString(),
+      category: item.category ? {
+        _id: item.category._id.toString(),
+        id: item.category._id.toString(),
+        name: item.category.name
+      } : null
+    };
+
+    res.json(mappedItem);
+  } catch (error) {
+    console.error('[API /api/menu/:id] Lỗi:', error);
+    res.status(500).json({ message: 'Không thể tải chi tiết món ăn', error: error.message });
+  }
+});
+
+// Get reviews for a menu item
+router.get('/api/menu/:id/reviews', async (req, res) => {
+  try {
+    const { MenuItemReview } = require('../models/MenuItemReview');
+    const { id } = req.params;
+    
+    const reviews = await MenuItemReview.find({ menuItem: id })
+      .populate('customer', 'name email')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Calculate average rating
+    const ratings = reviews.map(r => r.rating);
+    const averageRating = ratings.length > 0
+      ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1)
+      : 0;
+
+    // Count ratings by star
+    const ratingCounts = {
+      5: ratings.filter(r => r === 5).length,
+      4: ratings.filter(r => r === 4).length,
+      3: ratings.filter(r => r === 3).length,
+      2: ratings.filter(r => r === 2).length,
+      1: ratings.filter(r => r === 1).length
+    };
+
+    const mappedReviews = reviews.map(review => ({
+      _id: review._id.toString(),
+      id: review._id.toString(),
+      rating: review.rating,
+      content: review.content || '',
+      customer: review.customer ? {
+        name: review.customer.name || 'Khách hàng',
+        email: review.customer.email || ''
+      } : { name: 'Khách hàng', email: '' },
+      createdAt: review.createdAt
+    }));
+
+    res.json({
+      reviews: mappedReviews,
+      averageRating: parseFloat(averageRating),
+      totalReviews: reviews.length,
+      ratingCounts
+    });
+  } catch (error) {
+    console.error('[API /api/menu/:id/reviews] Lỗi:', error);
+    res.status(500).json({ message: 'Không thể tải đánh giá', error: error.message });
+  }
+});
+
+// Create a review for a menu item
+router.post('/api/menu/:id/reviews', async (req, res) => {
+  try {
+    const { MenuItemReview } = require('../models/MenuItemReview');
+    const { Customer } = require('../models/Customer');
+    const { id } = req.params;
+    const { rating, content } = req.body;
+
+    // Validate rating
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ message: 'Đánh giá phải từ 1 đến 5 sao' });
+    }
+
+    // Get customer from session or token
+    const customerId = req.session?.userId || req.user?.id;
+    if (!customerId) {
+      console.error('[API /api/menu/:id/reviews POST] No customer ID found in session:', {
+        hasSession: !!req.session,
+        sessionKeys: req.session ? Object.keys(req.session) : [],
+        userId: req.session?.userId,
+        customerId: req.session?.customerId,
+        user: req.user
+      });
+      return res.status(401).json({ message: 'Vui lòng đăng nhập để đánh giá' });
+    }
+
+    // Check if customer exists
+    const customer = await Customer.findById(customerId);
+    if (!customer) {
+      return res.status(404).json({ message: 'Không tìm thấy khách hàng' });
+    }
+
+    // Check if menu item exists
+    const menuItem = await MenuItem.findById(id);
+    if (!menuItem) {
+      return res.status(404).json({ message: 'Không tìm thấy món ăn' });
+    }
+
+    // Check if customer already reviewed this item
+    const existingReview = await MenuItemReview.findOne({
+      menuItem: id,
+      customer: customerId
+    });
+
+    if (existingReview) {
+      // Update existing review
+      existingReview.rating = rating;
+      existingReview.content = content || '';
+      await existingReview.save();
+
+      const updatedReview = await MenuItemReview.findById(existingReview._id)
+        .populate('customer', 'name email')
+        .lean();
+
+      return res.json({
+        review: {
+          _id: updatedReview._id.toString(),
+          id: updatedReview._id.toString(),
+          rating: updatedReview.rating,
+          content: updatedReview.content || '',
+          customer: updatedReview.customer ? {
+            name: updatedReview.customer.name || 'Khách hàng',
+            email: updatedReview.customer.email || ''
+          } : { name: 'Khách hàng', email: '' },
+          createdAt: updatedReview.createdAt
+        },
+        message: 'Cập nhật đánh giá thành công'
+      });
+    }
+
+    // Create new review
+    const review = new MenuItemReview({
+      menuItem: id,
+      customer: customerId,
+      rating,
+      content: content || ''
+    });
+
+    await review.save();
+
+    const newReview = await MenuItemReview.findById(review._id)
+      .populate('customer', 'name email')
+      .lean();
+
+    res.status(201).json({
+      review: {
+        _id: newReview._id.toString(),
+        id: newReview._id.toString(),
+        rating: newReview.rating,
+        content: newReview.content || '',
+        customer: newReview.customer ? {
+          name: newReview.customer.name || 'Khách hàng',
+          email: newReview.customer.email || ''
+        } : { name: 'Khách hàng', email: '' },
+        createdAt: newReview.createdAt
+      },
+      message: 'Đánh giá thành công'
+    });
+  } catch (error) {
+    console.error('[API /api/menu/:id/reviews POST] Lỗi:', error);
+    if (error.code === 11000) {
+      return res.status(400).json({ message: 'Bạn đã đánh giá món ăn này rồi' });
+    }
+    res.status(500).json({ message: 'Không thể tạo đánh giá', error: error.message });
   }
 });
 
@@ -1029,6 +1222,8 @@ router.post('/api/payments/momo/callback', async (req, res) => {
 router.get('/api/tables', async (req, res) => {
   try {
     const { Table } = require('../models/Table');
+    const { ReservationTable } = require('../models/ReservationTable');
+    const { Reservation } = require('../models/Reservation');
     
     // Fetch all tables from database, sorted by name
     const tables = await Table.find({})
@@ -1037,23 +1232,83 @@ router.get('/api/tables', async (req, res) => {
     
     console.log(`[Tables API] Found ${tables.length} tables in database`);
     
-    // Map table data to response format
-    const tablesData = tables.map(table => ({
-      id: table._id.toString(),
-      name: table.name || '',
-      seats: table.seats || 0,
-      location: table.location || '',
-      status: table.status || 'TRONG',
-      createdAt: table.createdAt ? new Date(table.createdAt).toISOString() : null,
-      updatedAt: table.updatedAt ? new Date(table.updatedAt).toISOString() : null
-    }));
+    const now = new Date();
+    
+    // Get all active reservations
+    const activeReservations = await Reservation.find({
+      status: { $in: ['DANG_CHO', 'XAC_NHAN'] }
+    }).lean();
+    
+    const reservationIds = activeReservations.map(r => r._id);
+    
+    let reservationTables = [];
+    if (reservationIds.length > 0) {
+      reservationTables = await ReservationTable.find({
+        reservation: { $in: reservationIds }
+      })
+      .populate('table', 'name seats location status _id')
+      .populate('reservation', 'status reservedAt')
+      .lean();
+    }
+    
+    // Create map: tableId -> reservation info
+    const tableReservationMap = {};
+    reservationTables.forEach(rt => {
+      // Handle both populated and non-populated table field
+      const tableId = rt.table && typeof rt.table === 'object' && rt.table._id
+        ? rt.table._id.toString()
+        : (rt.table ? rt.table.toString() : null);
+      
+      if (tableId && rt.reservation) {
+        if (!tableReservationMap[tableId]) {
+          tableReservationMap[tableId] = [];
+        }
+        const reservationData = typeof rt.reservation === 'object' ? rt.reservation : {};
+        tableReservationMap[tableId].push({
+          status: reservationData.status || rt.reservation?.status,
+          reservedAt: reservationData.reservedAt || rt.reservation?.reservedAt
+        });
+      }
+    });
+    
+    // Map table data to response format with displayStatus
+    const tablesData = tables.map(table => {
+      const tableId = table._id.toString();
+      const reservations = tableReservationMap[tableId] || [];
+      
+      // Determine display status (same logic as admin)
+      let displayStatus = table.status; // TRONG, DANG_DUNG, DANG_DON
+      
+      if (table.status === 'TRONG' && reservations.length > 0) {
+        // Check if there's a reservation that's not confirmed or not yet time
+        const hasReservedPending = reservations.some(r => {
+          const reservedTime = new Date(r.reservedAt);
+          return r.status === 'DANG_CHO' || reservedTime > now;
+        });
+        
+        if (hasReservedPending) {
+          displayStatus = 'RESERVED';
+        }
+      }
+      
+      return {
+        id: tableId,
+        name: table.name || '',
+        seats: table.seats || 0,
+        location: table.location || '',
+        status: table.status || 'TRONG',
+        displayStatus: displayStatus, // TRONG, DANG_DUNG, DANG_DON, RESERVED
+        createdAt: table.createdAt ? new Date(table.createdAt).toISOString() : null,
+        updatedAt: table.updatedAt ? new Date(table.updatedAt).toISOString() : null
+      };
+    });
     
     res.json(tablesData);
   } catch (error) {
     console.error('[Tables API] Error fetching tables from database:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Không thể lấy danh sách bàn',
-      error: error.message 
+      error: error.message
     });
   }
 });

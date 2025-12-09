@@ -30,16 +30,31 @@ const renderTableMap = (tables) => {
   }
 
   container.innerHTML = tables.map(table => {
-    const isAvailable = table.status === 'TRONG';
+    // Use displayStatus from API (same as admin)
+    const displayStatus = table.displayStatus || table.status;
+    const isAvailable = displayStatus === 'TRONG';
     const isSelected = selectedTableIds.includes(table.id);
     let className = 'table-item';
+    let statusText = '';
     
     if (isSelected) {
       className += ' selected';
+      statusText = 'Đã chọn';
+    } else if (displayStatus === 'RESERVED') {
+      className += ' reserved';
+      statusText = 'Đã đặt';
+    } else if (displayStatus === 'DANG_DUNG') {
+      className += ' occupied';
+      statusText = 'Đang dùng';
+    } else if (displayStatus === 'DANG_DON') {
+      className += ' occupied';
+      statusText = 'Đang dọn';
     } else if (isAvailable) {
       className += ' available';
+      statusText = 'Trống';
     } else {
       className += ' occupied';
+      statusText = 'Đã đặt';
     }
 
     return `
@@ -47,11 +62,13 @@ const renderTableMap = (tables) => {
         class="${className}" 
         data-table-id="${table.id}"
         data-table-status="${table.status}"
-        ${isAvailable ? 'onclick="handleTableClick(\'' + table.id + '\')"' : ''}
+        data-display-status="${displayStatus}"
+        ${isAvailable ? 'onclick="handleTableClick(\'' + table.id + '\')"' : 'style="cursor: not-allowed;"'}
       >
         <div class="table-item-name">${table.name}</div>
         <div class="table-item-seats">${table.seats} chỗ</div>
         ${table.location ? `<div class="table-item-location">${table.location}</div>` : ''}
+        <div style="font-size: 11px; opacity: 0.9; margin-top: 4px;">${statusText}</div>
       </div>
     `;
   }).join('');
@@ -59,7 +76,14 @@ const renderTableMap = (tables) => {
 
 const handleTableClick = (tableId) => {
   const table = tablesData.find(t => t.id === tableId);
-  if (!table || table.status !== 'TRONG') return;
+  if (!table) return;
+  
+  // Only allow selecting tables with displayStatus === 'TRONG'
+  const displayStatus = table.displayStatus || table.status;
+  if (displayStatus !== 'TRONG') {
+    alert('Bàn này đã được đặt hoặc đang sử dụng. Vui lòng chọn bàn khác.');
+    return;
+  }
 
   const index = selectedTableIds.indexOf(tableId);
   if (index > -1) {
@@ -248,6 +272,17 @@ const initializeReservationPage = async () => {
     
     // Wait for header to be initialized
     await new Promise((resolve) => window.setTimeout(resolve, 50));
+  }
+  
+  // Đồng bộ trạng thái đăng nhập cho nút header (kể cả khi header đã tồn tại)
+  if (typeof window.fetchCurrentUser === 'function' && typeof window.updateAuthUi === 'function') {
+    try {
+      const user = await window.fetchCurrentUser();
+      window.updateAuthUi(user);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('[reservation.js] Lỗi khi đồng bộ trạng thái đăng nhập:', error);
+    }
   }
 
   // Set minimum date to today

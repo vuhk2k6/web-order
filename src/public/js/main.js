@@ -779,11 +779,12 @@ const createMenuCard = (item) => {
   viewButton.addEventListener('click', (e) => {
     e.stopPropagation();
     e.preventDefault();
-    // Open detail modal
-    if (window.openMenuDetailModal) {
-      window.openMenuDetailModal({ ...item, size: selectedSize });
+    // Navigate to menu item detail page
+    const itemId = item._id || item.id;
+    if (itemId) {
+      window.location.href = `/menu/${itemId}`;
     } else {
-      openHomeMenuDetailModal({ ...item, size: selectedSize });
+      console.error('Không tìm thấy ID món ăn');
     }
   });
 
@@ -863,6 +864,19 @@ const createMenuCard = (item) => {
 
   card.appendChild(imageWrapper);
   card.appendChild(cardContent);
+
+  // Add click handler to card to navigate to detail page
+  card.style.cursor = 'pointer';
+  card.addEventListener('click', (e) => {
+    // Don't navigate if clicking on buttons or size selector
+    if (e.target.closest('button') || e.target.closest('.menu-card-size-inline')) {
+      return;
+    }
+    const itemId = item._id || item.id;
+    if (itemId) {
+      window.location.href = `/menu/${itemId}`;
+    }
+  });
 
   return card;
 };

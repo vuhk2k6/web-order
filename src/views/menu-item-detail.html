@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chi tiết món ăn - Nhà hàng</title>
+  <link rel="stylesheet" href="/@style/main.css" />
+  <link rel="stylesheet" href="/@style/menu-item-detail.css" />
+</head>
+
+<body class="page">
+  <div id="shared-header"></div>
+
+  <main class="main-content menu-item-detail-page">
+    <div class="container">
+      <!-- Back button -->
+      <div class="menu-item-detail-back">
+        <a href="/menu" class="back-link" aria-label="Quay lại thực đơn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Quay lại thực đơn</span>
+        </a>
+      </div>
+
+      <!-- Loading state -->
+      <div id="menu-item-detail-loading" class="menu-item-detail-loading" style="display: none;">
+        <div class="loading-spinner"></div>
+        <p>Đang tải chi tiết món ăn...</p>
+      </div>
+
+      <!-- Error state -->
+      <div id="menu-item-detail-error" class="menu-item-detail-error" style="display: none;">
+        <div class="error-icon">⚠️</div>
+        <h2>Không tìm thấy món ăn</h2>
+        <p>Món ăn bạn đang tìm không tồn tại hoặc đã bị xóa.</p>
+        <a href="/menu" class="btn-primary">Quay lại thực đơn</a>
+      </div>
+
+      <!-- Menu item detail content -->
+      <div id="menu-item-detail-content" class="menu-item-detail-content" style="display: none;">
+        <div class="menu-item-detail-grid">
+          <!-- Left: Image -->
+          <div class="menu-item-detail-image-section">
+            <div class="menu-item-detail-image-wrapper">
+              <img id="menu-item-detail-image" src="" alt="" class="menu-item-detail-image" />
+            </div>
+          </div>
+
+          <!-- Right: Info -->
+          <div class="menu-item-detail-info-section">
+            <div class="menu-item-detail-header">
+              <h1 id="menu-item-detail-title" class="menu-item-detail-title"></h1>
+              <div class="menu-item-detail-price-wrapper">
+                <span id="menu-item-detail-price" class="menu-item-detail-price"></span>
+                <span id="menu-item-detail-price-old" class="menu-item-detail-price-old" style="display: none;"></span>
+              </div>
+            </div>
+
+            <div id="menu-item-detail-description" class="menu-item-detail-description"></div>
+
+            <!-- Size selector -->
+            <div id="menu-item-detail-size-section" class="menu-item-detail-size-section" style="display: none;">
+              <h3 class="menu-item-detail-section-title">Chọn size</h3>
+              <div id="menu-item-detail-size-options" class="menu-size-options" role="group" aria-label="Chọn size món">
+                <!-- Size options will be dynamically generated -->
+              </div>
+            </div>
+
+            <!-- Additional info -->
+            <div class="menu-item-detail-specs">
+              <div id="menu-item-detail-category" class="menu-item-detail-spec-item" style="display: none;">
+                <span class="menu-item-detail-spec-label">Danh mục:</span>
+                <span id="menu-item-detail-category-value" class="menu-item-detail-spec-value"></span>
+              </div>
+              <div id="menu-item-detail-ingredients" class="menu-item-detail-spec-item" style="display: none;">
+                <span class="menu-item-detail-spec-label">Thành phần:</span>
+                <span id="menu-item-detail-ingredients-value" class="menu-item-detail-spec-value"></span>
+              </div>
+              <div id="menu-item-detail-calories" class="menu-item-detail-spec-item" style="display: none;">
+                <span class="menu-item-detail-spec-label">Calo:</span>
+                <span id="menu-item-detail-calories-value" class="menu-item-detail-spec-value"></span>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="menu-item-detail-actions">
+              <button type="button" id="menu-item-detail-add-button" class="menu-item-detail-add-button btn-primary">
+                Thêm vào giỏ hàng
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reviews Section -->
+      <section id="menu-item-reviews-section" class="menu-item-reviews-section" style="display: none;">
+        <div class="menu-item-reviews-header">
+          <h2 class="menu-item-reviews-title">Đánh giá món ăn</h2>
+          <div class="menu-item-reviews-summary">
+            <div class="reviews-average-rating">
+              <span id="reviews-average-rating-value" class="average-rating-value">0</span>
+              <div class="reviews-stars">
+                <span id="reviews-stars-display"></span>
+              </div>
+              <span class="reviews-count-text">
+                (<span id="reviews-total-count">0</span> đánh giá)
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Review Form (only show if logged in) -->
+        <div id="add-review-form-container" class="add-review-form-container" style="display: none;">
+          <h3 class="add-review-title">Viết đánh giá của bạn</h3>
+          <form id="add-review-form" class="add-review-form">
+            <div class="add-review-rating">
+              <label class="form-label">Đánh giá của bạn:</label>
+              <div class="rating-stars-input">
+                <button type="button" class="star-btn" data-rating="1" aria-label="1 sao">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+                <button type="button" class="star-btn" data-rating="2" aria-label="2 sao">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+                <button type="button" class="star-btn" data-rating="3" aria-label="3 sao">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+                <button type="button" class="star-btn" data-rating="4" aria-label="4 sao">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+                <button type="button" class="star-btn" data-rating="5" aria-label="5 sao">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+              <span id="selected-rating-text" class="selected-rating-text"></span>
+            </div>
+            <div class="add-review-content">
+              <label for="review-content-input" class="form-label">Nội dung đánh giá (tùy chọn):</label>
+              <textarea
+                id="review-content-input"
+                name="content"
+                class="form-input review-textarea"
+                rows="4"
+                placeholder="Chia sẻ cảm nhận của bạn về món ăn này..."
+              ></textarea>
+            </div>
+            <div class="add-review-actions">
+              <button type="submit" class="btn-primary add-review-submit">Gửi đánh giá</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Login prompt for review -->
+        <div id="review-login-prompt" class="review-login-prompt" style="display: none;">
+          <p>Vui lòng <a href="#" id="review-login-link">đăng nhập</a> để đánh giá món ăn này.</p>
+        </div>
+
+        <!-- Reviews List -->
+        <div id="reviews-list-container" class="reviews-list-container">
+          <div id="reviews-list" class="reviews-list">
+            <!-- Reviews will be dynamically rendered here -->
+          </div>
+          <div id="reviews-empty" class="reviews-empty" style="display: none;">
+            <p>Chưa có đánh giá nào cho món ăn này. Hãy là người đầu tiên đánh giá!</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Auth Modal -->
+  <div id="auth-modal-overlay" class="auth-modal-overlay" aria-hidden="true" style="display: none;">
+    <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
+      <button type="button" id="auth-close-button" class="auth-close-button" aria-label="Đóng">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="auth-modal-content">
+        <div class="auth-modal-illustration">
+          <img src="/img/loginout.jpg" alt="Illustration" class="auth-illustration-img" />
+        </div>
+        <div class="auth-modal-form-wrapper">
+          <div class="auth-tabs" role="tablist">
+            <button type="button" id="auth-tab-login" class="auth-tab active" role="tab" aria-selected="true">
+              Đăng nhập
+            </button>
+            <button type="button" id="auth-tab-register" class="auth-tab" role="tab" aria-selected="false">
+              Tạo tài khoản
+            </button>
+          </div>
+          <div class="auth-body">
+            <form id="auth-form-login" class="form" aria-label="Form đăng nhập khách hàng">
+              <div>
+                <label for="auth-login-phone" class="form-label">Số điện thoại</label>
+                <input id="auth-login-phone" name="phone" type="tel" class="form-input" placeholder="Nhập số điện thoại của bạn" required />
+              </div>
+              <div>
+                <label for="auth-login-password" class="form-label">Mật khẩu</label>
+                <input id="auth-login-password" name="password" type="password" class="form-input" placeholder="Nhập mật khẩu của bạn" required />
+                <a href="#" id="auth-forgot-password-link" class="auth-forgot-password" aria-label="Quên mật khẩu">Quên mật khẩu?</a>
+              </div>
+              <button id="auth-login-submit" type="submit" class="btn-primary auth-submit">
+                Đăng nhập
+              </button>
+            </form>
+
+            <form id="auth-form-register" class="form" aria-label="Form đăng ký tài khoản khách hàng" style="display: none;">
+              <div>
+                <label for="auth-register-phone" class="form-label">Số điện thoại</label>
+                <input id="auth-register-phone" name="phone" type="tel" class="form-input" placeholder="Nhập số điện thoại của bạn" required />
+              </div>
+              <div>
+                <label for="auth-register-lastname" class="form-label">Họ</label>
+                <input id="auth-register-lastname" name="lastname" type="text" class="form-input" placeholder="Nhập họ của bạn" required />
+              </div>
+              <div>
+                <label for="auth-register-firstname" class="form-label">Tên</label>
+                <input id="auth-register-firstname" name="firstname" type="text" class="form-input" placeholder="Nhập tên của bạn" required />
+              </div>
+              <div>
+                <label for="auth-register-email" class="form-label">Email</label>
+                <input id="auth-register-email" name="email" type="email" class="form-input" placeholder="Nhập email của bạn" />
+              </div>
+              <div>
+                <label for="auth-register-password" class="form-label">Mật khẩu</label>
+                <input id="auth-register-password" name="password" type="password" class="form-input" placeholder="Nhập mật khẩu của bạn" required />
+              </div>
+              <div>
+                <label for="auth-register-confirm-password" class="form-label">Xác nhận mật khẩu</label>
+                <input id="auth-register-confirm-password" name="confirmPassword" type="password" class="form-input" placeholder="Xác nhận mật khẩu của bạn" required />
+              </div>
+              <button id="auth-register-submit" type="submit" class="btn-primary auth-submit">
+                Tạo tài khoản
+              </button>
+            </form>
+
+            <p id="auth-message" class="auth-error" aria-live="polite" style="display: none;"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Forgot Password Modal -->
+  <div id="forgot-password-modal-overlay" class="auth-modal-overlay" aria-hidden="true" style="display: none;">
+    <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="forgot-password-modal-title">
+      <button type="button" id="forgot-password-close-button" class="auth-close-button" aria-label="Đóng">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="auth-modal-content">
+        <div class="auth-modal-illustration">
+          <img src="/img/loginout.jpg" alt="Illustration" class="auth-illustration-img" />
+        </div>
+        <div class="auth-modal-form-wrapper">
+          <h2 id="forgot-password-modal-title" class="auth-modal-title" style="margin-bottom: 24px;">Quên mật khẩu</h2>
+          <p class="auth-forgot-password-text" style="margin-bottom: 24px; color: #64748b; font-size: 14px; line-height: 1.6;">
+            Nhập số điện thoại hoặc email của bạn. Chúng tôi sẽ gửi mã xác nhận để đặt lại mật khẩu.
+          </p>
+          <form id="forgot-password-form" class="form" aria-label="Form quên mật khẩu">
+            <div>
+              <label for="forgot-password-phone" class="form-label">Số điện thoại hoặc Email</label>
+              <input id="forgot-password-phone" name="phoneOrEmail" type="text" class="form-input" placeholder="Nhập số điện thoại hoặc email của bạn" required />
+            </div>
+            <button id="forgot-password-submit" type="submit" class="btn-primary auth-submit">
+              Gửi mã xác nhận
+            </button>
+          </form>
+          <p id="forgot-password-message" class="auth-error" aria-live="polite" style="display: none; margin-top: 16px;"></p>
+          <div style="margin-top: 24px; text-align: center;">
+            <a href="#" id="forgot-password-back-link" class="auth-forgot-password" style="text-align: center; display: inline-block;">
+              Quay lại đăng nhập
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-grid">
+        <!-- Column 1: Logo & Contact -->
+        <div class="footer-column">
+          <div class="footer-logo">
+            <img src="/img/logo.png" alt="Logo CAFRROTSFUD" class="footer-logo-img" />
+            <p class="footer-logo-text">Thực phẩm sạch & tự nhiên cho cuộc sống lành mạnh</p>
+          </div>
+          <div class="footer-contact">
+            <p>Điện thoại: <a href="tel:0900000000">0900 000 000</a></p>
+            <p>Email: <a href="mailto:contact@cafrrotsfud.vn">contact@cafrrotsfud.vn</a></p>
+            <p>Địa chỉ: 123 Đường Ẩm Thực, Quận 1, TP. Hồ Chí Minh</p>
+          </div>
+        </div>
+
+        <!-- Column 2: Về nhà hàng -->
+        <div class="footer-column">
+          <h3 class="footer-column-title">VỀ NHÀ HÀNG</h3>
+          <ul class="footer-links">
+            <li><a href="/">Trang chủ</a></li>
+            <li><a href="/menu">Thực đơn</a></li>
+            <li><a href="#reservation">Đặt bàn</a></li>
+            <li><a href="#reviews">Đánh giá</a></li>
+          </ul>
+        </div>
+
+        <!-- Column 3: Hỗ trợ -->
+        <div class="footer-column">
+          <h3 class="footer-column-title">HỖ TRỢ</h3>
+          <ul class="footer-links">
+            <li><a href="#reservation">Đặt bàn trực tuyến</a></li>
+            <li><a href="/menu">Đặt món online</a></li>
+            <li><a href="#membership">Chương trình thành viên</a></li>
+            <li><a href="tel:0900000000">Liên hệ hỗ trợ</a></li>
+          </ul>
+        </div>
+
+        <!-- Column 4: Tiện ích -->
+        <div class="footer-column">
+          <h3 class="footer-column-title">TIỆN ÍCH</h3>
+          <ul class="footer-links">
+            <li><a href="/menu">Xem thực đơn</a></li>
+            <li><a href="#reservation">Đặt bàn nhanh</a></li>
+            <li><a href="#membership">Tích điểm thành viên</a></li>
+            <li><a href="/profile">Tài khoản của tôi</a></li>
+          </ul>
+        </div>
+
+        <!-- Column 5: Thông tin pháp lý -->
+        <div class="footer-column">
+          <h3 class="footer-column-title">THÔNG TIN PHÁP LÝ</h3>
+          <div class="footer-legal">
+            <p>Công ty TNHH CAFRROTSFUD</p>
+            <p>Địa chỉ: 123 Đường Ẩm Thực, Quận 1, TP. Hồ Chí Minh, Việt Nam</p>
+            <p>Mã số thuế: 0123456789</p>
+            <p>Giấy phép kinh doanh số: 01/GP-KD do Sở Kế hoạch và Đầu tư TP. HCM cấp</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Bottom: Copyright & Social -->
+      <div class="footer-bottom">
+        <div class="footer-copyright">
+          <p>© <span id="footer-year"></span> CAFRROTSFUD. Nền tảng đặt món và đặt bàn hàng đầu Việt Nam. All rights reserved.</p>
+        </div>
+        <div class="footer-social">
+          <a href="#" class="footer-social-link" aria-label="YouTube" target="_blank" rel="noopener noreferrer">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+            </svg>
+          </a>
+          <a href="#" class="footer-social-link" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+            </svg>
+          </a>
+          <a href="#" class="footer-social-link" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/header.js" defer></script>
+  <script src="/js/auth.js" defer></script>
+  <script src="/js/main.js" defer></script>
+  <script src="/js/menu-item-detail.js" defer></script>
+</body>
+
+</html>
+

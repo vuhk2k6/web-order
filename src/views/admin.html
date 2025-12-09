@@ -21,8 +21,14 @@
       <div class="sidebar-section">
         <nav class="sidebar-nav">
           <a href="#dashboard" class="nav-link active" aria-label="Đi tới tổng quan">Tổng quan</a>
-          <a href="/admin/orders" class="nav-link" aria-label="Đi tới trang Đơn hàng">Đơn hàng</a>
-          <a href="/admin/reservations" class="nav-link" aria-label="Đi tới trang Đặt bàn">Đặt bàn</a>
+          <a href="/admin/orders" class="nav-link" aria-label="Đi tới trang Đơn hàng">
+            Đơn hàng
+            <span id="nav-orders-badge" class="nav-badge">0</span>
+          </a>
+          <a href="/admin/reservations" class="nav-link" aria-label="Đi tới trang Đặt bàn">
+            Đặt bàn
+            <span id="nav-reservations-badge" class="nav-badge">0</span>
+          </a>
           <a href="/admin/menu" class="nav-link" aria-label="Đi tới trang Thực đơn">Thực đơn</a>
           <a href="/admin/customers" class="nav-link" aria-label="Đi tới khách hàng">Khách hàng</a>
           <a href="#promotions" class="nav-link" aria-label="Đi tới khuyến mãi">Khuyến mãi</a>
@@ -68,32 +74,25 @@
               <div class="summary-icon income"></div>
               <div>
                 <p class="summary-label">Doanh thu hôm nay</p>
-                <p class="summary-value">1,7M đ</p>
-                <p class="summary-change negative">-5.1% vs hôm qua</p>
+                <p id="dashboard-revenue-value" class="summary-value">0 đ</p>
+                <p id="dashboard-revenue-change" class="summary-change neutral">Đang tải...</p>
               </div>
             </div>
             <div class="summary-card">
               <div class="summary-icon orders"></div>
               <div>
                 <p class="summary-label">Đơn hàng</p>
-                <p class="summary-value">96 đơn</p>
-                <p class="summary-change positive">+14.1% tăng trưởng</p>
+                <p id="dashboard-orders-value" class="summary-value">0 đơn</p>
+                <p id="dashboard-orders-change" class="summary-change neutral">Đang tải...</p>
               </div>
             </div>
-            <div class="summary-card">
-              <div class="summary-icon profit"></div>
-              <div>
-                <p class="summary-label">Lợi nhuận</p>
-                <p class="summary-value">563k đ</p>
-                <p class="summary-change positive">+7.3% cải thiện</p>
-              </div>
-            </div>
+           
             <div class="summary-card">
               <div class="summary-icon guests"></div>
               <div>
                 <p class="summary-label">Khách phục vụ</p>
-                <p class="summary-value">128 khách</p>
-                <p class="summary-change neutral">Đang ổn định</p>
+                <p id="dashboard-guests-value" class="summary-value">0 khách</p>
+                <p class="summary-change neutral">Hôm nay</p>
               </div>
             </div>
           </div>
@@ -102,46 +101,23 @@
         <section class="panel panel-split">
           <div class="panel-block">
             <div class="panel-block-header">
-              <h3 class="panel-title">Hiệu suất danh mục</h3>
-              <button type="button" class="btn-text">Xem đầy đủ</button>
-            </div>
-            <div class="performance-grid">
-              <div class="performance-card">
-                <p class="performance-label">Món chính</p>
-                <p class="performance-value">54 đơn</p>
-                <p class="performance-change positive">+9% so với hôm qua</p>
-              </div>
-              <div class="performance-card">
-                <p class="performance-label">Đồ uống</p>
-                <p class="performance-value">26 đơn</p>
-                <p class="performance-change negative">-3% so với hôm qua</p>
-              </div>
-              <div class="performance-card">
-                <p class="performance-label">Tráng miệng</p>
-                <p class="performance-value">16 đơn</p>
-                <p class="performance-change positive">+4% so với hôm qua</p>
-              </div>
-            </div>
-          </div>
-          <div class="panel-block">
-            <div class="panel-block-header">
               <h3 class="panel-title">Trạng thái bàn & đặt bàn</h3>
               <button type="button" class="btn-text">Xem lịch</button>
             </div>
             <div class="status-grid">
               <div class="status-card">
                 <p class="status-label">Bàn trống</p>
-                <p class="status-value">12/24</p>
+                <p id="dashboard-tables-available-value" class="status-value">0/0</p>
                 <p class="status-note positive">Sẵn sàng nhận khách</p>
               </div>
               <div class="status-card">
                 <p class="status-label">Đặt bàn chờ</p>
-                <p class="status-value">8 lượt</p>
+                <p id="dashboard-reservations-waiting-value" class="status-value">0 lượt</p>
                 <p class="status-note neutral">Cần xác nhận</p>
               </div>
               <div class="status-card">
                 <p class="status-label">Khách đang dùng</p>
-                <p class="status-value">42 khách</p>
+                <p id="dashboard-active-guests-value" class="status-value">0 khách</p>
                 <p class="status-note neutral">Theo dõi phục vụ</p>
               </div>
             </div>

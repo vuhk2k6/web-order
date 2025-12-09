@@ -117,24 +117,26 @@ const renderAdminMenuList = () => {
     descriptionCell.textContent = item.description || '';
 
     const actionCell = document.createElement('td');
-    actionCell.className = 'px-3 py-2 text-right text-xs';
+    actionCell.className = 'table-action-cell';
+
+    const actionWrapper = document.createElement('div');
+    actionWrapper.className = 'action-buttons';
 
     const editButton = document.createElement('button');
     editButton.type = 'button';
     editButton.textContent = 'Sửa';
-    editButton.className =
-      'mr-2 rounded-full border border-slate-700 px-3 py-1 text-[11px] font-medium text-slate-100 hover:border-amber-400 hover:text-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-slate-950';
+    editButton.className = 'btn-chip btn-chip--info';
     editButton.addEventListener('click', () => handleEditItem(itemId));
 
     const deleteButton = document.createElement('button');
     deleteButton.type = 'button';
     deleteButton.textContent = 'Xóa';
-    deleteButton.className =
-      'rounded-full border border-rose-500/40 px-3 py-1 text-[11px] font-medium text-rose-300 hover:border-rose-400 hover:text-rose-200 focus:outline-none focus:ring-1 focus:ring-rose-400 focus:ring-offset-2 focus:ring-offset-slate-950';
+    deleteButton.className = 'btn-chip btn-chip--danger';
     deleteButton.addEventListener('click', () => handleDeleteItem(itemId));
 
-    actionCell.appendChild(editButton);
-    actionCell.appendChild(deleteButton);
+    actionWrapper.appendChild(editButton);
+    actionWrapper.appendChild(deleteButton);
+    actionCell.appendChild(actionWrapper);
 
     row.appendChild(imageCell);
     row.appendChild(nameCell);
@@ -202,7 +204,7 @@ const fetchCategories = async () => {
 const renderCategoryDropdown = () => {
   const categorySelect = getElement('menu-category');
   if (!categorySelect) {
-    console.warn('[Admin] Không tìm thấy element menu-category');
+    // Element only exists on menu management page, not on dashboard
     return;
   }
 
@@ -269,24 +271,22 @@ const renderCategoriesList = () => {
     descCell.textContent = category.description || '—';
 
     const actionCell = document.createElement('td');
-    actionCell.className = 'px-3 py-2 text-xs';
+    actionCell.className = 'table-action-cell';
     const actionWrapper = document.createElement('div');
-    actionWrapper.style.cssText = 'display: flex; gap: 8px;';
+    actionWrapper.className = 'action-buttons';
 
     const editBtn = document.createElement('button');
     editBtn.type = 'button';
-    editBtn.className = 'btn-text';
+    editBtn.className = 'btn-chip btn-chip--info';
     editBtn.textContent = 'Sửa';
-    editBtn.style.cssText = 'font-size: 12px; padding: 4px 8px;';
     editBtn.addEventListener('click', () => {
       handleEditCategory(categoryId);
     });
 
     const deleteBtn = document.createElement('button');
     deleteBtn.type = 'button';
-    deleteBtn.className = 'btn-text';
+    deleteBtn.className = 'btn-chip btn-chip--danger';
     deleteBtn.textContent = 'Xóa';
-    deleteBtn.style.cssText = 'font-size: 12px; padding: 4px 8px; color: #ef4444;';
     deleteBtn.addEventListener('click', () => {
       handleDeleteCategory(categoryId);
     });
@@ -868,7 +868,7 @@ const handleMenuFormSubmit = async (event) => {
 // Helper function to create action buttons based on order status
 const createActionButtons = (order) => {
   const actionsCell = document.createElement('td');
-  actionsCell.className = 'px-3 py-2 text-xs';
+  actionsCell.className = 'table-action-cell';
   actionsCell.style.cursor = 'default';
   
   // Stop event propagation to prevent row click when clicking buttons
@@ -877,12 +877,12 @@ const createActionButtons = (order) => {
   });
 
   const buttonContainer = document.createElement('div');
-  buttonContainer.className = 'flex gap-2 items-center justify-end';
+  buttonContainer.className = 'action-buttons';
 
   // Nút hủy - hiển thị trong mọi trạng thái trừ HOAN_THANH và DA_HUY
   if (order.status !== 'HOAN_THANH' && order.status !== 'DA_HUY') {
     const cancelBtn = document.createElement('button');
-    cancelBtn.className = 'px-2 py-1 text-[10px] bg-red-500/20 text-red-300 rounded hover:bg-red-500/30 transition-colors';
+    cancelBtn.className = 'btn-chip btn-chip--danger';
     cancelBtn.textContent = 'Hủy';
     cancelBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -896,7 +896,7 @@ const createActionButtons = (order) => {
   
   if (order.status === 'CHO_XAC_NHAN' || order.status === 'CHO_THANH_TOAN') {
     actionBtn = document.createElement('button');
-    actionBtn.className = 'px-2 py-1 text-[10px] bg-green-500/20 text-green-300 rounded hover:bg-green-500/30 transition-colors';
+    actionBtn.className = 'btn-chip btn-chip--success';
     actionBtn.textContent = 'Xác nhận';
     actionBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -904,7 +904,7 @@ const createActionButtons = (order) => {
     });
   } else if (order.status === 'DA_XAC_NHAN') {
     actionBtn = document.createElement('button');
-    actionBtn.className = 'px-2 py-1 text-[10px] bg-blue-500/20 text-blue-300 rounded hover:bg-blue-500/30 transition-colors';
+    actionBtn.className = 'btn-chip btn-chip--info';
     actionBtn.textContent = 'Đang chuẩn bị';
     actionBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -915,7 +915,7 @@ const createActionButtons = (order) => {
     const isDeliveryOrder = order.orderType === 'ONLINE' || order.orderTypeText === 'Giao hàng';
     if (isDeliveryOrder) {
       actionBtn = document.createElement('button');
-      actionBtn.className = 'px-2 py-1 text-[10px] bg-purple-500/20 text-purple-300 rounded hover:bg-purple-500/30 transition-colors';
+      actionBtn.className = 'btn-chip btn-chip--info';
       actionBtn.textContent = 'Đang giao';
       actionBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -923,7 +923,7 @@ const createActionButtons = (order) => {
       });
     } else {
       actionBtn = document.createElement('button');
-      actionBtn.className = 'px-2 py-1 text-[10px] bg-green-500/20 text-green-300 rounded hover:bg-green-500/30 transition-colors';
+      actionBtn.className = 'btn-chip btn-chip--success';
       actionBtn.textContent = 'Hoàn thành';
       actionBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -932,7 +932,7 @@ const createActionButtons = (order) => {
     }
   } else if (order.status === 'DANG_GIAO') {
     actionBtn = document.createElement('button');
-    actionBtn.className = 'px-2 py-1 text-[10px] bg-green-500/20 text-green-300 rounded hover:bg-green-500/30 transition-colors';
+    actionBtn.className = 'btn-chip btn-chip--success';
     actionBtn.textContent = 'Hoàn thành';
     actionBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -1672,6 +1672,99 @@ const updateAdminTableStatus = async (tableId, newStatus) => {
 
 window.handleAdminTableClick = handleAdminTableClick;
 
+// Dashboard Statistics
+const fetchDashboardStats = async () => {
+  try {
+    console.log('[Admin] Fetching dashboard stats...');
+    const response = await fetch('/admin/api/stats', {
+      credentials: 'same-origin'
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    
+    const stats = await response.json();
+    console.log('[Admin] Received dashboard stats:', stats);
+    renderDashboardStats(stats);
+  } catch (error) {
+    console.error('[Admin] Error fetching dashboard stats:', error);
+  }
+};
+
+// Format currency VND for dashboard
+const formatDashboardCurrency = (value) => {
+  if (!value && value !== 0) return '0 đ';
+  const numValue = Number(value);
+  if (isNaN(numValue)) return '0 đ';
+  
+  if (numValue >= 1000000) {
+    return `${(numValue / 1000000).toFixed(1)}M đ`;
+  } else if (numValue >= 1000) {
+    return `${(numValue / 1000).toFixed(0)}k đ`;
+  }
+  return `${numValue.toLocaleString('vi-VN')} đ`;
+};
+
+// Render dashboard statistics
+const renderDashboardStats = (stats) => {
+  // Revenue
+  const revenueValueEl = getElement('dashboard-revenue-value');
+  const revenueChangeEl = getElement('dashboard-revenue-change');
+  if (revenueValueEl) {
+    revenueValueEl.textContent = formatDashboardCurrency(stats.revenue.today);
+  }
+  if (revenueChangeEl) {
+    const change = stats.revenue.change || 0;
+    revenueChangeEl.className = `summary-change ${change > 0 ? 'positive' : change < 0 ? 'negative' : 'neutral'}`;
+    revenueChangeEl.textContent = change > 0 
+      ? `+${change}% vs hôm qua`
+      : change < 0
+        ? `${change}% vs hôm qua`
+        : 'Không thay đổi';
+  }
+  
+  // Orders
+  const ordersValueEl = getElement('dashboard-orders-value');
+  const ordersChangeEl = getElement('dashboard-orders-change');
+  if (ordersValueEl) {
+    ordersValueEl.textContent = `${stats.orders.today || 0} đơn`;
+  }
+  if (ordersChangeEl) {
+    const change = stats.orders.change || 0;
+    ordersChangeEl.className = `summary-change ${change > 0 ? 'positive' : change < 0 ? 'negative' : 'neutral'}`;
+    ordersChangeEl.textContent = change > 0
+      ? `+${change}% tăng trưởng`
+      : change < 0
+        ? `${change}% giảm`
+        : 'Không thay đổi';
+  }
+  
+  // Guests
+  const guestsValueEl = getElement('dashboard-guests-value');
+  if (guestsValueEl) {
+    guestsValueEl.textContent = `${stats.guests.today || 0} khách`;
+  }
+  
+  // Tables
+  const tablesAvailableEl = getElement('dashboard-tables-available-value');
+  if (tablesAvailableEl && stats.tables) {
+    tablesAvailableEl.textContent = `${stats.tables.available || 0}/${stats.tables.total || 0}`;
+  }
+  
+  // Reservations waiting
+  const reservationsWaitingEl = getElement('dashboard-reservations-waiting-value');
+  if (reservationsWaitingEl && stats.reservations) {
+    reservationsWaitingEl.textContent = `${stats.reservations.waiting || 0} lượt`;
+  }
+  
+  // Active guests
+  const activeGuestsEl = getElement('dashboard-active-guests-value');
+  if (activeGuestsEl && stats.reservations) {
+    activeGuestsEl.textContent = `${stats.reservations.activeGuests || 0} khách`;
+  }
+};
+
 const fetchAdminReservations = async () => {
   try {
     console.log('[Admin] Fetching reservations from /admin/api/reservations...');
@@ -1778,25 +1871,25 @@ const renderAdminReservations = () => {
 
     // Actions
     const actionsCell = document.createElement('td');
-    actionsCell.className = 'px-3 py-2 text-xs';
+    actionsCell.className = 'table-action-cell';
     const actionsDiv = document.createElement('div');
-    actionsDiv.className = 'flex gap-2';
+    actionsDiv.className = 'action-buttons';
 
     if (reservation.status === 'DANG_CHO') {
       const confirmBtn = document.createElement('button');
-      confirmBtn.className = 'px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-xs';
+      confirmBtn.className = 'btn-chip btn-chip--success';
       confirmBtn.textContent = 'Xác nhận';
       confirmBtn.onclick = () => handleConfirmReservation(reservation.id);
       actionsDiv.appendChild(confirmBtn);
 
       const cancelBtn = document.createElement('button');
-      cancelBtn.className = 'px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-xs';
+      cancelBtn.className = 'btn-chip btn-chip--danger';
       cancelBtn.textContent = 'Hủy';
       cancelBtn.onclick = () => handleCancelReservation(reservation.id);
       actionsDiv.appendChild(cancelBtn);
     } else if (reservation.status === 'XAC_NHAN') {
       const cancelBtn = document.createElement('button');
-      cancelBtn.className = 'px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-xs';
+      cancelBtn.className = 'btn-chip btn-chip--danger';
       cancelBtn.textContent = 'Hủy đặt bàn';
       cancelBtn.onclick = () => handleCancelReservation(reservation.id);
       actionsDiv.appendChild(cancelBtn);
@@ -2233,16 +2326,150 @@ const initializeAdminPage = () => {
   fetchAdminOrders();
   fetchAdminCustomers();
   
+  // Fetch pending counts for sidebar badges
+  fetchPendingCounts(false);
+  setupBadgePolling();
+  
   // Check if we're on reservations page
   const currentPath = window.location.pathname;
   if (currentPath.includes('/admin/reservations')) {
     console.log('[Admin] Initializing reservations page...');
     fetchAdminTables();
     fetchAdminReservations();
+  } else if (currentPath === '/admin' || currentPath === '/admin/' || currentPath === '/admin#dashboard') {
+    // Check if we're on dashboard (main admin page)
+    console.log('[Admin] Initializing dashboard page...');
+    fetchDashboardStats();
   }
   
   setupSectionToggle();
 };
+
+// Pending badge state
+let lastPendingCounts = { pendingOrders: 0, pendingReservations: 0 };
+let badgePollIntervalId = null;
+
+// Fetch pending counts for sidebar badges
+async function fetchPendingCounts(notify = false) {
+  try {
+    const response = await fetch('/admin/api/pending-counts', {
+      credentials: 'same-origin'
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    
+    const data = await response.json();
+
+    // Trigger toast when counts increase
+    if (notify) {
+      const newOrders = data.pendingOrders - lastPendingCounts.pendingOrders;
+      if (newOrders > 0) {
+        showToast(`Có ${newOrders} đơn mới cần xử lý`);
+        playNotificationSound();
+      }
+      const newReservations = data.pendingReservations - lastPendingCounts.pendingReservations;
+      if (newReservations > 0) {
+        showToast(`Có ${newReservations} yêu cầu đặt bàn mới`);
+        playNotificationSound();
+      }
+    }
+
+    lastPendingCounts = {
+      pendingOrders: data.pendingOrders,
+      pendingReservations: data.pendingReservations
+    };
+
+    updateSidebarBadges(data);
+  } catch (error) {
+    console.error('[Admin] Error fetching pending counts:', error);
+  }
+}
+
+// Update sidebar badges
+function updateSidebarBadges(counts) {
+  // Orders badge - always show
+  const ordersBadge = getElement('nav-orders-badge');
+  if (ordersBadge) {
+    ordersBadge.textContent = counts.pendingOrders > 99 ? '99+' : counts.pendingOrders.toString();
+    ordersBadge.style.display = 'inline-flex';
+  }
+  
+  // Reservations badge - always show
+  const reservationsBadge = getElement('nav-reservations-badge');
+  if (reservationsBadge) {
+    reservationsBadge.textContent = counts.pendingReservations > 99 ? '99+' : counts.pendingReservations.toString();
+    reservationsBadge.style.display = 'inline-flex';
+  }
+}
+
+// Toast notifications
+function ensureToastContainer() {
+  let container = document.getElementById('admin-toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'admin-toast-container';
+    container.className = 'admin-toast-container';
+    document.body.appendChild(container);
+  }
+  return container;
+}
+
+function showToast(message) {
+  const container = ensureToastContainer();
+  const toast = document.createElement('div');
+  toast.className = 'admin-toast';
+  toast.innerHTML = `
+    <span class="admin-toast-icon" aria-hidden="true">🔔</span>
+    <div class="admin-toast-body">
+      <span class="admin-toast-title">Thông báo mới</span>
+      <span class="admin-toast-text">${message}</span>
+    </div>
+  `;
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add('admin-toast-hide');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+function setupBadgePolling() {
+  if (badgePollIntervalId) {
+    clearInterval(badgePollIntervalId);
+  }
+  badgePollIntervalId = setInterval(() => {
+    fetchPendingCounts(true);
+  }, 15000);
+}
+
+function playNotificationSound() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) {
+      throw new Error('AudioContext not supported');
+    }
+
+    const ctx = new AudioCtx();
+    ctx.resume?.();
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.value = 880;
+    gain.gain.value = 0.2; // louder
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 2.0); // 2 seconds
+  } catch (error) {
+    console.warn('Notification sound not played:', error);
+  }
+}
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initializeAdminPage);

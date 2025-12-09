@@ -14,8 +14,42 @@ const fetchCurrentUser = async () => {
     }
 
     const data = await response.json();
-    return data.user || null;
+    const userPayload =
+      data?.user ||
+      data?.customer ||
+      data?.member ||
+      data?.data ||
+      null;
+
+    if (!userPayload) {
+      return null;
+    }
+
+    // Chuẩn hóa tên hiển thị: ưu tiên name, fullname, firstname + lastname, sau đó phone/email
+    const {
+      name,
+      fullname,
+      fullName,
+      firstname,
+      firstName,
+      lastname,
+      lastName,
+      phone,
+      email
+    } = userPayload;
+
+    const displayName =
+      name ||
+      fullname ||
+      fullName ||
+      [firstname || firstName, lastname || lastName].filter(Boolean).join(' ').trim() ||
+      phone ||
+      email ||
+      '';
+
+    return { ...userPayload, name: displayName };
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Lỗi khi kiểm tra trạng thái đăng nhập', error);
     return null;
   }
@@ -30,7 +64,17 @@ const updateAuthUi = (user) => {
   }
 
   if (user) {
-    const initial = user.name ? user.name.trim().charAt(0).toUpperCase() : 'U';
+    const nameSource =
+      user.name ||
+      user.fullname ||
+      user.fullName ||
+      [user.firstname || user.firstName, user.lastname || user.lastName].filter(Boolean).join(' ').trim() ||
+      user.phone ||
+      user.email ||
+      '';
+
+    const initial = nameSource ? nameSource.trim().charAt(0).toUpperCase() : 'U';
+
     authOpenButton.innerHTML = '';
     const avatarSpan = document.createElement('span');
     avatarSpan.className = 'auth-avatar-circle';
