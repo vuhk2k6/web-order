@@ -27,7 +27,6 @@ app.use('/admin', adminRoutes);
 app.use('/auth', authRoutes);
 app.use(express.static(path.join(__dirname, 'src/public')));
 
-// 404 handler - must be last
 app.use((req, res) => {
   console.log(`[404] Route not found: ${req.method} ${req.path}`);
   res.status(404).send('Page not found');
@@ -37,7 +36,6 @@ const startServer = async () => {
   await connectDatabase();
 
   app.listen(PORT, () => {
-    // eslint-disable-next-line no-console
     console.log(`Server is running on http://localhost:${PORT}`);
   });
 };

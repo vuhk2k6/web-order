@@ -51,7 +51,6 @@ router.post('/register', async (req, res) => {
   }
 
   try {
-    // Check if phone already exists in database
     const existingByPhone = await Customer.findOne({ phone }).lean();
 
     if (existingByPhone) {
@@ -60,7 +59,6 @@ router.post('/register', async (req, res) => {
         .json({ message: 'Số điện thoại đã được sử dụng. Vui lòng đăng nhập.' });
     }
 
-    // Check if email already exists in database (if provided)
     if (email) {
       const existingByEmail = await Customer.findOne({ email }).lean();
 
@@ -71,10 +69,8 @@ router.post('/register', async (req, res) => {
       }
     }
 
-    // Hash password before saving to database
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
-    // Create customer record in database
     const customer = await Customer.create({
       name,
       email: email || '',
@@ -83,7 +79,6 @@ router.post('/register', async (req, res) => {
       accountType: 'THANH_VIEN'
     });
 
-    // Create member record in database
     await Member.create({
       customer: customer._id,
       points: 0,
@@ -91,7 +86,6 @@ router.post('/register', async (req, res) => {
       totalSpent: 0
     });
 
-    // Set session
     if (req.session) {
       req.session.userId = customer._id.toString();
     }
@@ -118,7 +112,6 @@ router.post('/login', async (req, res) => {
   }
 
   try {
-    // Find customer in database by phone
     const customer = await Customer.findOne({ phone });
 
     if (!customer) {
@@ -127,7 +120,6 @@ router.post('/login', async (req, res) => {
         .json({ message: 'Số điện thoại hoặc mật khẩu không đúng.' });
     }
 
-    // Compare password with hash stored in database
     const isMatch = await bcrypt.compare(password, customer.passwordHash);
 
     if (!isMatch) {
@@ -136,7 +128,6 @@ router.post('/login', async (req, res) => {
         .json({ message: 'Số điện thoại hoặc mật khẩu không đúng.' });
     }
 
-    // Set session
     if (req.session) {
       req.session.userId = customer._id.toString();
     }

@@ -9,7 +9,7 @@ const orderItemSchema = new mongoose.Schema(
     },
     dish: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Dish',
+      ref: 'MenuItem',
       required: true
     },
     quantity: {

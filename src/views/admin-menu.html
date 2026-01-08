@@ -84,7 +84,12 @@
               <h2 class="panel-title">Danh sách món ăn</h2>
               <p class="panel-text">Quản lý món, giá, mô tả và hình ảnh.</p>
             </div>
-            <button type="button" class="btn-secondary" aria-label="Làm mới danh sách" onclick="window.location.reload()">Làm mới</button>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <select id="menu-filter-category" class="form-input" style="min-width: 180px;">
+                <option value="">Tất cả danh mục</option>
+              </select>
+              <button type="button" class="btn-secondary" aria-label="Làm mới danh sách" onclick="window.location.reload()">Làm mới</button>
+            </div>
           </div>
           <div class="table-wrapper">
             <table>

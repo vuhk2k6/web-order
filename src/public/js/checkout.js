@@ -1,4 +1,10 @@
 /* eslint-disable no-console */
+
+// ============================================
+// CHECKOUT PAGE
+// ============================================
+
+// Checkout state - stores order information being created
 const checkoutState = {
   currentStep: 1,
   orderType: null,
@@ -15,7 +21,7 @@ const checkoutState = {
   memberInfo: null
 };
 
-// Load cart items from localStorage
+// Load cart items to display on checkout page
 const loadCheckoutCart = () => {
   try {
     const stored = localStorage.getItem('cartItems');
@@ -26,7 +32,7 @@ const loadCheckoutCart = () => {
   }
 };
 
-// Fetch current user
+// Get current user info (if logged in)
 const fetchCheckoutUser = async () => {
   try {
     const response = await fetch('/auth/me', {
@@ -37,7 +43,6 @@ const fetchCheckoutUser = async () => {
     }
     const data = await response.json();
     
-    // Handle different response formats
     const userPayload =
       data?.user ||
       data?.customer ||
@@ -49,7 +54,6 @@ const fetchCheckoutUser = async () => {
       return null;
     }
 
-    // Return user with normalized format
     return userPayload;
   } catch (error) {
     console.error('Lỗi khi lấy thông tin người dùng:', error);
@@ -57,7 +61,7 @@ const fetchCheckoutUser = async () => {
   }
 };
 
-// Fetch member info
+// Get member info (points, tier)
 const fetchMemberInfo = async (userId) => {
   try {
     if (!userId) {
@@ -67,7 +71,6 @@ const fetchMemberInfo = async (userId) => {
       credentials: 'same-origin'
     });
     if (!response.ok) {
-      // 404 is OK - user might not be a member yet
       if (response.status === 404) {
         return null;
       }
@@ -81,7 +84,7 @@ const fetchMemberInfo = async (userId) => {
   }
 };
 
-// Render cart items
+// Render cart items list on checkout page
 const renderCheckoutCart = () => {
   const container = document.getElementById('checkout-cart-items');
   const emptyMessage = document.getElementById('checkout-cart-empty');
@@ -193,9 +196,8 @@ const updateOrderSummary = () => {
   }
 };
 
-// Show step
+// Show specific checkout step (1-5)
 const showStep = (stepNumber) => {
-  // Validate step number
   if (stepNumber < 1 || stepNumber > 5) {
     return;
   }
@@ -212,16 +214,14 @@ const showStep = (stepNumber) => {
   const prevBtn = document.getElementById('checkout-prev-btn');
   const nextBtn = document.getElementById('checkout-next-btn');
 
-  // Show/hide previous button
   if (prevBtn) {
     if (stepNumber > 1) {
       prevBtn.style.display = 'block';
     } else {
       prevBtn.style.display = 'none';
-    }
+  }
   }
 
-  // Show/hide next button
   if (nextBtn) {
     if (stepNumber === 5) {
       nextBtn.style.display = 'none';
@@ -231,13 +231,12 @@ const showStep = (stepNumber) => {
     }
   }
 
-  // Update summary when showing step 5
   if (stepNumber === 5) {
     updateOrderSummary();
   }
 };
 
-// Handle order type change
+// Handle order type change (delivery/dine-in/takeaway)
 const handleOrderTypeChange = () => {
   const orderTypes = document.querySelectorAll('input[name="order-type"]');
   const deliverySection = document.getElementById('checkout-delivery-section');
@@ -250,7 +249,6 @@ const handleOrderTypeChange = () => {
       if (e.target.value === 'DELIVERY') {
         if (deliverySection) deliverySection.style.display = 'block';
         if (dineinSection) dineinSection.style.display = 'none';
-        // Calculate delivery fee (simplified - can be enhanced)
         checkoutState.deliveryFee = 20000;
         const feeEl = document.getElementById('checkout-delivery-fee-amount');
         if (feeEl) feeEl.textContent = '20,000 đ';
@@ -273,7 +271,6 @@ const handleOrderTypeChange = () => {
   });
 };
 
-// Handle points input
 const handlePointsInput = () => {
   const pointsInput = document.getElementById('checkout-points-used');
   const availablePointsEl = document.getElementById('checkout-available-points');
@@ -376,14 +373,13 @@ const handlePromoCode = async () => {
   }
 };
 
-// Handle payment method
+// Handle payment method selection
 const handlePaymentMethod = () => {
   const paymentMethods = document.querySelectorAll('input[name="payment-method"]');
 
   paymentMethods.forEach((radio) => {
     radio.addEventListener('change', (e) => {
       checkoutState.paymentMethod = e.target.value;
-      // MOMO is now a direct payment method, no need for sub-options
       if (e.target.value === 'MOMO') {
         checkoutState.onlineMethod = 'MOMO';
       } else {
@@ -408,7 +404,6 @@ const createMoMoPayment = async (orderId, pointsUsed) => {
     const data = await response.json();
 
     if (!response.ok) {
-      // Handle error response - data might not have success field
       const errorMsg = data.message || data.error || 'Không thể tạo yêu cầu thanh toán MoMo';
       throw new Error(errorMsg);
     }
@@ -417,7 +412,6 @@ const createMoMoPayment = async (orderId, pointsUsed) => {
       throw new Error(data.message || data.error || 'Không thể tạo yêu cầu thanh toán MoMo');
     }
 
-    // Redirect to MoMo payment page
     if (data.payUrl) {
       window.location.href = data.payUrl;
     } else {
@@ -429,7 +423,7 @@ const createMoMoPayment = async (orderId, pointsUsed) => {
   }
 };
 
-// Submit order
+// Submit order to server (create order in database)
 const submitOrder = async () => {
   const submitBtn = document.getElementById('checkout-submit-btn');
   if (!submitBtn) return;
@@ -473,27 +467,22 @@ const submitOrder = async () => {
       return;
     }
 
-    // Check if payment is required (MoMo)
     if (checkoutState.paymentMethod === 'MOMO') {
-      // Clear cart before redirecting to payment
       localStorage.removeItem('cartItems');
       if (window.appCart) {
         window.appCart.updateBadge();
       }
       
-      // Create MoMo payment and redirect
       submitBtn.textContent = 'Đang chuyển đến trang thanh toán...';
       await createMoMoPayment(data.orderId, totals.pointsDiscount);
       return;
     }
 
-    // Clear cart for other payment methods
     localStorage.removeItem('cartItems');
     if (window.appCart) {
       window.appCart.updateBadge();
     }
 
-    // Redirect to order confirmation
     window.location.href = `/orders/${data.orderId}`;
   } catch (error) {
     console.error('Lỗi khi tạo đơn hàng:', error);
@@ -503,10 +492,8 @@ const submitOrder = async () => {
   }
 };
 
-// Navigation handlers
 let navigationSetup = false;
 const setupNavigation = () => {
-  // Prevent duplicate event listeners
   if (navigationSetup) {
     return;
   }
@@ -517,12 +504,10 @@ const setupNavigation = () => {
   const submitBtn = document.getElementById('checkout-submit-btn');
 
   if (nextBtn) {
-    // Remove existing listener if any
     const newNextBtn = nextBtn.cloneNode(true);
     nextBtn.parentNode?.replaceChild(newNextBtn, nextBtn);
     
     newNextBtn.addEventListener('click', () => {
-      // Validate current step
       if (checkoutState.currentStep === 1) {
         if (!checkoutState.orderType) {
           alert('Vui lòng chọn loại đơn hàng');
@@ -531,7 +516,6 @@ const setupNavigation = () => {
       }
 
       if (checkoutState.currentStep === 2) {
-        // Check if user wants to use points but is not logged in
         const pointsInput = document.getElementById('checkout-points-used');
         const pointsUsed = pointsInput ? parseInt(pointsInput.value) || 0 : 0;
         
@@ -544,10 +528,8 @@ const setupNavigation = () => {
         }
 
         if (checkoutState.orderType === 'DELIVERY') {
-          // Check if using saved address or new address
           const selectedAddress = document.querySelector('.checkout-saved-address.selected');
           if (selectedAddress) {
-            // Using saved address - requires login
             if (!checkoutState.user) {
               alert('Vui lòng đăng nhập để sử dụng địa chỉ đã lưu');
               if (typeof window.openAuthModal === 'function') {
@@ -558,7 +540,6 @@ const setupNavigation = () => {
             const addressId = selectedAddress.getAttribute('data-address-id');
             checkoutState.deliveryAddress = { savedAddressId: addressId };
           } else {
-            // Using new address
             const street = document.getElementById('checkout-address-street')?.value.trim();
             const ward = document.getElementById('checkout-address-ward')?.value.trim();
             const district = document.getElementById('checkout-address-district')?.value.trim();
@@ -601,7 +582,6 @@ const setupNavigation = () => {
   }
 
   if (prevBtn) {
-    // Remove existing listener if any
     const newPrevBtn = prevBtn.cloneNode(true);
     prevBtn.parentNode?.replaceChild(newPrevBtn, prevBtn);
     
@@ -624,7 +604,7 @@ const setupNavigation = () => {
   }
 };
 
-// Load saved addresses
+// Load saved delivery addresses list
 const loadSavedAddresses = async () => {
   try {
     const response = await fetch('/api/delivery-addresses', {
@@ -641,7 +621,6 @@ const loadSavedAddresses = async () => {
           </div>
         `).join('');
 
-        // Attach click handlers
         container.querySelectorAll('.checkout-saved-address').forEach((el) => {
           el.addEventListener('click', () => {
             container.querySelectorAll('.checkout-saved-address').forEach((a) => {
@@ -652,7 +631,6 @@ const loadSavedAddresses = async () => {
           });
         });
 
-        // Select first address by default
         const firstAddress = container.querySelector('.checkout-saved-address[data-selected="true"]');
         if (firstAddress) {
           firstAddress.classList.add('selected');
@@ -677,24 +655,21 @@ const handleAddAddressButton = () => {
   }
 };
 
-// Update checkout state after login
+// Update checkout page after login
 const updateCheckoutAfterLogin = async () => {
   try {
-    // Reload user info using the same method as auth.js
     if (typeof window.fetchCurrentUser === 'function') {
       checkoutState.user = await window.fetchCurrentUser();
     } else {
       checkoutState.user = await fetchCheckoutUser();
     }
 
-    // Load member info if user is logged in
     if (checkoutState.user) {
       const userId = checkoutState.user._id || checkoutState.user.id;
       
       if (userId && checkoutState.user.accountType === 'THANH_VIEN') {
         checkoutState.memberInfo = await fetchMemberInfo(userId);
 
-        // Show points section
         const pointsSection = document.getElementById('checkout-points-section');
         if (pointsSection && checkoutState.memberInfo) {
           pointsSection.style.display = 'block';
@@ -712,7 +687,6 @@ const updateCheckoutAfterLogin = async () => {
           }
         }
       } else {
-        // Hide points section if user is not a member
         const pointsSection = document.getElementById('checkout-points-section');
         if (pointsSection) {
           pointsSection.style.display = 'none';
@@ -720,12 +694,10 @@ const updateCheckoutAfterLogin = async () => {
       }
     }
 
-    // Load saved addresses if delivery is selected
     if (checkoutState.orderType === 'DELIVERY') {
       await loadSavedAddresses();
     }
 
-    // Update order summary
     updateOrderSummary();
     
     console.log('[Checkout] State updated after login:', {
@@ -737,9 +709,8 @@ const updateCheckoutAfterLogin = async () => {
   }
 };
 
-// Initialize checkout page
+// Initialize checkout page - load data and setup event listeners
 const initializeCheckout = async () => {
-  // Load cart items
   checkoutState.cartItems = loadCheckoutCart();
 
   if (checkoutState.cartItems.length === 0) {
@@ -748,39 +719,34 @@ const initializeCheckout = async () => {
     return;
   }
 
-  // Load user info
   checkoutState.user = await fetchCheckoutUser();
 
-  // Load member info if user is logged in
   if (checkoutState.user) {
     const userId = checkoutState.user._id || checkoutState.user.id;
     if (userId && checkoutState.user.accountType === 'THANH_VIEN') {
       checkoutState.memberInfo = await fetchMemberInfo(userId);
 
-      // Show points section
-      const pointsSection = document.getElementById('checkout-points-section');
-      if (pointsSection && checkoutState.memberInfo) {
-        pointsSection.style.display = 'block';
-        const availablePointsEl = document.getElementById('checkout-available-points');
-        const maxPointsEl = document.getElementById('checkout-max-points');
-        if (availablePointsEl) {
-          availablePointsEl.textContent = checkoutState.memberInfo.points || 0;
-        }
-        if (maxPointsEl) {
-          const totals = calculateTotals();
-          maxPointsEl.textContent = Math.min(
-            checkoutState.memberInfo.points || 0,
-            totals.subtotal
-          );
+    const pointsSection = document.getElementById('checkout-points-section');
+    if (pointsSection && checkoutState.memberInfo) {
+      pointsSection.style.display = 'block';
+      const availablePointsEl = document.getElementById('checkout-available-points');
+      const maxPointsEl = document.getElementById('checkout-max-points');
+      if (availablePointsEl) {
+        availablePointsEl.textContent = checkoutState.memberInfo.points || 0;
+      }
+      if (maxPointsEl) {
+        const totals = calculateTotals();
+        maxPointsEl.textContent = Math.min(
+          checkoutState.memberInfo.points || 0,
+          totals.subtotal
+        );
         }
       }
     }
   }
 
-  // Render cart
   renderCheckoutCart();
 
-  // Setup handlers
   handleOrderTypeChange();
   handlePointsInput();
   handlePromoCode();
@@ -788,16 +754,13 @@ const initializeCheckout = async () => {
   handleAddAddressButton();
   setupNavigation();
 
-  // Show first step
   showStep(1);
 };
 
-// Export function for auth.js to use
 if (typeof window !== 'undefined') {
   window.updateCheckoutAfterLogin = updateCheckoutAfterLogin;
 }
 
-// Initialize when DOM is ready
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initializeCheckout);
 } else {

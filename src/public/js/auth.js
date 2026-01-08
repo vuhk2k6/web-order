@@ -1,8 +1,15 @@
 /* eslint-disable no-console */
+
+// ============================================
+// AUTHENTICATION
+// ============================================
+
+// Authentication state - stores current user information
 const authState = {
   currentUser: null
 };
 
+// Get current user information from server
 const fetchCurrentUser = async () => {
   try {
     const response = await fetch('/auth/me', {
@@ -55,6 +62,7 @@ const fetchCurrentUser = async () => {
   }
 };
 
+// Update authentication UI (display avatar/login)
 const updateAuthUi = (user) => {
   authState.currentUser = user;
   const authOpenButton = document.getElementById('auth-open-button');
@@ -94,6 +102,7 @@ const updateAuthUi = (user) => {
   }
 };
 
+// Open login/register modal
 const openAuthModal = () => {
   const overlay = document.getElementById('auth-modal-overlay');
 
@@ -105,6 +114,7 @@ const openAuthModal = () => {
   overlay.setAttribute('aria-hidden', 'false');
 };
 
+// Close login/register modal
 const closeAuthModal = () => {
   const overlay = document.getElementById('auth-modal-overlay');
 
@@ -116,6 +126,7 @@ const closeAuthModal = () => {
   overlay.setAttribute('aria-hidden', 'true');
 };
 
+// Switch between login and register tabs
 const switchAuthTab = (mode) => {
   const loginTab = document.getElementById('auth-tab-login');
   const registerTab = document.getElementById('auth-tab-register');
@@ -155,6 +166,7 @@ const setAuthLoadingState = (button, isLoading, originalText) => {
   }
 };
 
+// Validate phone number format
 const validatePhone = (phone) => {
   const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})$/;
   return phoneRegex.test(phone.replace(/\s/g, ''));
@@ -262,7 +274,7 @@ const handleAuthLoginSubmit = async (event) => {
         }
       } else {
         // Reload page for other pages
-        window.location.reload();
+      window.location.reload();
       }
     }, 800);
   } catch (error) {
@@ -275,6 +287,7 @@ const handleAuthLoginSubmit = async (event) => {
   }
 };
 
+// Handle register form submit
 const handleAuthRegisterSubmit = async (event) => {
   event.preventDefault();
 
@@ -421,7 +434,7 @@ const handleAuthRegisterSubmit = async (event) => {
 
     // Check if we're on checkout page
     const isCheckoutPage = window.location.pathname.includes('/checkout');
-    
+
     window.setTimeout(async () => {
       closeAuthModal();
       
@@ -437,7 +450,7 @@ const handleAuthRegisterSubmit = async (event) => {
         }
       } else {
         // Reload page for other pages
-        window.location.reload();
+      window.location.reload();
       }
     }, 1000);
   } catch (error) {
@@ -450,6 +463,7 @@ const handleAuthRegisterSubmit = async (event) => {
   }
 };
 
+// Initialize authentication modal - setup event listeners
 const initializeAuthModal = () => {
   const authOpenButton = document.getElementById('auth-open-button');
   const authCloseButton = document.getElementById('auth-close-button');
@@ -644,6 +658,7 @@ const initializeAuthModal = () => {
   }
 };
 
+// Initialize authentication system - load user and setup UI
 const initializeAuth = async () => {
   const user = await fetchCurrentUser();
   updateAuthUi(user);

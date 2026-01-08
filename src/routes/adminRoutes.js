@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const multer = require('multer');
 const { MenuItem } = require('../models/MenuItem');
-const { Promotion } = require('../models/Promotion'); // đảm bảo đăng ký model trước khi populate
+const { Promotion } = require('../models/Promotion');
 const { Order } = require('../models/Order');
 const { OrderItem } = require('../models/OrderItem');
 const { Category } = require('../models/Category');
@@ -14,13 +14,10 @@ const { authMiddleware } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-// Apply auth middleware to all routes except login
 router.use((req, res, next) => {
-  // Skip auth for login routes
   if (req.path === '/login' || req.path.startsWith('/login')) {
     return next();
   }
-  // Apply auth middleware for all other routes
   return authMiddleware(req, res, next);
 });
 const upload = multer({
@@ -54,9 +51,6 @@ router.get('/reservations/', (req, res) => {
   const reservationsPath = path.join(__dirname, '..', 'views', 'admin-reservations.html');
   res.sendFile(reservationsPath);
 });
-
-// Note: API routes should be defined before catch-all routes
-// The /api/reservations route is defined later in this file
 
 router.get('/menu', (req, res) => {
   const menuPath = path.join(__dirname, '..', 'views', 'admin-menu.html');
@@ -163,7 +157,6 @@ router.get('/api/customers/:id/detail', async (req, res) => {
 });
 
 router.get('/login', (req, res) => {
-  // If already logged in, redirect to dashboard
   if (req.session && req.session.isAdmin) {
     return res.redirect('/admin');
   }
@@ -174,7 +167,6 @@ router.get('/login', (req, res) => {
 router.post('/login', (req, res) => {
   const { username, password } = req.body;
 
-  // Validate input
   if (!username || !password) {
     return res.status(400).json({ 
       success: false,
@@ -182,7 +174,6 @@ router.post('/login', (req, res) => {
     });
   }
 
-  // Check credentials
   if (username === 'admin' && password === '123456') {
     req.session.isAdmin = true;
     return res.json({ 
@@ -249,7 +240,6 @@ router.post('/api/menu', async (req, res) => {
   try {
     const parsedPrice = Number(price);
     
-    // Validate category if provided
     let categoryId = null;
     if (category) {
       const categoryObj = await Category.findById(category);
@@ -259,7 +249,6 @@ router.post('/api/menu', async (req, res) => {
       categoryId = category;
     }
     
-    // Validate và format sizeOptions
     let formattedSizeOptions = [];
     if (Array.isArray(sizeOptions) && sizeOptions.length > 0) {
       formattedSizeOptions = sizeOptions
@@ -323,7 +312,6 @@ router.put('/api/menu/:id', async (req, res) => {
       updateData.image = image;
     }
 
-    // Handle category update
     if (category !== undefined) {
       if (category === '' || category === null) {
         updateData.category = null;
@@ -336,7 +324,6 @@ router.put('/api/menu/:id', async (req, res) => {
       }
     }
 
-    // Validate và format sizeOptions nếu được cung cấp
     if (sizeOptions !== undefined) {
       if (Array.isArray(sizeOptions)) {
         updateData.sizeOptions = sizeOptions
@@ -399,7 +386,6 @@ router.delete('/api/menu/:id', async (req, res) => {
   }
 });
 
-// Get dashboard statistics
 router.get('/api/stats', async (req, res) => {
   console.log('[Admin API] GET /admin/api/stats - Request received');
   try {
@@ -410,39 +396,32 @@ router.get('/api/stats', async (req, res) => {
     const { MenuItem } = require('../models/MenuItem');
     const { Category } = require('../models/Category');
     
-    // Get today's date range
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
     
-    // Get yesterday's date range
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
     
-    // Today's orders
     const todayOrders = await Order.find({
       createdAt: { $gte: today, $lt: tomorrow }
     }).lean();
     
-    // Yesterday's orders
     const yesterdayOrders = await Order.find({
       createdAt: { $gte: yesterday, $lt: today }
     }).lean();
     
-    // Calculate today's revenue (only completed/confirmed orders, exclude cancelled)
     const completedTodayOrders = todayOrders.filter(
       o => !['DA_HUY', 'THANH_TOAN_THAT_BAI'].includes(o.status)
     );
     const todayRevenue = completedTodayOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
     
-    // Calculate yesterday's revenue
     const completedYesterdayOrders = yesterdayOrders.filter(
       o => !['DA_HUY', 'THANH_TOAN_THAT_BAI'].includes(o.status)
     );
     const yesterdayRevenue = completedYesterdayOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
     
-    // Calculate revenue change
     const revenueChange = yesterdayRevenue > 0
       ? ((todayRevenue - yesterdayRevenue) / yesterdayRevenue * 100).toFixed(1)
       : (todayRevenue > 0 ? 100 : 0);
@@ -476,19 +455,16 @@ router.get('/api/stats', async (req, res) => {
       order: { $in: todayOrderIds }
     }).lean();
     
-    // Get all menu items with categories in one query for efficiency
     const dishIds = [...new Set(todayOrderItems.map(item => item.dish).filter(Boolean))];
     const menuItems = await MenuItem.find({
       _id: { $in: dishIds }
     }).populate('category', 'name').lean();
     
-    // Create map for quick lookup
     const menuItemMap = {};
     menuItems.forEach(item => {
       menuItemMap[item._id.toString()] = item;
     });
     
-    // Get category counts
     const categoryCounts = {};
     for (const item of todayOrderItems) {
       if (item.dish) {
@@ -507,17 +483,14 @@ router.get('/api/stats', async (req, res) => {
       }
     }
     
-    // Table status
     const allTables = await Table.find({}).lean();
     const totalTables = allTables.length;
     const availableTables = allTables.filter(t => t.status === 'TRONG').length;
     
-    // Reservations waiting
     const waitingReservations = await Reservation.find({
       status: 'DANG_CHO'
     }).lean();
     
-    // Active reservations (confirmed, today or future)
     const activeReservations = await Reservation.find({
       status: 'XAC_NHAN',
       reservedAt: { $gte: today }
@@ -555,18 +528,15 @@ router.get('/api/stats', async (req, res) => {
   }
 });
 
-// Get pending counts for sidebar badges
 router.get('/api/pending-counts', async (req, res) => {
   try {
     const { Order } = require('../models/Order');
     const { Reservation } = require('../models/Reservation');
     
-    // Count pending orders (not completed, not cancelled)
     const pendingOrdersCount = await Order.countDocuments({
       status: { $nin: ['HOAN_THANH', 'DA_HUY', 'THANH_TOAN_THAT_BAI'] }
     });
     
-    // Count pending reservations (waiting or confirmed but not cancelled)
     const pendingReservationsCount = await Reservation.countDocuments({
       status: { $in: ['DANG_CHO', 'XAC_NHAN'] }
     });
@@ -628,7 +598,6 @@ router.get('/api/orders', async (req, res) => {
   }
 });
 
-// Get order detail with items
 router.get('/api/orders/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -641,7 +610,6 @@ router.get('/api/orders/:id', async (req, res) => {
       return res.status(404).json({ message: 'Không tìm thấy đơn hàng' });
     }
 
-    // Get order items with menu item details
     const orderItems = await OrderItem.find({ order: order._id }).lean();
     const items = await Promise.all(orderItems.map(async (item) => {
       try {
@@ -703,7 +671,6 @@ router.get('/api/orders/:id', async (req, res) => {
   }
 });
 
-// Update order status
 router.put('/api/orders/:id/status', async (req, res) => {
   try {
     const { id } = req.params;
@@ -724,7 +691,6 @@ router.put('/api/orders/:id/status', async (req, res) => {
       return res.status(400).json({ message: 'Trạng thái không hợp lệ' });
     }
 
-    // Build update object
     const updateData = { status };
     if (cancelReason) {
       updateData.cancelReason = cancelReason;
@@ -899,7 +865,6 @@ router.put('/api/categories/:id', async (req, res) => {
       if (!name.trim()) {
         return res.status(400).json({ message: 'Tên danh mục không được để trống' });
       }
-      // Check if another category with same name exists
       const existing = await Category.findOne({ name: name.trim(), _id: { $ne: id } });
       if (existing) {
         return res.status(400).json({ message: 'Danh mục với tên này đã tồn tại' });
@@ -935,7 +900,6 @@ router.delete('/api/categories/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
-    // Check if any menu items use this category
     const itemsWithCategory = await MenuItem.countDocuments({ category: id });
     if (itemsWithCategory > 0) {
       return res.status(400).json({ 
@@ -957,7 +921,6 @@ router.delete('/api/categories/:id', async (req, res) => {
   }
 });
 
-// Get all tables with reservation info for admin
 router.get('/api/tables', async (req, res) => {
   try {
     console.log('[Admin API] GET /admin/api/tables - Request received');
@@ -969,7 +932,6 @@ router.get('/api/tables', async (req, res) => {
     console.log(`[Admin API] Found ${tables.length} tables`);
     const now = new Date();
     
-    // Get all active reservations
     const activeReservations = await Reservation.find({
       status: { $in: ['DANG_CHO', 'XAC_NHAN'] }
     }).lean();
@@ -988,10 +950,8 @@ router.get('/api/tables', async (req, res) => {
     
     console.log(`[Admin API] Found ${reservationTables.length} reservation-table links`);
     
-    // Create map: tableId -> reservation info
     const tableReservationMap = {};
     reservationTables.forEach(rt => {
-      // Handle both populated and non-populated table field
       const tableId = rt.table && typeof rt.table === 'object' && rt.table._id
         ? rt.table._id.toString()
         : (rt.table ? rt.table.toString() : null);
@@ -1012,12 +972,10 @@ router.get('/api/tables', async (req, res) => {
       const tableId = table._id.toString();
       const reservations = tableReservationMap[tableId] || [];
       
-      // Determine display status
-      let displayStatus = table.status; // TRONG, DANG_DUNG, DANG_DON
+      let displayStatus = table.status;
       let hasReservedPending = false;
       
       if (table.status === 'TRONG' && reservations.length > 0) {
-        // Check if there's a reservation that's not confirmed or not yet time
         hasReservedPending = reservations.some(r => {
           const reservedTime = new Date(r.reservedAt);
           return r.status === 'DANG_CHO' || reservedTime > now;
@@ -1034,7 +992,7 @@ router.get('/api/tables', async (req, res) => {
         seats: table.seats,
         location: table.location || '',
         status: table.status,
-        displayStatus: displayStatus, // TRONG, DANG_DUNG, DANG_DON, RESERVED
+        displayStatus: displayStatus,
         reservations: reservations.map(r => ({
           status: r.status,
           reservedAt: r.reservedAt ? new Date(r.reservedAt).toISOString() : null
@@ -1049,7 +1007,6 @@ router.get('/api/tables', async (req, res) => {
   }
 });
 
-// Update table status
 router.put('/api/tables/:id', async (req, res) => {
   try {
     const { Table } = require('../models/Table');
@@ -1097,7 +1054,6 @@ router.get('/api/reservations', async (req, res) => {
     
     console.log(`[Admin API] Found ${reservations.length} reservations in database`);
     
-    // Get tables for each reservation
     const reservationsWithTables = await Promise.all(
       reservations.map(async (reservation) => {
         const reservationTables = await ReservationTable.find({ 
@@ -1145,7 +1101,6 @@ router.get('/api/reservations', async (req, res) => {
   }
 });
 
-// Update reservation status
 router.put('/api/reservations/:id', async (req, res) => {
   try {
     const { Reservation } = require('../models/Reservation');
@@ -1171,14 +1126,11 @@ router.put('/api/reservations/:id', async (req, res) => {
     }
     await reservation.save();
     
-    // Get tables linked to this reservation
     const reservationTables = await ReservationTable.find({ reservation: id })
       .populate('table')
       .lean();
     
-    // Update table status based on reservation status
     if (status === 'XAC_NHAN') {
-      // Confirm: set tables to DANG_DUNG
       for (const rt of reservationTables) {
         if (rt.table) {
           const table = await Table.findById(rt.table._id);
@@ -1189,7 +1141,6 @@ router.put('/api/reservations/:id', async (req, res) => {
         }
       }
     } else if (status === 'DA_HUY' && oldStatus === 'XAC_NHAN') {
-      // Cancel after confirmed: set tables back to TRONG
       for (const rt of reservationTables) {
         if (rt.table) {
           const table = await Table.findById(rt.table._id);
@@ -1200,7 +1151,6 @@ router.put('/api/reservations/:id', async (req, res) => {
         }
       }
     } else if (status === 'HOAN_THANH') {
-      // Complete: set tables back to TRONG
       for (const rt of reservationTables) {
         if (rt.table) {
           const table = await Table.findById(rt.table._id);

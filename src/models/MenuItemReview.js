@@ -29,12 +29,15 @@ const menuItemReviewSchema = new mongoose.Schema(
   }
 );
 
-// Index for efficient queries
 menuItemReviewSchema.index({ menuItem: 1, createdAt: -1 });
-menuItemReviewSchema.index({ customer: 1, menuItem: 1 }, { unique: true }); // One review per customer per menu item
+menuItemReviewSchema.index({ customer: 1, menuItem: 1 }, { unique: true });
 
 const MenuItemReview = mongoose.model('MenuItemReview', menuItemReviewSchema);
 
 module.exports = { MenuItemReview };
+
+
+
+
 
 

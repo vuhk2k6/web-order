@@ -3,6 +3,7 @@ const state = {
   orders: [],
   customers: [],
   categories: [],
+  filterCategoryId: '',
   editingItemId: null,
   editingCategoryId: null
 };
@@ -19,12 +20,10 @@ const handleAdminLogout = async () => {
       window.location.href = '/admin/login';
     } else {
       console.error('Lỗi khi đăng xuất');
-      // Still redirect to login page even if logout fails
       window.location.href = '/admin/login';
     }
   } catch (error) {
     console.error('Lỗi khi đăng xuất:', error);
-    // Still redirect to login page even if logout fails
     window.location.href = '/admin/login';
   }
 };
@@ -33,7 +32,6 @@ const handleAdminLogout = async () => {
 const initializeLogoutButtons = () => {
   const logoutButtons = document.querySelectorAll('.btn-logout');
   logoutButtons.forEach((btn) => {
-    // Remove existing listeners by cloning
     const newBtn = btn.cloneNode(true);
     btn.parentNode?.replaceChild(newBtn, btn);
     
@@ -62,7 +60,6 @@ const normalizeMenuItem = (item) => {
 };
 
 const openMenuModal = () => {
-  // Ensure category dropdown is populated before opening modal
   if (state.categories && state.categories.length > 0) {
     renderCategoryDropdown();
   }
@@ -99,14 +96,24 @@ const renderAdminMenuList = () => {
 
   tableBody.innerHTML = '';
 
-  if (!state.menuItems || state.menuItems.length === 0) {
+  const filteredMenuItems = state.filterCategoryId
+    ? state.menuItems.filter((item) => {
+        const catId =
+          typeof item.category === 'string'
+            ? item.category
+            : item.category?._id || item.category?.id || '';
+        return catId && catId.toString() === state.filterCategoryId.toString();
+      })
+    : state.menuItems;
+
+  if (!filteredMenuItems || filteredMenuItems.length === 0) {
     emptyMessage.style.display = 'block';
     return;
   }
 
   emptyMessage.style.display = 'none';
 
-  state.menuItems.forEach((item) => {
+  filteredMenuItems.forEach((item) => {
     const itemId = (item.id || item._id || '').toString();
     const row = document.createElement('tr');
     row.className = 'hover:bg-slate-900/80';
@@ -229,6 +236,7 @@ const fetchCategories = async () => {
     const data = await response.json();
     state.categories = Array.isArray(data) ? data : [];
     renderCategoryDropdown();
+    renderCategoryFilterDropdown();
     renderCategoriesList();
   } catch (error) {
     console.error('Lỗi khi tải danh sách danh mục', error);
@@ -238,23 +246,18 @@ const fetchCategories = async () => {
 const renderCategoryDropdown = () => {
   const categorySelect = getElement('menu-category');
   if (!categorySelect) {
-    // Element only exists on menu management page, not on dashboard
     return;
   }
 
-  // Store current selected value to restore it later
   const currentValue = categorySelect.value;
 
-  // Clear dropdown
   categorySelect.innerHTML = '';
 
-  // Add placeholder option
   const defaultOption = document.createElement('option');
   defaultOption.value = '';
   defaultOption.textContent = '-- Chọn danh mục --';
   categorySelect.appendChild(defaultOption);
 
-  // Add categories
   if (state.categories && state.categories.length > 0) {
     state.categories.forEach((category) => {
       const option = document.createElement('option');
@@ -271,6 +274,33 @@ const renderCategoryDropdown = () => {
   if (currentValue) {
     categorySelect.value = currentValue;
   }
+};
+
+const renderCategoryFilterDropdown = () => {
+  const filterSelect = getElement('menu-filter-category');
+  if (!filterSelect) {
+    return;
+  }
+
+  const currentValue = filterSelect.value || state.filterCategoryId || '';
+  filterSelect.innerHTML = '';
+
+  const defaultOption = document.createElement('option');
+  defaultOption.value = '';
+  defaultOption.textContent = 'Tất cả danh mục';
+  filterSelect.appendChild(defaultOption);
+
+  if (state.categories && state.categories.length > 0) {
+    state.categories.forEach((category) => {
+      const option = document.createElement('option');
+      const categoryId = (category._id || category.id).toString();
+      option.value = categoryId;
+      option.textContent = category.name;
+      filterSelect.appendChild(option);
+    });
+  }
+
+  filterSelect.value = currentValue;
 };
 
 // Render categories list in table
@@ -502,7 +532,6 @@ const handleCategoryFormSubmit = async (event) => {
   }
 };
 
-// Size Options Management
 let sizeOptionCounter = 0;
 
 const renderSizeOptions = (sizeOptions = []) => {
@@ -613,7 +642,6 @@ const resetMenuForm = () => {
   priceInput.value = '';
   descriptionInput.value = '';
   if (categorySelect) {
-    // Ensure dropdown is populated before resetting
     if (state.categories && state.categories.length > 0) {
       renderCategoryDropdown();
     }
@@ -633,7 +661,6 @@ const resetMenuForm = () => {
     modalTitle.textContent = 'Thêm / Cập nhật món ăn';
   }
 
-  // Reset size options
   renderSizeOptions([]);
 
   state.editingItemId = null;
@@ -674,12 +701,10 @@ const handleEditItem = async (id) => {
     return;
   }
 
-  // Ensure categories are loaded before opening modal
   if (!state.categories || state.categories.length === 0) {
     await fetchCategories();
   }
 
-  // Ensure category dropdown is populated
   renderCategoryDropdown();
 
   const idInput = getElement('menu-id');
@@ -708,9 +733,7 @@ const handleEditItem = async (id) => {
   priceInput.value = item.price;
   descriptionInput.value = item.description || '';
   
-  // Set category - must be done after dropdown is populated
   if (categorySelect) {
-    // Handle category - can be ID string or object with _id/id
     let categoryId = '';
     if (item.category) {
       if (typeof item.category === 'string') {
@@ -722,8 +745,6 @@ const handleEditItem = async (id) => {
       }
     }
     
-    // Set value after ensuring dropdown is populated
-    // Use requestAnimationFrame to ensure DOM is ready
     requestAnimationFrame(() => {
       if (categoryId && categorySelect.querySelector(`option[value="${categoryId}"]`)) {
         categorySelect.value = categoryId;
@@ -735,11 +756,9 @@ const handleEditItem = async (id) => {
   
   imageInput.value = item.image || '';
   if (imagePreview && item.image) {
-    imagePreview.src = item.image;
     imagePreview.style.display = 'block';
   }
   
-  // Load size options
   renderSizeOptions(item.sizeOptions || []);
   
   submitButton.textContent = 'Cập nhật món ăn';
@@ -813,7 +832,6 @@ const handleMenuFormSubmit = async (event) => {
     return;
   }
 
-  // Get size options from form
   const sizeOptions = getSizeOptionsFromForm();
 
   const payload = {
@@ -824,7 +842,6 @@ const handleMenuFormSubmit = async (event) => {
     sizeOptions
   };
   
-  // Only include category if one is selected
   if (category && category.trim()) {
     payload.category = category.trim();
   }
@@ -899,13 +916,11 @@ const handleMenuFormSubmit = async (event) => {
   }
 };
 
-// Helper function to create action buttons based on order status
 const createActionButtons = (order) => {
   const actionsCell = document.createElement('td');
   actionsCell.className = 'table-action-cell';
   actionsCell.style.cursor = 'default';
   
-  // Stop event propagation to prevent row click when clicking buttons
   actionsCell.addEventListener('click', (e) => {
     e.stopPropagation();
   });
@@ -913,7 +928,6 @@ const createActionButtons = (order) => {
   const buttonContainer = document.createElement('div');
   buttonContainer.className = 'action-buttons';
 
-  // Nút hủy - hiển thị trong mọi trạng thái trừ HOAN_THANH và DA_HUY
   if (order.status !== 'HOAN_THANH' && order.status !== 'DA_HUY') {
     const cancelBtn = document.createElement('button');
     cancelBtn.className = 'btn-chip btn-chip--danger';
@@ -925,7 +939,6 @@ const createActionButtons = (order) => {
     buttonContainer.appendChild(cancelBtn);
   }
 
-  // Nút hành động theo trạng thái
   let actionBtn = null;
   
   if (order.status === 'CHO_XAC_NHAN' || order.status === 'CHO_THANH_TOAN') {
@@ -983,7 +996,6 @@ const createActionButtons = (order) => {
   return actionsCell;
 };
 
-// Helper function to create order row
 const createOrderRow = (order) => {
   const row = document.createElement('tr');
   row.className = 'hover:bg-slate-900/80';
@@ -1021,13 +1033,11 @@ const createOrderRow = (order) => {
     statusBadge.className += ' bg-blue-500/20 text-blue-300';
   }
   
-  // Hiển thị trạng thái kèm lý do hủy nếu có
   let statusText = order.statusText || order.status || '—';
   if (order.status === 'DA_HUY' && order.cancelReason) {
     statusText = `${statusText}: ${order.cancelReason}`;
   }
   statusBadge.textContent = statusText;
-  // Thêm title để hiển thị đầy đủ khi hover
   if (order.status === 'DA_HUY' && order.cancelReason) {
     statusBadge.title = `${order.statusText || order.status} - Lý do: ${order.cancelReason}`;
   }
@@ -1037,7 +1047,6 @@ const createOrderRow = (order) => {
   dateCell.className = 'px-3 py-2 text-xs text-slate-400';
   dateCell.textContent = order.createdAt || '—';
 
-  // Tạo cột thao tác với các nút
   const actionsCell = createActionButtons(order);
 
   row.appendChild(orderIdCell);
@@ -1062,7 +1071,6 @@ const renderAdminOrders = () => {
     return;
   }
 
-  // Clear both tables
   activeTableBody.innerHTML = '';
   completedTableBody.innerHTML = '';
 
@@ -1072,12 +1080,9 @@ const renderAdminOrders = () => {
     return;
   }
 
-  // Separate orders into active (not completed) and completed
-  // Đơn đã hủy (DA_HUY) sẽ được đưa vào phần đã hoàn thành
   const activeOrders = state.orders.filter(order => order.status !== 'HOAN_THANH' && order.status !== 'DA_HUY');
   const completedOrders = state.orders.filter(order => order.status === 'HOAN_THANH' || order.status === 'DA_HUY');
 
-  // Render active orders
   if (activeOrders.length === 0) {
     if (activeEmptyMessage) activeEmptyMessage.style.display = 'block';
   } else {
@@ -1088,7 +1093,6 @@ const renderAdminOrders = () => {
     });
   }
 
-  // Render completed orders
   if (completedOrders.length === 0) {
     if (completedEmptyMessage) completedEmptyMessage.style.display = 'block';
   } else {
@@ -1145,7 +1149,6 @@ const openOrderDetail = async (order) => {
   setText('od-promo', order.promotion?.name || 'Không áp dụng');
   setText('od-created', order.createdAt || '—');
 
-  // Hiển thị lý do hủy nếu có
   if (order.cancelReason && (order.status === 'DA_HUY')) {
     setText('od-cancel-reason', order.cancelReason);
     setDisplay('od-cancel-reason-row', 'block');
@@ -1153,7 +1156,6 @@ const openOrderDetail = async (order) => {
     setDisplay('od-cancel-reason-row', 'none');
   }
 
-  // Fetch order detail with items
   try {
     const orderId = order._id || order.id;
     const response = await fetch(`/admin/api/orders/${orderId}`, {
@@ -1229,7 +1231,6 @@ const fetchAdminOrders = async () => {
   }
 };
 
-// Handle update order status
 const handleUpdateOrderStatus = async (orderId, newStatus, cancelReason = null) => {
   try {
     const body = { status: newStatus };
@@ -1260,19 +1261,15 @@ const handleUpdateOrderStatus = async (orderId, newStatus, cancelReason = null) 
   }
 };
 
-// Handle update order status with cancel reason
 const handleUpdateOrderStatusWithReason = async (orderId, newStatus, cancelReason) => {
   await handleUpdateOrderStatus(orderId, newStatus, cancelReason);
 };
 
-// Handle cancel order - show cancel reason modal
 const handleCancelOrder = async (order) => {
   showCancelReasonModal(order);
 };
 
-// Show confirm status change modal
 const showConfirmStatusModal = (order, newStatus, title, message) => {
-  // Create modal overlay if it doesn't exist
   let modal = document.getElementById('confirm-status-modal');
   if (!modal) {
     modal = document.createElement('div');
@@ -1297,7 +1294,6 @@ const showConfirmStatusModal = (order, newStatus, title, message) => {
     `;
     document.body.appendChild(modal);
 
-    // Handle close button
     const closeBtn = document.getElementById('confirm-status-close');
     const cancelBtn = document.getElementById('confirm-status-cancel');
     if (closeBtn) {
@@ -1317,7 +1313,6 @@ const showConfirmStatusModal = (order, newStatus, title, message) => {
       });
     }
 
-    // Handle submit
     const submitBtn = document.getElementById('confirm-status-submit');
     if (submitBtn) {
       submitBtn.addEventListener('click', async () => {
@@ -1329,15 +1324,12 @@ const showConfirmStatusModal = (order, newStatus, title, message) => {
           return;
         }
 
-        // Close modal
         modal.style.display = 'none';
         modal.setAttribute('aria-hidden', 'true');
 
-        // Update order status
         try {
           await handleUpdateOrderStatus(orderId, status);
           
-          // Clear data
           delete modal.dataset.orderId;
           delete modal.dataset.newStatus;
         } catch (error) {
@@ -1347,17 +1339,14 @@ const showConfirmStatusModal = (order, newStatus, title, message) => {
     }
   }
 
-  // Set current order data
   modal.dataset.orderId = order._id;
   modal.dataset.newStatus = newStatus;
   
-  // Update modal content
   const titleEl = document.getElementById('confirm-status-title');
   const messageEl = document.getElementById('confirm-status-message');
   if (titleEl) titleEl.textContent = title;
   if (messageEl) messageEl.textContent = message;
 
-  // Show modal
   modal.style.display = 'flex';
   modal.setAttribute('aria-hidden', 'false');
 };
@@ -1404,7 +1393,6 @@ const showCancelReasonModal = (order) => {
     `;
     document.body.appendChild(modal);
 
-    // Handle close button
     const closeBtn = document.getElementById('cancel-reason-close');
     const cancelBtn = document.getElementById('cancel-reason-cancel');
     if (closeBtn) {
@@ -1420,7 +1408,6 @@ const showCancelReasonModal = (order) => {
       });
     }
 
-    // Handle reason select change
     const reasonSelect = document.getElementById('cancel-reason-select');
     const otherGroup = document.getElementById('cancel-reason-other-group');
     if (reasonSelect) {
@@ -1433,7 +1420,6 @@ const showCancelReasonModal = (order) => {
       });
     }
 
-    // Handle submit
     const submitBtn = document.getElementById('cancel-reason-submit');
     if (submitBtn) {
       submitBtn.addEventListener('click', async () => {
@@ -1453,22 +1439,18 @@ const showCancelReasonModal = (order) => {
           return;
         }
 
-        // Get order ID from modal dataset
         const orderId = modal.dataset.orderId;
         if (!orderId) {
           console.error('Không tìm thấy orderId');
           return;
         }
 
-        // Close modal
         modal.style.display = 'none';
         modal.setAttribute('aria-hidden', 'true');
 
-        // Update order status with cancel reason
         try {
           await handleUpdateOrderStatusWithReason(orderId, 'DA_HUY', cancelReason);
           
-          // Reset form
           if (reasonSelect) reasonSelect.value = '';
           if (otherGroup) otherGroup.style.display = 'none';
           const otherInput = document.getElementById('cancel-reason-other');
@@ -1481,10 +1463,8 @@ const showCancelReasonModal = (order) => {
     }
   }
 
-  // Set current order ID
   modal.dataset.orderId = order._id;
   
-  // Reset form
   const reasonSelect = document.getElementById('cancel-reason-select');
   const otherGroup = document.getElementById('cancel-reason-other-group');
   const otherInput = document.getElementById('cancel-reason-other');
@@ -1492,7 +1472,6 @@ const showCancelReasonModal = (order) => {
   if (otherGroup) otherGroup.style.display = 'none';
   if (otherInput) otherInput.value = '';
 
-  // Show modal
   modal.style.display = 'flex';
   modal.setAttribute('aria-hidden', 'false');
 };
@@ -1647,9 +1626,6 @@ const openUpdateTableStatusModal = (tableId) => {
     tableIdInput.value = tableId;
     tableNameEl.textContent = table.name;
     
-    // Set current status as checked
-    // If displayStatus is RESERVED, check RESERVED radio
-    // Otherwise check the actual status
     const statusRadios = form.querySelectorAll('input[name="table-status"]');
     statusRadios.forEach(radio => {
       if (table.displayStatus === 'RESERVED' && radio.value === 'RESERVED') {
@@ -1660,7 +1636,7 @@ const openUpdateTableStatusModal = (tableId) => {
         radio.checked = false;
       }
     });
-    
+
     if (messageEl) {
       messageEl.style.display = 'none';
       messageEl.textContent = '';
@@ -1685,7 +1661,6 @@ const handleAdminTableClick = (tableId) => {
 
 const updateAdminTableStatus = async (tableId, newStatus) => {
   try {
-    // If RESERVED is selected, keep status as TRONG (RESERVED is only a display status)
     const actualStatus = newStatus === 'RESERVED' ? 'TRONG' : newStatus;
     
     const response = await fetch(`/admin/api/tables/${tableId}`, {
@@ -1702,23 +1677,19 @@ const updateAdminTableStatus = async (tableId, newStatus) => {
       throw new Error(errorData.message || 'Không thể cập nhật trạng thái bàn');
     }
 
-    // Update local data
     const table = adminTablesData.find(t => t.id === tableId);
     if (table) {
       table.status = actualStatus;
-      // Recalculate displayStatus
       if (actualStatus === 'TRONG') {
-        // If RESERVED was selected, we want to show it as RESERVED
-        // Otherwise, check if there are pending reservations
         if (newStatus === 'RESERVED') {
           table.displayStatus = 'RESERVED';
         } else {
-          const hasReservedPending = table.reservations && table.reservations.some(r => {
-            const reservedTime = new Date(r.reservedAt);
-            const now = new Date();
-            return r.status === 'DANG_CHO' || reservedTime > now;
-          });
-          table.displayStatus = hasReservedPending ? 'RESERVED' : 'TRONG';
+        const hasReservedPending = table.reservations && table.reservations.some(r => {
+          const reservedTime = new Date(r.reservedAt);
+          const now = new Date();
+          return r.status === 'DANG_CHO' || reservedTime > now;
+        });
+        table.displayStatus = hasReservedPending ? 'RESERVED' : 'TRONG';
         }
       } else {
         table.displayStatus = actualStatus;
@@ -1760,7 +1731,6 @@ const fetchDashboardStats = async () => {
   }
 };
 
-// Format currency VND for dashboard
 const formatDashboardCurrency = (value) => {
   if (!value && value !== 0) return '0 đ';
   const numValue = Number(value);
@@ -1774,9 +1744,7 @@ const formatDashboardCurrency = (value) => {
   return `${numValue.toLocaleString('vi-VN')} đ`;
 };
 
-// Render dashboard statistics
 const renderDashboardStats = (stats) => {
-  // Revenue
   const revenueValueEl = getElement('dashboard-revenue-value');
   const revenueChangeEl = getElement('dashboard-revenue-change');
   if (revenueValueEl) {
@@ -1814,19 +1782,16 @@ const renderDashboardStats = (stats) => {
     guestsValueEl.textContent = `${stats.guests.today || 0} khách`;
   }
   
-  // Tables
   const tablesAvailableEl = getElement('dashboard-tables-available-value');
   if (tablesAvailableEl && stats.tables) {
     tablesAvailableEl.textContent = `${stats.tables.available || 0}/${stats.tables.total || 0}`;
   }
   
-  // Reservations waiting
   const reservationsWaitingEl = getElement('dashboard-reservations-waiting-value');
   if (reservationsWaitingEl && stats.reservations) {
     reservationsWaitingEl.textContent = `${stats.reservations.waiting || 0} lượt`;
   }
   
-  // Active guests
   const activeGuestsEl = getElement('dashboard-active-guests-value');
   if (activeGuestsEl && stats.reservations) {
     activeGuestsEl.textContent = `${stats.reservations.activeGuests || 0} khách`;
@@ -1915,63 +1880,63 @@ const renderAdminReservations = () => {
 };
 
 const renderReservationRow = (reservation, tableBody, showActions = true) => {
-  const row = document.createElement('tr');
-  row.className = 'hover:bg-slate-900/80';
+    const row = document.createElement('tr');
+    row.className = 'hover:bg-slate-900/80';
 
-  // Reservation ID
-  const idCell = document.createElement('td');
-  idCell.className = 'px-3 py-2 text-xs font-semibold text-slate-100';
-  idCell.textContent = `#${reservation.id.substring(reservation.id.length - 6)}`;
+    // Reservation ID
+    const idCell = document.createElement('td');
+    idCell.className = 'px-3 py-2 text-xs font-semibold text-slate-100';
+    idCell.textContent = `#${reservation.id.substring(reservation.id.length - 6)}`;
 
-  // Customer Name
-  const nameCell = document.createElement('td');
-  nameCell.className = 'px-3 py-2 text-xs text-slate-300';
-  nameCell.textContent = reservation.customerName || '—';
+    // Customer Name
+    const nameCell = document.createElement('td');
+    nameCell.className = 'px-3 py-2 text-xs text-slate-300';
+    nameCell.textContent = reservation.customerName || '—';
 
-  // Phone
-  const phoneCell = document.createElement('td');
-  phoneCell.className = 'px-3 py-2 text-xs text-slate-300';
-  phoneCell.textContent = reservation.customerPhone || reservation.guestPhone || '—';
+    // Phone
+    const phoneCell = document.createElement('td');
+    phoneCell.className = 'px-3 py-2 text-xs text-slate-300';
+    phoneCell.textContent = reservation.customerPhone || reservation.guestPhone || '—';
 
-  // Guest Count
-  const guestsCell = document.createElement('td');
-  guestsCell.className = 'px-3 py-2 text-xs text-slate-300';
-  guestsCell.textContent = `${reservation.guestCount} người`;
+    // Guest Count
+    const guestsCell = document.createElement('td');
+    guestsCell.className = 'px-3 py-2 text-xs text-slate-300';
+    guestsCell.textContent = `${reservation.guestCount} người`;
 
-  // Date & Time
-  const dateCell = document.createElement('td');
-  dateCell.className = 'px-3 py-2 text-xs text-slate-300';
-  dateCell.textContent = reservation.reservedAt || '—';
+    // Date & Time
+    const dateCell = document.createElement('td');
+    dateCell.className = 'px-3 py-2 text-xs text-slate-300';
+    dateCell.textContent = reservation.reservedAt || '—';
 
-  // Tables
-  const tablesCell = document.createElement('td');
-  tablesCell.className = 'px-3 py-2 text-xs text-slate-300';
-  if (reservation.tables && reservation.tables.length > 0) {
-    tablesCell.textContent = reservation.tables.map(t => t.name).join(', ');
-  } else {
-    tablesCell.textContent = 'Chưa gán bàn';
-  }
+    // Tables
+    const tablesCell = document.createElement('td');
+    tablesCell.className = 'px-3 py-2 text-xs text-slate-300';
+    if (reservation.tables && reservation.tables.length > 0) {
+      tablesCell.textContent = reservation.tables.map(t => t.name).join(', ');
+    } else {
+      tablesCell.textContent = 'Chưa gán bàn';
+    }
 
-  // Status
-  const statusCell = document.createElement('td');
-  statusCell.className = 'px-3 py-2 text-xs';
-  const statusBadge = document.createElement('span');
-  statusBadge.className = 'px-2 py-1 rounded text-xs font-semibold';
-  
-  if (reservation.status === 'XAC_NHAN') {
-    statusBadge.className += ' bg-green-500/20 text-green-400';
+    // Status
+    const statusCell = document.createElement('td');
+    statusCell.className = 'px-3 py-2 text-xs';
+    const statusBadge = document.createElement('span');
+    statusBadge.className = 'px-2 py-1 rounded text-xs font-semibold';
+    
+    if (reservation.status === 'XAC_NHAN') {
+      statusBadge.className += ' bg-green-500/20 text-green-400';
     statusBadge.textContent = 'Đã xác nhận';
   } else if (reservation.status === 'HOAN_THANH') {
     statusBadge.className += ' bg-blue-500/20 text-blue-400';
     statusBadge.textContent = 'Hoàn thành';
-  } else if (reservation.status === 'DA_HUY') {
-    statusBadge.className += ' bg-red-500/20 text-red-400';
+    } else if (reservation.status === 'DA_HUY') {
+      statusBadge.className += ' bg-red-500/20 text-red-400';
     statusBadge.textContent = 'Đã hủy';
-  } else {
-    statusBadge.className += ' bg-yellow-500/20 text-yellow-400';
+    } else {
+      statusBadge.className += ' bg-yellow-500/20 text-yellow-400';
     statusBadge.textContent = 'Đang chờ';
-  }
-  statusCell.appendChild(statusBadge);
+    }
+    statusCell.appendChild(statusBadge);
 
   row.appendChild(idCell);
   row.appendChild(nameCell);
@@ -2030,7 +1995,7 @@ const renderReservationRow = (reservation, tableBody, showActions = true) => {
     row.appendChild(cancelReasonCell);
   }
 
-  tableBody.appendChild(row);
+    tableBody.appendChild(row);
 };
 
 const handleConfirmReservation = async (reservationId) => {
@@ -2541,6 +2506,15 @@ const initializeAdminPage = () => {
 
   if (categoryResetButton) {
     categoryResetButton.addEventListener('click', resetCategoryForm);
+  }
+
+  // Menu filter by category
+  const menuFilterSelect = getElement('menu-filter-category');
+  if (menuFilterSelect) {
+    menuFilterSelect.addEventListener('change', (e) => {
+      state.filterCategoryId = e.target.value || '';
+      renderAdminMenuList();
+    });
   }
 
   fetchCategories();

@@ -1,7 +1,13 @@
 /* eslint-disable no-console */
+
+// ============================================
+// MENU PAGE
+// ============================================
+
+// Helper function to get element by ID
 const getMenuElement = (id) => document.getElementById(id);
 
-// Menu Detail Modal Functions
+// Open menu detail modal
 const openMenuDetailModal = (item) => {
   const overlay = getMenuElement('menu-detail-modal-overlay');
   if (!overlay) {
@@ -9,7 +15,6 @@ const openMenuDetailModal = (item) => {
     return;
   }
 
-  // Set content
   const image = getMenuElement('menu-detail-image');
   const title = getMenuElement('menu-detail-title');
   const price = getMenuElement('menu-detail-price');
@@ -62,20 +67,16 @@ const openMenuDetailModal = (item) => {
     note.textContent = item.note || 'Đang cập nhật';
   }
 
-  // Setup size options from item.sizeOptions or fallback
   let selectedSize = item.size || 'Mặc định';
   let selectedPrice = item.price || 0;
   
-  // Get base price and size options
   const basePrice = item.price || 0;
   const sizeOptions = item.sizeOptions || [];
   
-  // If no size options, use default
   if (sizeOptions.length === 0) {
     selectedSize = 'Mặc định';
     selectedPrice = basePrice;
   } else {
-    // Set first size as default if none selected
     if (!item.size || sizeOptions.find(opt => opt.name === item.size) === undefined) {
       selectedSize = sizeOptions[0]?.name || 'Mặc định';
       selectedPrice = basePrice + (sizeOptions[0]?.additionalPrice || 0);
@@ -87,7 +88,6 @@ const openMenuDetailModal = (item) => {
       }
     }
     
-    // Update price display when size changes
     if (price) {
       price.textContent = getFormatCurrencyVnd()(selectedPrice);
     }
@@ -122,7 +122,6 @@ const openMenuDetailModal = (item) => {
     sizeOptionsContainer.innerHTML = '';
   }
 
-  // Setup add button
   if (addButton) {
     const handleAddToCart = async (e) => {
       e.stopPropagation();
@@ -158,8 +157,8 @@ const openMenuDetailModal = (item) => {
         const success = window.appCart.addItem({
           id: item._id || item.id,
           name: item.name,
-          price: selectedPrice, // Use selected price with size addition
-          basePrice: basePrice, // Store base price for reference
+          price: selectedPrice,
+          basePrice: basePrice,
           image: item.image,
           quantity: 1,
           size: selectedSize
@@ -186,13 +185,11 @@ const openMenuDetailModal = (item) => {
       }
     };
 
-    // Remove old listeners and add new one
     const newAddButton = addButton.cloneNode(true);
     addButton.parentNode.replaceChild(newAddButton, addButton);
     newAddButton.addEventListener('click', handleAddToCart);
   }
 
-  // Show modal
   overlay.style.display = 'flex';
   overlay.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
@@ -209,7 +206,7 @@ const closeMenuDetailModal = () => {
   document.body.style.overflow = '';
 };
 
-// Initialize menu detail modal
+// Initialize menu detail modal - setup event listeners
 const initializeMenuDetailModal = () => {
   const closeButton = getMenuElement('menu-detail-close-button');
   const overlay = getMenuElement('menu-detail-modal-overlay');
@@ -240,12 +237,10 @@ if (typeof window !== 'undefined') {
   window.closeMenuDetailModal = closeMenuDetailModal;
 }
 
-// formatCurrencyVnd is defined in main.js - wait for it to be available
 const getFormatCurrencyVnd = () => {
   if (window.formatCurrencyVnd) {
     return window.formatCurrencyVnd;
   }
-  // Fallback if main.js hasn't loaded yet
   return (value) => {
   if (!value) {
     return '';
@@ -261,7 +256,6 @@ const getFormatCurrencyVnd = () => {
 const createFullMenuCard = (item) => {
   const card = document.createElement('article');
   card.className = 'menu-card';
-  // Don't set data-category here, it will be set in renderFullMenu
 
   const imageWrapper = document.createElement('div');
   imageWrapper.className = 'menu-card-image-wrapper';
@@ -303,7 +297,6 @@ const createFullMenuCard = (item) => {
   description.className = 'menu-card-description';
   description.textContent = item.description || 'Món ăn đặc biệt của nhà hàng.';
 
-  // Size selector (inline) - use sizeOptions from backend
   const sizeRow = document.createElement('div');
   sizeRow.className = 'menu-card-size-inline';
   const basePrice = item.price || 0;
@@ -311,7 +304,6 @@ const createFullMenuCard = (item) => {
   let selectedSize = 'Mặc định';
   let selectedPrice = basePrice;
   
-  // If no size options, hide size selector
   if (sizeOptions.length === 0) {
     sizeRow.style.display = 'none';
   } else {
@@ -335,7 +327,6 @@ const createFullMenuCard = (item) => {
         });
         btn.classList.add('active');
         
-        // Update price display in card
         const priceEl = card.querySelector('.menu-card-price');
         if (priceEl) {
           priceEl.textContent = getFormatCurrencyVnd()(selectedPrice);
@@ -351,11 +342,9 @@ const createFullMenuCard = (item) => {
     }
   }
 
-  // Actions container for buttons
   const actionsContainer = document.createElement('div');
   actionsContainer.className = 'menu-card-actions';
 
-  // Add to cart button
   const addButton = document.createElement('button');
   addButton.type = 'button';
   addButton.className = 'menu-add-button';
@@ -366,12 +355,10 @@ const createFullMenuCard = (item) => {
     e.stopPropagation();
     e.preventDefault();
     
-    // Prevent double-click
     if (addButton.disabled) {
       return;
     }
     
-    // Wait for cart to be available
     let cartReady = false;
     let attempts = 0;
     const maxAttempts = 20;
@@ -390,7 +377,6 @@ const createFullMenuCard = (item) => {
       return;
     }
     
-    // Disable button temporarily
     const originalText = addButton.textContent;
     addButton.disabled = true;
     addButton.textContent = 'Đang thêm...';
@@ -426,7 +412,6 @@ const createFullMenuCard = (item) => {
     }
   });
 
-  // View details button - navigate to detail page
   const viewButton = document.createElement('button');
   viewButton.type = 'button';
   viewButton.className = 'menu-view-button';
@@ -436,7 +421,6 @@ const createFullMenuCard = (item) => {
   viewButton.addEventListener('click', (e) => {
     e.stopPropagation();
     e.preventDefault();
-    // Navigate to menu item detail page
     const itemId = item._id || item.id;
     if (itemId) {
       window.location.href = `/menu/${itemId}`;
@@ -456,10 +440,8 @@ const createFullMenuCard = (item) => {
   card.appendChild(imageWrapper);
   card.appendChild(cardContent);
 
-  // Add click handler to card to navigate to detail page
   card.style.cursor = 'pointer';
   card.addEventListener('click', (e) => {
-    // Don't navigate if clicking on buttons or size selector
     if (e.target.closest('button') || e.target.closest('.menu-card-size-inline')) {
       return;
     }
@@ -472,28 +454,13 @@ const createFullMenuCard = (item) => {
   return card;
 };
 
-// Helper function to normalize category key from category object
 const getCategoryKey = (category) => {
   if (!category) return 'other';
   
-  if (typeof category === 'object' && category.name) {
-    // Map category name to key for backward compatibility with tabs
-    const nameMap = {
-      'combo': 'combo',
-      'Combo': 'combo',
-      'khai vị': 'main',
-      'Khai vị': 'main',
-      'món chính': 'appetizer',
-      'Món chính': 'appetizer',
-      'thức uống': 'drink',
-      'Thức uống': 'drink',
-      'tráng miệng': 'dessert',
-      'Tráng miệng': 'dessert',
-      'món chay': 'vegetarian',
-      'Món chay': 'vegetarian'
-    };
-    const normalizedName = category.name.trim();
-    return nameMap[normalizedName] || normalizedName.toLowerCase().replace(/\s+/g, '-');
+  if (typeof category === 'object') {
+    const id = category._id || category.id;
+    if (id) return id.toString();
+    if (category.name) return category.name.trim().toLowerCase().replace(/\s+/g, '-');
   }
   
   if (typeof category === 'string') {
@@ -503,18 +470,36 @@ const getCategoryKey = (category) => {
   return 'other';
 };
 
-// Category mapping for display names (phải khớp với tab text trong HTML)
-const categoryNames = {
-  combo: 'COMBO',
-  main: 'KHAI VỊ',           // Tab: "Khai vị"
-  appetizer: 'MÓN CHÍNH',    // Tab: "Món chính"
-  drink: 'THỨC UỐNG',        // Tab: "Thức uống"
-  dessert: 'TRÁNG MIỆNG',    // Tab: "Tráng miệng"
-  vegetarian: 'MÓN CHAY'     // Tab: "Món chay"
-};
+const renderMenuTabs = (categories = []) => {
+  const nav = document.querySelector('.menu-nav-tabs');
+  if (!nav) return;
 
-// Category order for display
-const categoryOrder = ['combo', 'main', 'appetizer', 'drink', 'dessert', 'vegetarian'];
+  nav.innerHTML = '';
+
+  const createTab = (label, value, isActive = false) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'menu-nav-tab';
+    if (isActive) {
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+    } else {
+      btn.setAttribute('aria-selected', 'false');
+    }
+    btn.setAttribute('data-category', value);
+    btn.setAttribute('role', 'tab');
+    btn.textContent = label;
+    return btn;
+  };
+
+  nav.appendChild(createTab('Tất cả', 'all', true));
+
+  categories.forEach((cat) => {
+    const catId = (cat._id || cat.id || '').toString();
+    if (!catId) return;
+    nav.appendChild(createTab(cat.name || 'Danh mục', catId));
+  });
+};
 
 const renderFullMenu = (items) => {
   const listElement = getMenuElement('full-menu-list');
@@ -531,7 +516,6 @@ const renderFullMenu = (items) => {
     console.error('[menu.js] Không tìm thấy element #full-menu-empty');
   }
 
-  // Clear previous content
   listElement.innerHTML = '';
 
   if (!items || items.length === 0) {
@@ -548,14 +532,12 @@ const renderFullMenu = (items) => {
   
   console.log('[menu.js] Đang render', items.length, 'món ăn...');
 
-  // Create a single grid container for all items (no category sections)
   const menuGrid = document.createElement('div');
   menuGrid.className = 'menu-category-grid';
 
   let renderedCount = 0;
   let errorCount = 0;
   
-  // Add all items to the grid without grouping by category
   items.forEach((item, index) => {
     try {
       if (!item || !item.name) {
@@ -571,7 +553,6 @@ const renderFullMenu = (items) => {
         return;
       }
       
-      // Set data-category attribute for filtering
       const categoryKey = getCategoryKey(item.category);
       card.setAttribute('data-category', categoryKey);
       menuGrid.appendChild(card);
@@ -636,12 +617,27 @@ const fetchFullMenu = async () => {
   }
 };
 
+// Fetch categories list from API
+const fetchMenuCategories = async () => {
+  try {
+    const response = await fetch('/api/categories');
+    if (!response.ok) {
+      console.error('[menu.js] Không thể tải danh mục, status:', response.status);
+      return [];
+    }
+    const data = await response.json();
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error('[menu.js] Lỗi khi tải danh mục', error);
+    return [];
+  }
+};
+
+// Initialize menu page - load data and setup event listeners
 const initializeMenuPage = async () => {
-  // Check if header is already rendered
   const container = document.getElementById('shared-header');
   const headerExists = container && container.children.length > 0;
   
-  // Only render header if not already rendered
   if (!headerExists && typeof window.renderSharedHeader === 'function') {
       let authButtonText = 'Đăng nhập';
       
@@ -673,11 +669,9 @@ const initializeMenuPage = async () => {
         }
       });
     
-    // Wait for header to be initialized
     await new Promise((resolve) => window.setTimeout(resolve, 50));
   }
   
-  // Đồng bộ trạng thái đăng nhập cho nút header (dù header có sẵn hay vừa render)
   if (typeof window.fetchCurrentUser === 'function' && typeof window.updateAuthUi === 'function') {
     try {
       const user = await window.fetchCurrentUser();
@@ -688,20 +682,16 @@ const initializeMenuPage = async () => {
     }
   }
   
-  // Wait a bit for cart to be initialized
   await new Promise((resolve) => window.setTimeout(resolve, 50));
   
-  // Ensure cart is initialized (only update, don't re-render)
   if (typeof window.appCart !== 'undefined' && window.appCart) {
     window.appCart.updateBadge();
-    // Only render dropdown if it doesn't exist
     const dropdown = document.getElementById('cart-dropdown');
     if (!dropdown || !dropdown.querySelector('.cart-dropdown-panel')) {
       window.appCart.renderDropdown();
     }
   }
   
-  // Initialize auth only if not already initialized
   if (typeof window.initializeAuth === 'function' && !window.__authInitialized) {
     await window.initializeAuth();
     window.__authInitialized = true;
@@ -710,14 +700,19 @@ const initializeMenuPage = async () => {
 
   const searchInput = getMenuElement('menu-search');
 
-  const items = await fetchFullMenu();
+  const [categories, items] = await Promise.all([
+    fetchMenuCategories(),
+    fetchFullMenu()
+  ]);
+
+  renderMenuTabs(categories);
+
   let filteredItems = items;
   let activeCategory = 'all';
 
   const applyFilters = () => {
     let results = items;
 
-    // Apply search filter
     const keyword = searchInput ? searchInput.value.trim().toLowerCase() : '';
     if (keyword) {
       results = results.filter((item) =>
@@ -728,7 +723,6 @@ const initializeMenuPage = async () => {
     filteredItems = results;
     renderFullMenu(filteredItems);
     
-    // Apply category filter after rendering
     if (activeCategory) {
       filterMenuItemsByCategory(activeCategory);
     }
@@ -740,52 +734,37 @@ const initializeMenuPage = async () => {
     });
   }
 
-  // Setup category filter
-  const tabs = document.querySelectorAll('.menu-nav-tab');
   const menuList = getMenuElement('full-menu-list');
-  
-  if (tabs.length && menuList) {
+  const bindCategoryTabs = () => {
+    const tabs = document.querySelectorAll('.menu-nav-tab');
+    if (!tabs.length || !menuList) return;
+
     tabs.forEach((tab) => {
       tab.addEventListener('click', () => {
-        // Remove active class from all tabs
         tabs.forEach((t) => {
           t.classList.remove('active');
           t.setAttribute('aria-selected', 'false');
         });
-
-        // Add active class to clicked tab
         tab.classList.add('active');
         tab.setAttribute('aria-selected', 'true');
-
-        // Update active category
         activeCategory = tab.getAttribute('data-category') || 'all';
-        
-        // Scroll to top of menu list
         if (menuList) {
           menuList.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-        
-        // Filter items by showing/hiding cards based on category
         filterMenuItemsByCategory(activeCategory);
       });
     });
-  }
+  };
+  bindCategoryTabs();
   
-  // Render initial menu (all items visible by default)
   renderFullMenu(filteredItems);
-  
-  // No initial filter needed since 'all' is selected by default
 };
 
-// Filter menu items by showing/hiding cards based on category
 const filterMenuItemsByCategory = (category) => {
   const menuGrid = document.querySelector('#full-menu-list .menu-category-grid');
   if (!menuGrid) return;
 
   const cards = menuGrid.querySelectorAll('.menu-card');
-  
-  // category from tab is already in correct format (combo, main, appetizer, etc.)
-  // because it comes from data-category attribute
   
   cards.forEach((card) => {
     const cardCategory = card.getAttribute('data-category') || 'other';
@@ -793,7 +772,6 @@ const filterMenuItemsByCategory = (category) => {
     if (category === 'all') {
       card.style.display = '';
     } else {
-      // Compare directly since both use the same category key format
       if (cardCategory === category) {
         card.style.display = '';
       } else {
@@ -802,7 +780,6 @@ const filterMenuItemsByCategory = (category) => {
     }
   });
   
-  // Show empty message if no items are visible
   const visibleCards = Array.from(cards).filter(card => {
     const display = window.getComputedStyle(card).display;
     return display !== 'none';
@@ -821,7 +798,6 @@ const filterMenuItemsByCategory = (category) => {
   }
 };
 
-// Prevent multiple initializations
 let menuPageInitialized = false;
 
 const startMenuPage = () => {

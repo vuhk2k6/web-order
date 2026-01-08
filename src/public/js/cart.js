@@ -1,9 +1,16 @@
 /* eslint-disable no-console */
+
+// ============================================
+// CART PAGE
+// ============================================
+
+// Format currency in VND format
 const formatCurrency = (value) => `${(value || 0).toLocaleString('vi-VN')} đ`;
 
+// Key for storing cart in localStorage
 const cartStorageKey = 'cartItems';
 
-// Sync with main.js cart if available
+// Sync with main cart (main.js)
 const syncWithMainCart = () => {
   if (typeof window.appCart !== 'undefined' && window.appCart) {
     if (typeof window.appCart.reload === 'function') {
@@ -12,18 +19,14 @@ const syncWithMainCart = () => {
   }
 };
 
-// Listen for storage events to sync cart across tabs
 if (typeof window !== 'undefined') {
-  // Storage event (only fires in other tabs)
   window.addEventListener('storage', (e) => {
     if (e.key === 'cartItems') {
-      // Reload cart from localStorage
       const items = loadCart();
       renderCartPage(items);
     }
   });
   
-  // Custom event for same-tab synchronization
   window.addEventListener('cartUpdated', (e) => {
     if (e.detail && e.detail.items) {
       renderCartPage(e.detail.items);
@@ -48,6 +51,7 @@ const loadCart = () => {
   }
 };
 
+// Save cart items to localStorage
 const saveCart = (items) => {
   try {
     localStorage.setItem(cartStorageKey, JSON.stringify(items));
@@ -56,6 +60,7 @@ const saveCart = (items) => {
   }
 };
 
+// Render cart items list on page
 const renderCartPage = (items) => {
   const list = document.getElementById('cart-list');
   const emptyState = document.getElementById('cart-empty-state');
@@ -153,6 +158,7 @@ const updateQuantity = (items, itemId, delta, itemSize = null) => {
   return updated;
 };
 
+// Set specific item quantity
 const setQuantity = (items, itemId, newQuantity, itemSize = null) => {
   const size = itemSize || 'Vừa (M)';
   const quantity = Math.max(1, Math.floor(Number(newQuantity)) || 1);
@@ -167,6 +173,7 @@ const setQuantity = (items, itemId, newQuantity, itemSize = null) => {
   return updated;
 };
 
+// Update note for item
 const updateNote = (items, itemId, note, itemSize = null) => {
   const size = itemSize || 'Vừa (M)';
   const updated = items
@@ -180,9 +187,9 @@ const updateNote = (items, itemId, note, itemSize = null) => {
   return updated;
 };
 
+// Remove item from cart
 const removeItem = (items, itemId, itemSize = null) => {
   const size = itemSize || 'Vừa (M)';
-  // Remove item matching both id and size
   const updated = items.filter(
     (item) => item.id !== itemId || (item.size || 'Vừa (M)') !== size
   );
@@ -190,6 +197,7 @@ const removeItem = (items, itemId, itemSize = null) => {
   return updated;
 };
 
+// Initialize cart page - setup event listeners and render data
 const setupCartPage = () => {
   let cartItems = loadCart();
   renderCartPage(cartItems);
@@ -199,7 +207,6 @@ const setupCartPage = () => {
   const continueBtns = document.querySelectorAll('#cart-continue, .cart-continue-link');
 
   if (list) {
-    // Handle click events
     list.addEventListener('click', (event) => {
       const row = event.target.closest('.cart-item-row');
       if (!row) return;
@@ -211,7 +218,6 @@ const setupCartPage = () => {
         const delta = event.target.getAttribute('data-action') === 'increase' ? 1 : -1;
         cartItems = updateQuantity(cartItems, itemId, delta, itemSize);
         renderCartPage(cartItems);
-        // Sync with main cart
         syncWithMainCart();
         return;
       }
@@ -219,12 +225,10 @@ const setupCartPage = () => {
       if (event.target.classList.contains('cart-item-remove')) {
         cartItems = removeItem(cartItems, itemId, itemSize);
         renderCartPage(cartItems);
-        // Sync with main cart
         syncWithMainCart();
       }
     });
 
-    // Handle quantity input changes
     list.addEventListener('change', (event) => {
       if (event.target.classList.contains('qty-input')) {
         const row = event.target.closest('.cart-item-row');
@@ -234,12 +238,10 @@ const setupCartPage = () => {
         const newQuantity = event.target.value;
         cartItems = setQuantity(cartItems, itemId, newQuantity, itemSize);
         renderCartPage(cartItems);
-        // Sync with main cart
         syncWithMainCart();
       }
     });
 
-    // Handle note input changes (with debounce)
     let noteTimeout = null;
     list.addEventListener('input', (event) => {
       if (event.target.classList.contains('cart-item-note-input')) {
@@ -249,13 +251,11 @@ const setupCartPage = () => {
         const itemSize = row.getAttribute('data-item-size') || 'Vừa (M)';
         const note = event.target.value.trim();
 
-        // Debounce to avoid too many saves
         if (noteTimeout) {
           clearTimeout(noteTimeout);
         }
         noteTimeout = setTimeout(() => {
           cartItems = updateNote(cartItems, itemId, note, itemSize);
-          // Sync with main cart
           syncWithMainCart();
         }, 500);
       }
@@ -278,7 +278,6 @@ const setupCartPage = () => {
     });
   }
   
-  // Sync cart on visibility change
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
       cartItems = loadCart();

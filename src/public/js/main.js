@@ -1,8 +1,15 @@
 /* eslint-disable no-console */
+
+// ============================================
+// CART MANAGEMENT
+// ============================================
+
+// Cart state - stores list of items added to cart
 const cartState = {
   items: []
 };
 
+// Load cart items from localStorage
 const loadCartItems = () => {
   try {
     const stored = localStorage.getItem('cartItems');
@@ -20,6 +27,7 @@ const loadCartItems = () => {
   }
 };
 
+// Save cart items to localStorage
 const saveCartItems = (items) => {
   try {
     localStorage.setItem('cartItems', JSON.stringify(items));
@@ -28,6 +36,7 @@ const saveCartItems = (items) => {
   }
 };
 
+// Update cart badge count (cart icon)
 const updateCartBadge = () => {
   const badge = document.getElementById('cart-count');
   if (!badge) {
@@ -48,6 +57,7 @@ const updateCartBadge = () => {
   }
 };
 
+// Render cart dropdown with list of added items
 const renderCartDropdown = () => {
   const itemsContainer = document.getElementById('cart-items');
   const emptyMessage = document.getElementById('cart-empty');
@@ -135,6 +145,7 @@ const renderCartDropdown = () => {
   totalElement.textContent = `${total.toLocaleString('vi-VN')} đ`;
 };
 
+// Update cart dropdown position to align with cart button
 const updateCartDropdownPosition = () => {
   const dropdown = document.getElementById('cart-dropdown');
   const cartButton = document.querySelector('.btn-cart');
@@ -162,6 +173,7 @@ const updateCartDropdownPosition = () => {
   dropdown.style.left = 'auto';
 };
 
+// Open cart dropdown
 const openCartDropdown = () => {
   const dropdown = document.getElementById('cart-dropdown');
   if (!dropdown) {
@@ -175,6 +187,7 @@ const openCartDropdown = () => {
   dropdown.setAttribute('aria-hidden', 'false');
 };
 
+// Close cart dropdown
 const closeCartDropdown = () => {
   const dropdown = document.getElementById('cart-dropdown');
   if (!dropdown) {
@@ -184,6 +197,7 @@ const closeCartDropdown = () => {
   dropdown.setAttribute('aria-hidden', 'true');
 };
 
+// Toggle cart dropdown open/close state
 const toggleCartDropdown = () => {
   const dropdown = document.getElementById('cart-dropdown');
   if (!dropdown) {
@@ -197,6 +211,7 @@ const toggleCartDropdown = () => {
   }
 };
 
+// Add item to cart (check for duplicates, update quantity if exists)
 const addItemToCart = (payload) => {
   if (!payload || !payload.id) {
     console.warn('Không thể thêm món vào giỏ hàng: thiếu thông tin');
@@ -261,6 +276,7 @@ const addItemToCart = (payload) => {
   return true;
 };
 
+// Show notification when item is successfully added to cart
 const showAddToCartFeedback = (itemName) => {
   // Create or update feedback element
   let feedbackEl = document.getElementById('cart-feedback');
@@ -281,7 +297,11 @@ const showAddToCartFeedback = (itemName) => {
   }, 2000);
 };
 
-// Fallback modal detail cho trang không nạp menu.js (ví dụ trang chủ)
+// ============================================
+// MENU DETAIL MODAL
+// ============================================
+
+// Open menu detail modal on homepage
 const openHomeMenuDetailModal = (item) => {
   const overlay = document.getElementById('menu-detail-modal-overlay');
   if (!overlay) {
@@ -368,6 +388,7 @@ const openHomeMenuDetailModal = (item) => {
   document.body.style.overflow = 'hidden';
 };
 
+// Close menu detail modal
 const closeHomeMenuDetailModal = () => {
   const overlay = document.getElementById('menu-detail-modal-overlay');
   if (!overlay) return;
@@ -375,6 +396,11 @@ const closeHomeMenuDetailModal = () => {
   document.body.style.overflow = '';
 };
 
+// ============================================
+// UPDATE CART
+// ============================================
+
+// Update item quantity in cart
 const updateCartItemQuantity = (itemId, newQuantity, itemSize = null) => {
   const quantity = Math.max(1, Math.floor(Number(newQuantity)) || 1);
   const size = itemSize || 'Vừa (M)';
@@ -392,6 +418,7 @@ const updateCartItemQuantity = (itemId, newQuantity, itemSize = null) => {
   }
 };
 
+// Remove item from cart
 const removeCartItem = (itemId, itemSize = null) => {
   const size = itemSize || 'Vừa (M)';
   
@@ -408,6 +435,7 @@ const removeCartItem = (itemId, itemSize = null) => {
   }
 };
 
+// Attach event listeners for cart dropdown controls (increase/decrease quantity, remove)
 const attachCartItemListeners = () => {
   // Quantity decrease buttons
   document.querySelectorAll('.cart-quantity-decrease').forEach((btn) => {
@@ -473,6 +501,7 @@ const attachCartItemListeners = () => {
   });
 };
 
+// Handle navigation to checkout page
 const handleCheckout = () => {
   if (cartState.items.length === 0) {
     return;
@@ -485,6 +514,7 @@ const handleCheckout = () => {
   window.location.href = '/cart';
 };
 
+// Setup cart event listeners (click, hover, resize)
 const setupCartListeners = () => {
   const cartButton = document.querySelector('.btn-cart');
   const cartCloseButton = document.getElementById('cart-close-button');
@@ -594,7 +624,7 @@ const setupCartListeners = () => {
   window.addEventListener('resize', window.cartResizeHandler);
 };
 
-// Sync cart state across tabs/pages
+// Sync cart state from localStorage (used when opening new tab or returning to tab)
 const syncCartFromStorage = () => {
   try {
     const stored = localStorage.getItem('cartItems');
@@ -700,6 +730,11 @@ if (typeof window !== 'undefined') {
   window.formatCurrencyVnd = formatCurrencyVnd;
 }
 
+// ============================================
+// MENU DISPLAY
+// ============================================
+
+// Create menu card element for menu list
 const createMenuCard = (item) => {
   const card = document.createElement('article');
   card.className = 'menu-card';
@@ -865,7 +900,6 @@ const createMenuCard = (item) => {
   card.appendChild(imageWrapper);
   card.appendChild(cardContent);
 
-  // Add click handler to card to navigate to detail page
   card.style.cursor = 'pointer';
   card.addEventListener('click', (e) => {
     // Don't navigate if clicking on buttons or size selector
@@ -881,6 +915,7 @@ const createMenuCard = (item) => {
   return card;
 };
 
+// Fetch menu list from API
 const fetchMenu = async () => {
   try {
     const response = await fetch('/api/menu');
@@ -895,6 +930,7 @@ const fetchMenu = async () => {
   }
 };
 
+// Render menu list on page
 const renderMenu = (items) => {
   const container = document.getElementById('menu-list');
   const emptyMessage = document.getElementById('menu-empty');
@@ -922,12 +958,11 @@ const renderMenu = (items) => {
   });
 };
 
-// Utility functions for homepage
-// Reservation form moved to /reservation page
-// No need for scroll handler anymore
+// ============================================
+// HOMEPAGE INITIALIZATION
+// ============================================
 
-// Reservation form handling moved to /reservation page (reservation.js)
-
+// Update year displayed in footer
 const initializeFooterYear = () => {
   const yearElement = document.getElementById('footer-year');
 
@@ -938,9 +973,11 @@ const initializeFooterYear = () => {
   yearElement.textContent = new Date().getFullYear().toString();
 };
 
-// Auth functions are in auth.js - use window.authState, window.updateAuthUi, etc.
+// ============================================
+// GALLERY MODAL
+// ============================================
 
-// Gallery state and functions
+// Gallery state - stores list of restaurant space videos and images
 const galleryState = {
   currentIndex: 0,
   mediaItems: [
@@ -952,6 +989,7 @@ const galleryState = {
   ]
 };
 
+// Open gallery modal to display restaurant space videos/images
 const openGalleryModal = (index = 0) => {
   const overlay = document.getElementById('gallery-modal-overlay');
   if (!overlay) {
@@ -977,6 +1015,7 @@ const openGalleryModal = (index = 0) => {
   console.log('Gallery modal opened at index:', validIndex);
 };
 
+// Close gallery modal
 const closeGalleryModal = () => {
   const overlay = document.getElementById('gallery-modal-overlay');
   if (!overlay) {
@@ -995,6 +1034,7 @@ const closeGalleryModal = () => {
   }
 };
 
+// Render current video or image in gallery
 const renderGalleryMedia = () => {
   const mediaContainer = document.getElementById('gallery-media');
   if (!mediaContainer) {
@@ -1035,6 +1075,7 @@ const renderGalleryMedia = () => {
   }
 };
 
+// Render thumbnail list of videos/images in gallery
 const renderGalleryThumbnails = () => {
   const thumbnailsContainer = document.getElementById('gallery-thumbnails');
   if (!thumbnailsContainer) {
@@ -1081,6 +1122,7 @@ const renderGalleryThumbnails = () => {
   });
 };
 
+// Navigate gallery (move to previous or next video/image)
 const navigateGallery = (direction) => {
   if (direction === 'prev') {
     galleryState.currentIndex = galleryState.currentIndex > 0
@@ -1126,6 +1168,7 @@ const initializeHomePageMenuDetailModal = () => {
   });
 };
 
+// Initialize homepage - setup all event listeners and load data
 const initializeHomePage = () => {
   const heroVideo = document.getElementById('hero-video');
   // Reservation button is now a link to /reservation page
@@ -1364,6 +1407,7 @@ const initializeHomePage = () => {
   window.setTimeout(initAuth, 150);
 };
 
+// Check if currently on homepage
 const shouldInitializeHomePage = () => {
   const path = window.location.pathname;
   return path === '/' || path === '/index.html';

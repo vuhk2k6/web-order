@@ -7,7 +7,9 @@ const { MenuItem } = require('../models/MenuItem');
 
 const router = express.Router();
 
-// MoMo Payment Configuration
+// ============================================
+// MOMO PAYMENT CONFIGURATION
+// ============================================
 const MOMO_CONFIG = {
   partnerCode: process.env.MOMO_PARTNER_CODE || 'MOMO',
   accessKey: process.env.MOMO_ACCESS_KEY || 'F8BBA842ECF85',
@@ -16,33 +18,41 @@ const MOMO_CONFIG = {
   requestType: 'captureWallet'
 };
 
+// ============================================
+// PAGE ROUTES
+// ============================================
+
+// Homepage
 router.get('/', (req, res) => {
   const indexPath = path.join(__dirname, '..', 'views', 'index.html');
   res.sendFile(indexPath);
 });
 
+// Menu page - display menu items list
 router.get('/menu', (req, res) => {
   const menuPath = path.join(__dirname, '..', 'views', 'menu.html');
   res.sendFile(menuPath);
 });
 
+// Menu item detail page
 router.get('/menu/:id', (req, res) => {
   const menuItemDetailPath = path.join(__dirname, '..', 'views', 'menu-item-detail.html');
   res.sendFile(menuItemDetailPath);
 });
 
+// Cart page
 router.get('/cart', (req, res) => {
   const cartPath = path.join(__dirname, '..', 'views', 'cart.html');
   res.sendFile(cartPath);
 });
 
+// Reservation page
 router.get('/reservation', (req, res) => {
   try {
     console.log('[Route /reservation] Route matched!');
     const reservationPath = path.join(__dirname, '..', 'views', 'reservation.html');
     console.log('[Route /reservation] Full path:', reservationPath);
     
-    // Check if file exists
     if (!fs.existsSync(reservationPath)) {
       console.error('[Route /reservation] File not found at:', reservationPath);
       return res.status(404).send('Reservation page file not found');
@@ -58,6 +68,7 @@ router.get('/reservation', (req, res) => {
   }
 });
 
+// Profile page (requires login)
 router.get('/profile', (req, res) => {
   if (!req.session || !req.session.userId) {
     return res.redirect('/');
@@ -67,24 +78,28 @@ router.get('/profile', (req, res) => {
   return res.sendFile(profilePath);
 });
 
+// Checkout page
 router.get('/checkout', (req, res) => {
   const checkoutPath = path.join(__dirname, '..', 'views', 'checkout.html');
   res.sendFile(checkoutPath);
 });
 
+// Order confirmation page
 router.get('/orders/:orderId', (req, res) => {
-  // Extract clean orderId - handle cases where MoMo might append extra data
   let orderId = req.params.orderId;
   if (orderId && orderId.includes(',')) {
     orderId = orderId.split(',')[0];
   }
   
-  // Store cleaned orderId for the view to use
-  // The view will extract it from URL anyway, but we can validate here
   const orderPath = path.join(__dirname, '..', 'views', 'order.html');
   res.sendFile(orderPath);
 });
 
+// ============================================
+// API ENDPOINTS
+// ============================================
+
+// Get menu list from database
 router.get('/api/menu', async (req, res) => {
   try {
     const items = await MenuItem.find()
@@ -92,7 +107,6 @@ router.get('/api/menu', async (req, res) => {
       .sort({ createdAt: -1 })
       .lean();
 
-    // Map _id to string for frontend compatibility and format category
     const mappedItems = items.map(item => ({
       ...item,
       _id: item._id.toString(),
@@ -110,7 +124,7 @@ router.get('/api/menu', async (req, res) => {
   }
 });
 
-// Get single menu item detail
+// Get menu item detail by ID
 router.get('/api/menu/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -122,7 +136,6 @@ router.get('/api/menu/:id', async (req, res) => {
       return res.status(404).json({ message: 'Không tìm thấy món ăn' });
     }
 
-    // Map _id to string for frontend compatibility and format category
     const mappedItem = {
       ...item,
       _id: item._id.toString(),
@@ -141,7 +154,7 @@ router.get('/api/menu/:id', async (req, res) => {
   }
 });
 
-// Get reviews for a menu item
+// Get reviews list for a menu item
 router.get('/api/menu/:id/reviews', async (req, res) => {
   try {
     const { MenuItemReview } = require('../models/MenuItemReview');
@@ -191,7 +204,7 @@ router.get('/api/menu/:id/reviews', async (req, res) => {
   }
 });
 
-// Create a review for a menu item
+// Create new review for menu item
 router.post('/api/menu/:id/reviews', async (req, res) => {
   try {
     const { MenuItemReview } = require('../models/MenuItemReview');
@@ -199,12 +212,10 @@ router.post('/api/menu/:id/reviews', async (req, res) => {
     const { id } = req.params;
     const { rating, content } = req.body;
 
-    // Validate rating
     if (!rating || rating < 1 || rating > 5) {
       return res.status(400).json({ message: 'Đánh giá phải từ 1 đến 5 sao' });
     }
 
-    // Get customer from session or token
     const customerId = req.session?.userId || req.user?.id;
     if (!customerId) {
       console.error('[API /api/menu/:id/reviews POST] No customer ID found in session:', {
@@ -217,26 +228,22 @@ router.post('/api/menu/:id/reviews', async (req, res) => {
       return res.status(401).json({ message: 'Vui lòng đăng nhập để đánh giá' });
     }
 
-    // Check if customer exists
     const customer = await Customer.findById(customerId);
     if (!customer) {
       return res.status(404).json({ message: 'Không tìm thấy khách hàng' });
     }
 
-    // Check if menu item exists
     const menuItem = await MenuItem.findById(id);
     if (!menuItem) {
       return res.status(404).json({ message: 'Không tìm thấy món ăn' });
     }
 
-    // Check if customer already reviewed this item
     const existingReview = await MenuItemReview.findOne({
       menuItem: id,
       customer: customerId
     });
 
     if (existingReview) {
-      // Update existing review
       existingReview.rating = rating;
       existingReview.content = content || '';
       await existingReview.save();
@@ -261,7 +268,6 @@ router.post('/api/menu/:id/reviews', async (req, res) => {
       });
     }
 
-    // Create new review
     const review = new MenuItemReview({
       menuItem: id,
       customer: customerId,
@@ -298,7 +304,7 @@ router.post('/api/menu/:id/reviews', async (req, res) => {
   }
 });
 
-// Get member info
+// Get member info (points, tier)
 router.get('/api/member/:userId', async (req, res) => {
   try {
     const { Member } = require('../models/Member');
@@ -315,7 +321,7 @@ router.get('/api/member/:userId', async (req, res) => {
   }
 });
 
-// Get user profile data (orders, stats, member info)
+// Get current user profile data (orders, stats, member info)
 router.get('/api/profile', async (req, res) => {
   try {
     const customerId = req.session?.userId;
@@ -329,16 +335,13 @@ router.get('/api/profile', async (req, res) => {
     const { PointTransaction } = require('../models/PointTransaction');
     const { DeliveryAddress } = require('../models/DeliveryAddress');
     
-    // Get customer info from database
     const customer = await Customer.findById(customerId).lean();
     if (!customer) {
       return res.status(404).json({ message: 'Không tìm thấy thông tin khách hàng' });
     }
     
-    // Get member info
     const member = await Member.findOne({ customer: customerId }).lean();
     
-    // Get orders statistics
     const allOrders = await Order.find({ customer: customerId }).lean();
     const totalOrders = allOrders.length;
     const totalSpent = allOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
@@ -393,13 +396,11 @@ router.get('/api/profile', async (req, res) => {
       })));
     }
     
-    // Get saved addresses
     const orderIds = allOrders.map(o => o._id);
     const addresses = await DeliveryAddress.find({ order: { $in: orderIds } })
       .select('address ward district deliveryNote')
       .lean();
     
-    // Remove duplicates addresses
     const uniqueAddresses = [];
     const addressStrings = new Set();
     addresses.forEach(addr => {
@@ -456,7 +457,7 @@ router.get('/api/profile', async (req, res) => {
   }
 });
 
-// Get saved delivery addresses (for logged-in users)
+// Get saved delivery addresses for customer
 router.get('/api/delivery-addresses', async (req, res) => {
   try {
     const customerId = req.session?.userId;
@@ -467,7 +468,6 @@ router.get('/api/delivery-addresses', async (req, res) => {
     const { DeliveryAddress } = require('../models/DeliveryAddress');
     const { Order } = require('../models/Order');
     
-    // Get addresses from previous orders
     const orders = await Order.find({ customer: customerId }).select('_id').lean();
     const orderIds = orders.map(o => o._id);
     
@@ -482,7 +482,7 @@ router.get('/api/delivery-addresses', async (req, res) => {
   }
 });
 
-// Get order details
+// Get order detail information
 router.get('/api/orders/:orderId', async (req, res) => {
   try {
     console.log('[Order Details] Request received:', req.params.orderId);
@@ -496,15 +496,12 @@ router.get('/api/orders/:orderId', async (req, res) => {
     const { MenuItem } = require('../models/MenuItem');
     const { Customer } = require('../models/Customer');
     
-    // Extract orderId - handle cases where MoMo might append extra data
     let orderId = req.params.orderId;
-    // If there's a comma, take only the part before it (our MongoDB ObjectId)
     if (orderId && orderId.includes(',')) {
       orderId = orderId.split(',')[0];
       console.log('[Order Details] Cleaned orderId:', orderId);
     }
     
-    // Validate MongoDB ObjectId format
     if (!orderId || !/^[a-f\d]{24}$/i.test(orderId)) {
       console.error('[Order Details] Invalid orderId format:', orderId);
       return res.status(400).json({ message: 'Mã đơn hàng không hợp lệ' });
@@ -530,13 +527,10 @@ router.get('/api/orders/:orderId', async (req, res) => {
     
     console.log('[Order Details] Order found:', order._id);
     
-    // Get order items
     const orderItems = await OrderItem.find({ order: order._id }).lean();
     
-    // Map items with menu item details
     const items = await Promise.all(orderItems.map(async (item) => {
       try {
-        // item.dish is a reference (ObjectId), need to populate or find
         const dishId = item.dish?.toString ? item.dish.toString() : item.dish;
         const menuItem = dishId ? await MenuItem.findById(dishId).lean() : null;
         
@@ -551,7 +545,6 @@ router.get('/api/orders/:orderId', async (req, res) => {
         };
       } catch (error) {
         console.error('[Order Details] Error processing item:', error);
-        // Return item data even if menu item lookup fails
         return {
           name: 'Món không xác định',
           quantity: item.quantity || 1,
@@ -564,25 +557,20 @@ router.get('/api/orders/:orderId', async (req, res) => {
       }
     }));
     
-    // Get payment info
     let payment = null;
     try {
       payment = await Payment.findOne({ order: order._id }).lean();
     } catch (error) {
       console.error('[Order Details] Error fetching payment:', error);
-      // Continue without payment info
     }
     
-    // Get delivery address if exists
     let deliveryAddress = null;
     try {
       deliveryAddress = await DeliveryAddress.findOne({ order: order._id }).lean();
     } catch (error) {
       console.error('[Order Details] Error fetching delivery address:', error);
-      // Continue without delivery address
     }
     
-    // Get dine-in info if exists
     let dineInOrder = null;
     try {
       dineInOrder = await DineInOrder.findOne({ order: order._id })
@@ -590,10 +578,8 @@ router.get('/api/orders/:orderId', async (req, res) => {
         .lean();
     } catch (error) {
       console.error('[Order Details] Error fetching dine-in order:', error);
-      // Continue without dine-in info
     }
     
-    // Map order type
     const orderTypeMap = {
       'MANG_VE': 'Mang về',
       'ONLINE': 'Giao hàng',
@@ -612,7 +598,6 @@ router.get('/api/orders/:orderId', async (req, res) => {
       'THANH_TOAN_THAT_BAI': 'Thanh toán thất bại'
     };
     
-    // Map payment method
     const paymentMethodMap = {
       'TIEN_MAT': 'Tiền mặt',
       'ONLINE': 'Thanh toán online'
@@ -669,7 +654,7 @@ router.get('/api/orders/:orderId', async (req, res) => {
   }
 });
 
-// Validate promotion code
+// Validate and verify promotion code
 router.get('/api/promotions/validate/:code', async (req, res) => {
   try {
     const { Promotion } = require('../models/Promotion');
@@ -683,10 +668,8 @@ router.get('/api/promotions/validate/:code', async (req, res) => {
       return res.json({ valid: false, message: 'Mã khuyến mãi không hợp lệ hoặc đã hết hạn' });
     }
     
-    // Get subtotal from query or default to 0
     const subtotal = parseFloat(req.query.subtotal) || 0;
     
-    // Check minimum order amount
     if (promotion.minOrderAmount && subtotal < promotion.minOrderAmount) {
       return res.json({ 
         valid: false, 
@@ -694,7 +677,6 @@ router.get('/api/promotions/validate/:code', async (req, res) => {
       });
     }
     
-    // Calculate discount amount
     let discount = 0;
     if (promotion.discountType === 'PERCENT') {
       discount = Math.floor(subtotal * promotion.value / 100);
@@ -715,7 +697,7 @@ router.get('/api/promotions/validate/:code', async (req, res) => {
   }
 });
 
-// Create order
+// Create new order (handle payment, apply promotion, accumulate points)
 router.post('/api/orders', async (req, res) => {
   try {
     const { Order } = require('../models/Order');
@@ -751,10 +733,8 @@ router.post('/api/orders', async (req, res) => {
     };
     const mappedOrderType = orderTypeMap[orderType] || orderType;
     
-    // Get customer ID from session
     const customerId = req.session?.userId || null;
     
-    // Get promotion if promoCode exists
     let promotionId = null;
     if (promoCode) {
       const promotion = await Promotion.findOne({ name: promoCode.toUpperCase() });
@@ -763,24 +743,22 @@ router.post('/api/orders', async (req, res) => {
       }
     }
     
-    // Create order - default status is CHO_XAC_NHAN (Chờ xác nhận)
     const order = new Order({
       customer: customerId,
       orderType: mappedOrderType,
       totalAmount: total,
       deliveryFee: deliveryFee || 0,
       promotion: promotionId,
-      status: 'CHO_XAC_NHAN' // Trạng thái mặc định khi tạo đơn
+      status: 'CHO_XAC_NHAN'
     });
     await order.save();
     
-    // Create order items
     for (const item of items) {
       const menuItem = await MenuItem.findById(item.id);
       if (menuItem) {
         const orderItem = new OrderItem({
           order: order._id,
-          dish: menuItem._id, // Note: field name is 'dish' but we're using MenuItem ID
+          dish: menuItem._id,
           quantity: item.quantity,
           priceAtOrderTime: item.price,
           selectedSize: item.size || null,
@@ -790,7 +768,6 @@ router.post('/api/orders', async (req, res) => {
       }
     }
     
-    // Handle delivery address
     if (orderType === 'DELIVERY' && deliveryAddress) {
       const addressString = [
         deliveryAddress.street,
@@ -809,19 +786,15 @@ router.post('/api/orders', async (req, res) => {
       await address.save();
     }
     
-    // Handle dine-in
     if (orderType === 'DINE_IN' && tableNumber) {
       const { Table } = require('../models/Table');
-      // Try to find table by name/number, or create a reference
       let tableId = null;
       const table = await Table.findOne({ name: tableNumber });
       if (table) {
         tableId = table._id;
-        // Update table status
         table.status = 'DANG_DUNG';
         await table.save();
       } else {
-        // Create a temporary table reference if not found
         const newTable = new Table({
           name: tableNumber,
           seats: 4,
@@ -839,16 +812,12 @@ router.post('/api/orders', async (req, res) => {
       await dineIn.save();
     }
     
-    // Handle points - only deduct for non-MoMo payments immediately
-    // For MoMo, points will be deducted after successful payment
     if (pointsUsed > 0 && customerId && paymentMethod !== 'MOMO') {
       const member = await Member.findOne({ customer: customerId });
       if (member && member.points >= pointsUsed) {
-        // Deduct points
         member.points -= pointsUsed;
         await member.save();
         
-        // Record transaction (points is positive, type indicates direction)
         const pointTransaction = new PointTransaction({
           member: member._id,
           type: 'TIEU',
@@ -859,8 +828,6 @@ router.post('/api/orders', async (req, res) => {
       }
     }
     
-    // Calculate earned points (1% of total) - only for non-MoMo payments immediately
-    // For MoMo, points will be awarded after successful payment
     if (paymentMethod !== 'MOMO') {
       const earnedPoints = Math.floor(total * 0.01);
       if (earnedPoints > 0 && customerId) {
@@ -880,14 +847,10 @@ router.post('/api/orders', async (req, res) => {
       }
     }
     
-    // Handle payment based on method
     if (paymentMethod === 'MOMO') {
-      // For MoMo, order status should be pending payment
       order.status = 'CHO_THANH_TOAN';
       await order.save();
       
-      // Don't create payment record yet - will be created after successful payment
-      // Return orderId so frontend can initiate MoMo payment
       res.status(201).json({
         message: 'Đơn hàng đã được tạo, vui lòng thanh toán',
         orderId: order._id,
@@ -897,7 +860,6 @@ router.post('/api/orders', async (req, res) => {
       return;
     }
     
-    // For COD and other payment methods, create payment record immediately
     const paymentMethodMap = {
       'COD': 'TIEN_MAT',
       'ONLINE': 'ONLINE'
@@ -946,12 +908,10 @@ router.post('/api/payments/momo/create', async (req, res) => {
     
     console.log('[MoMo Create] Order found:', { orderId: order._id, totalAmount: order.totalAmount });
     
-    // Generate request ID and order ID for MoMo
     const requestId = MOMO_CONFIG.partnerCode + new Date().getTime();
     const momoOrderId = requestId;
     const amount = Math.round(order.totalAmount).toString();
     
-    // Validate amount
     if (!amount || amount === '0' || isNaN(amount)) {
       console.error('[MoMo Create] Invalid amount:', amount);
       return res.status(400).json({ message: 'Số tiền thanh toán không hợp lệ' });
@@ -959,28 +919,21 @@ router.post('/api/payments/momo/create', async (req, res) => {
     
     console.log('[MoMo Create] Amount:', amount, 'RequestId:', requestId);
     
-    // Build redirect and IPN URLs
     const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`;
-    // Ensure orderId is URL encoded and clean
     const cleanOrderId = orderId.toString();
     const redirectUrl = `${baseUrl}/api/payments/momo/return?orderId=${encodeURIComponent(cleanOrderId)}`;
     const ipnUrl = `${baseUrl}/api/payments/momo/callback`;
     
-    // Store orderId and pointsUsed in extraData (base64 encoded)
     const extraDataObj = { 
       orderId: orderId.toString(),
       pointsUsed: pointsUsed || 0
     };
     const extraData = Buffer.from(JSON.stringify(extraDataObj)).toString('base64');
     
-    // Create raw signature - order matters!
-    // According to MoMo docs: accessKey, amount, extraData, ipnUrl, orderId, orderInfo, partnerCode, redirectUrl, requestId, requestType
-    // URLs should NOT be encoded in the signature string
     const rawSignature = `accessKey=${MOMO_CONFIG.accessKey}&amount=${amount}&extraData=${extraData}&ipnUrl=${ipnUrl}&orderId=${momoOrderId}&orderInfo=Thanh toan don hang ${orderId}&partnerCode=${MOMO_CONFIG.partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${MOMO_CONFIG.requestType}`;
     
     console.log('[MoMo Create] Raw signature string:', rawSignature);
     
-    // Generate signature
     const signature = crypto
       .createHmac('sha256', MOMO_CONFIG.secretKey)
       .update(rawSignature)
@@ -988,7 +941,6 @@ router.post('/api/payments/momo/create', async (req, res) => {
     
     console.log('[MoMo Create] Generated signature:', signature);
     
-    // Build request body
     const requestBody = JSON.stringify({
       partnerCode: MOMO_CONFIG.partnerCode,
       accessKey: MOMO_CONFIG.accessKey,
@@ -1004,7 +956,6 @@ router.post('/api/payments/momo/create', async (req, res) => {
       lang: 'vi'
     });
     
-    // Create request to MoMo
     const options = {
       hostname: MOMO_CONFIG.endpoint,
       port: 443,
@@ -1016,7 +967,6 @@ router.post('/api/payments/momo/create', async (req, res) => {
       }
     };
     
-    // Make request to MoMo
     const momoRequest = https.request(options, (momoResponse) => {
       let data = '';
       
@@ -1033,9 +983,6 @@ router.post('/api/payments/momo/create', async (req, res) => {
           
           if (responseData.resultCode === 0 && responseData.payUrl) {
             console.log('[MoMo Create] Payment URL generated successfully');
-            // Store MoMo orderId mapping for callback verification
-            // You might want to store this in a database table
-            // For now, we'll pass it via extraData
             res.json({
               success: true,
               payUrl: responseData.payUrl,
@@ -1085,7 +1032,7 @@ router.post('/api/payments/momo/create', async (req, res) => {
   }
 });
 
-// MoMo callback handler (IPN)
+// Handle MoMo payment callback (webhook IPN)
 router.post('/api/payments/momo/callback', async (req, res) => {
   try {
     const { Order } = require('../models/Order');
@@ -1110,7 +1057,6 @@ router.post('/api/payments/momo/callback', async (req, res) => {
       signature
     } = req.body;
     
-    // Verify signature
     const rawSignature = `accessKey=${accessKey}&amount=${amount}&extraData=${extraData}&message=${message}&orderId=${momoOrderId}&orderInfo=${orderInfo}&orderType=${orderType}&partnerCode=${partnerCode}&payType=${payType}&requestId=${requestId}&responseTime=${responseTime}&resultCode=${resultCode}&transId=${transId}`;
     
     const expectedSignature = crypto
@@ -1123,7 +1069,6 @@ router.post('/api/payments/momo/callback', async (req, res) => {
       return res.status(400).json({ message: 'Invalid signature' });
     }
     
-    // Extract orderId and pointsUsed from extraData or orderInfo
     let actualOrderId = null;
     let extraDataObj = {};
     try {
@@ -1133,7 +1078,6 @@ router.post('/api/payments/momo/callback', async (req, res) => {
         actualOrderId = extraDataObj.orderId;
       }
     } catch (e) {
-      // Try to extract from orderInfo as fallback
       const match = orderInfo.match(/don hang (.+)/);
       if (match) {
         actualOrderId = match[1];
@@ -1151,13 +1095,10 @@ router.post('/api/payments/momo/callback', async (req, res) => {
       return res.status(404).json({ message: 'Order not found' });
     }
     
-    // Handle payment result
     if (resultCode === 0) {
-      // Payment successful
       order.status = 'CHO_XAC_NHAN';
       await order.save();
       
-      // Create payment record
       const payment = new Payment({
         order: order._id,
         method: 'ONLINE',
@@ -1169,7 +1110,6 @@ router.post('/api/payments/momo/callback', async (req, res) => {
       
       const customerId = order.customer;
       if (customerId) {
-        // Deduct points used (if any)
         const pointsUsed = extraDataObj.pointsUsed || 0;
         if (pointsUsed > 0) {
           const member = await Member.findOne({ customer: customerId });
@@ -1187,7 +1127,6 @@ router.post('/api/payments/momo/callback', async (req, res) => {
           }
         }
         
-        // Award earned points (1% of total)
         const earnedPoints = Math.floor(parseFloat(amount) * 0.01);
         if (earnedPoints > 0) {
           const member = await Member.findOne({ customer: customerId });
@@ -1206,7 +1145,6 @@ router.post('/api/payments/momo/callback', async (req, res) => {
         }
       }
     } else {
-      // Payment failed
       order.status = 'THANH_TOAN_THAT_BAI';
       await order.save();
     }
@@ -1218,7 +1156,7 @@ router.post('/api/payments/momo/callback', async (req, res) => {
   }
 });
 
-// Get all tables with status
+// Get tables list and status (available, in use, reserved)
 router.get('/api/tables', async (req, res) => {
   try {
     const { Table } = require('../models/Table');
@@ -1234,7 +1172,6 @@ router.get('/api/tables', async (req, res) => {
     
     const now = new Date();
     
-    // Get all active reservations
     const activeReservations = await Reservation.find({
       status: { $in: ['DANG_CHO', 'XAC_NHAN'] }
     }).lean();
@@ -1251,10 +1188,8 @@ router.get('/api/tables', async (req, res) => {
       .lean();
     }
     
-    // Create map: tableId -> reservation info
     const tableReservationMap = {};
     reservationTables.forEach(rt => {
-      // Handle both populated and non-populated table field
       const tableId = rt.table && typeof rt.table === 'object' && rt.table._id
         ? rt.table._id.toString()
         : (rt.table ? rt.table.toString() : null);
@@ -1271,16 +1206,13 @@ router.get('/api/tables', async (req, res) => {
       }
     });
     
-    // Map table data to response format with displayStatus
     const tablesData = tables.map(table => {
       const tableId = table._id.toString();
       const reservations = tableReservationMap[tableId] || [];
       
-      // Determine display status (same logic as admin)
-      let displayStatus = table.status; // TRONG, DANG_DUNG, DANG_DON
+      let displayStatus = table.status;
       
       if (table.status === 'TRONG' && reservations.length > 0) {
-        // Check if there's a reservation that's not confirmed or not yet time
         const hasReservedPending = reservations.some(r => {
           const reservedTime = new Date(r.reservedAt);
           return r.status === 'DANG_CHO' || reservedTime > now;
@@ -1297,7 +1229,7 @@ router.get('/api/tables', async (req, res) => {
         seats: table.seats || 0,
         location: table.location || '',
         status: table.status || 'TRONG',
-        displayStatus: displayStatus, // TRONG, DANG_DUNG, DANG_DON, RESERVED
+        displayStatus: displayStatus,
         createdAt: table.createdAt ? new Date(table.createdAt).toISOString() : null,
         updatedAt: table.updatedAt ? new Date(table.updatedAt).toISOString() : null
       };
@@ -1313,7 +1245,24 @@ router.get('/api/tables', async (req, res) => {
   }
 });
 
-// Create reservation
+// Get menu categories list
+router.get('/api/categories', async (req, res) => {
+  try {
+    const { Category } = require('../models/Category');
+    const categories = await Category.find().sort({ name: 1 }).lean();
+    const mapped = categories.map((cat) => ({
+      ...cat,
+      _id: cat._id.toString(),
+      id: cat._id.toString()
+    }));
+    res.json(mapped);
+  } catch (error) {
+    console.error('[Public API] Lỗi khi lấy danh mục:', error);
+    res.status(500).json({ message: 'Không thể tải danh mục', error: error.message });
+  }
+});
+
+// Create new reservation request
 router.post('/api/reservations', async (req, res) => {
   try {
     const { Reservation } = require('../models/Reservation');
@@ -1326,10 +1275,8 @@ router.post('/api/reservations', async (req, res) => {
       return res.status(400).json({ message: 'Vui lòng điền đầy đủ thông tin' });
     }
     
-    // Get customer from session if logged in
     const customerId = req.session?.userId || null;
     
-    // Create reservation
     const reservation = new Reservation({
       customer: customerId,
       guestName,
@@ -1341,10 +1288,8 @@ router.post('/api/reservations', async (req, res) => {
     });
     await reservation.save();
     
-    // Link tables if provided
     if (tableIds && Array.isArray(tableIds) && tableIds.length > 0) {
       for (const tableId of tableIds) {
-        // Verify table exists and is available
         const table = await Table.findById(tableId);
         if (table && table.status === 'TRONG') {
           const reservationTable = new ReservationTable({
@@ -1352,10 +1297,6 @@ router.post('/api/reservations', async (req, res) => {
             table: tableId
           });
           await reservationTable.save();
-          
-          // Update table status to reserved (or keep TRONG if you want to update on confirmation)
-          // table.status = 'DANG_DUNG';
-          // await table.save();
         }
       }
     }
@@ -1370,20 +1311,17 @@ router.post('/api/reservations', async (req, res) => {
   }
 });
 
-// MoMo return URL handler
+// Handle redirect from MoMo after payment (return URL)
 router.get('/api/payments/momo/return', async (req, res) => {
   try {
     const { orderId, resultCode, message } = req.query;
     
-    // Extract clean orderId if there's extra data
     let cleanOrderId = orderId;
     if (cleanOrderId && cleanOrderId.includes(',')) {
       cleanOrderId = cleanOrderId.split(',')[0];
     }
     
-    // Redirect to order confirmation page or show result
     if (resultCode === '0' || resultCode === 0) {
-      // Payment successful
       if (cleanOrderId) {
         return res.redirect(`/orders/${cleanOrderId}?payment=success`);
       }
@@ -1425,7 +1363,6 @@ router.get('/api/payments/momo/return', async (req, res) => {
         </html>
       `);
     } else {
-      // Payment failed or cancelled
       return res.send(`
         <!DOCTYPE html>
         <html lang="vi">
