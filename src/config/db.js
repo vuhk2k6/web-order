@@ -11,6 +11,7 @@ const connectDatabase = async () => {
 
   try {
     await mongoose.connect(mongoUri, {
+      dbName: process.env.MONGODB_DATABASE || 'web-order',
       serverSelectionTimeoutMS: 5000
     });
 
@@ -19,10 +20,9 @@ const connectDatabase = async () => {
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('MongoDB connection error:', error.message);
-    process.exit(1);
+    console.warn('Server continuing to run without DB or waiting for DB whitelist...');
   }
 };
 
 module.exports = { connectDatabase };
-
 

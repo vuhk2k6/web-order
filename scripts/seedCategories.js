@@ -1,8 +1,7 @@
 const mongoose = require('mongoose');
+require('dotenv').config();
+const { connectDatabase } = require('../src/config/db');
 const { Category } = require('../src/models/Category');
-
-// Connect to MongoDB
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/web-order';
 
 const categories = [
   { name: 'Combo', description: 'Các combo tiết kiệm' },
@@ -15,7 +14,7 @@ const categories = [
 
 async function seedCategories() {
   try {
-    await mongoose.connect(MONGODB_URI);
+    await connectDatabase();
     console.log('Đã kết nối MongoDB');
 
     // Clear existing categories (optional - comment out if you want to keep existing)
@@ -42,7 +41,6 @@ async function seedCategories() {
 }
 
 seedCategories();
-
 
 
 

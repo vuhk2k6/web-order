@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const multer = require('multer');
 const { MenuItem } = require('../models/MenuItem');
 const { Promotion } = require('../models/Promotion');
@@ -788,20 +789,40 @@ router.post(
 
     try {
       const timestamp = Date.now();
-      const safeName = req.file.originalname.replace(/\s+/g, '-').toLowerCase();
-      const key = `menu/${timestamp}-${safeName}`;
+      const safeName = req.file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_').toLowerCase();
+      const filename = `${timestamp}-${safeName}`;
 
-      const url = await uploadImageToS3(
-        req.file.buffer,
-        key,
-        req.file.mimetype || 'image/jpeg'
-      );
+      let url = null;
+      // Optional: try AWS S3 if fully configured
+      if (process.env.AWS_S3_BUCKET && process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
+        try {
+          url = await uploadImageToS3(
+            req.file.buffer,
+            `menu/${filename}`,
+            req.file.mimetype || 'image/jpeg'
+          );
+        } catch (s3Error) {
+          console.warn('S3 upload error, falling back to local storage:', s3Error.message);
+        }
+      }
+
+      // Default/Fallback: Save to local public/uploads/menu/
+      if (!url) {
+        const uploadDir = path.join(__dirname, '..', 'public', 'uploads', 'menu');
+        if (!fs.existsSync(uploadDir)) {
+          fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        const filePath = path.join(uploadDir, filename);
+        fs.writeFileSync(filePath, req.file.buffer);
+        url = `/uploads/menu/${filename}`;
+      }
 
       return res.status(201).json({ url });
     } catch (error) {
+      console.error('Lỗi khi tải ảnh:', error);
       return res
         .status(500)
-        .json({ message: 'Không thể tải ảnh lên AWS S3', error: error.message });
+        .json({ message: 'Không thể tải ảnh lên', error: error.message });
     }
   }
 );

@@ -2,25 +2,25 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 const { connectDatabase } = require('../src/config/db');
-const { Dish } = require('../src/models/Dish');
+const { MenuItem } = require('../src/models/MenuItem');
 
 const checkDatabase = async () => {
   try {
     await connectDatabase();
     console.log('=== KIỂM TRA DATABASE ===\n');
     
-    const count = await Dish.countDocuments();
+    const count = await MenuItem.countDocuments();
     console.log(`Số lượng món ăn trong database: ${count}\n`);
     
     if (count > 0) {
-      const items = await Dish.find().limit(3).lean();
+      const items = await MenuItem.find().limit(3).lean();
       console.log('Mẫu dữ liệu (3 món đầu):\n');
       items.forEach((item, idx) => {
         console.log(`Món ${idx + 1}:`);
         console.log('  _id:', item._id);
         console.log('  name:', item.name);
         console.log('  price:', item.price);
-        console.log('  imageUrl:', item.imageUrl || '(trống)');
+        console.log('  image:', item.image || '(trống)');
         console.log('  category:', item.category);
         console.log('');
       });
@@ -38,4 +38,3 @@ const checkDatabase = async () => {
 };
 
 checkDatabase();
-
